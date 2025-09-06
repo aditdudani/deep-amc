@@ -1,0 +1,13 @@
+# Ignore datasets and generated artifacts
+data/
+models/
+results/
+notebooks/
+
+# Ignore Python cache and environment files
+__pycache__/
+*.pyc
+amc_env/
+
+# Ignore OS-specific files
+.DS_Store
