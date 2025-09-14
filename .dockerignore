@@ -1,0 +1,10 @@
+# Ignore the entire data directory
+data/
+
+# Ignore notebooks and results
+notebooks/
+results/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc

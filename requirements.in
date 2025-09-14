@@ -1,0 +1,8 @@
+pip
+setuptools
+tensorflow
+numpy
+matplotlib
+scikit-learn
+pip-tools
+kaggle
