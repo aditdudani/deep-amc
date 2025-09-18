@@ -4,8 +4,8 @@ import os
 
 # --- Configuration ---
 # Define the absolute paths inside the Docker container
-SOURCE_FILE_PATH = '/app/projects/amc_project/data/GOLD_XYZ_OSC.0001_1024.hdf5'
-SAMPLE_FILE_PATH = '/app/projects/amc_project/data/RML2018.01A_sample.h5'
+SOURCE_FILE_PATH = '/app/data/GOLD_XYZ_OSC.0001_1024.hdf5'
+SAMPLE_FILE_PATH = '/app/data/RML2018.01A_sample.h5'
 
 # Number of records to include in the sample
 NUM_SAMPLES = 10000
