@@ -24,24 +24,24 @@ def create_data_sample():
         with h5py.File(SOURCE_FILE_PATH, 'r') as source_file, h5py.File(SAMPLE_FILE_PATH, 'w') as sample_file:
             
             # --- Process X dataset (Signal Data) ---
-            print(f"Slicing first {NUM_SAMPLES} records from /X...")
-            # Get a handle to the full dataset on disk
-            x_data = source_file['X'][:NUM_SAMPLES]
-            # Read only the first NUM_SAMPLES records into memory
+
+            # Get the total number of records in the dataset
+            total_records = source_file['X'].shape[0]
+            print(f"Slicing last {NUM_SAMPLES} records from /X...")
+            # Get a handle to the last NUM_SAMPLES records
+            x_data = source_file['X'][-NUM_SAMPLES:]
             x_sample = x_data
-            # Create a new dataset in the sample file and write the sliced data
             sample_file.create_dataset('X', data=x_sample)
 
             # --- Process Y dataset (Labels) ---
-            print(f"Slicing first {NUM_SAMPLES} records from /Y...")
-            # ** THE FIX IS HERE: ** Get a handle to the 'Y' dataset specifically
-            y_data = source_file['Y'][:NUM_SAMPLES]
+            print(f"Slicing last {NUM_SAMPLES} records from /Y...")
+            y_data = source_file['Y'][-NUM_SAMPLES:]
             y_sample = y_data
             sample_file.create_dataset('Y', data=y_sample)
 
             # --- Process Z dataset (SNRs) ---
-            print(f"Slicing first {NUM_SAMPLES} records from /Z...")
-            z_data = source_file['Z'][:NUM_SAMPLES]
+            print(f"Slicing last {NUM_SAMPLES} records from /Z...")
+            z_data = source_file['Z'][-NUM_SAMPLES:]
             z_sample = z_data
             sample_file.create_dataset('Z', data=z_sample)
 
