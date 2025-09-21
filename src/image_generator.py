@@ -37,10 +37,10 @@ def generate_three_channel_image(iq_samples, grid_size=224, alphas=(10, 1, 0.1))
 
 if __name__ == '__main__':
     print("Testing image generator...")
-    sample_path = '~/amc_project/data/RML2018.01A_sample.h5'
+    sample_path = '~/amc_project/data/RML2018.01A_sample.h5_last10k'
     X_sample, _, _ = load_data_sample(sample_path)
     
-    n=0
+    n=5000
     signal_frame = X_sample[n] # Pick just the nth frame
     print(f"Processing {n}th signal frame with shape: {signal_frame.shape}")
     

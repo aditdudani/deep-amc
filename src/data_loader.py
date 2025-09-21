@@ -12,7 +12,7 @@ def load_data_sample(file_path):
     return X, Y, Z
 
 if __name__ == '__main__':
-    sample_path = '~/amc_project/data/RML2018.01A_sample.h5'
+    sample_path = '~/amc_project/data/RML2018.01A_sample.h5_last10k'
 
     try:
         X_sample, Y_sample, Z_sample = load_data_sample(sample_path)
