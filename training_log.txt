@@ -1,0 +1,82 @@
+2025-09-23 11:20:17.890965: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1758626421.883315     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626421.883677     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626421.883986     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626421.884285     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626422.196602     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626422.196910     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626422.197182     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1758626422.197452     527 gpu_device.cc:2431] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 5.0. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+I0000 00:00:1758626422.238613     527 gpu_device.cc:2020] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 6905 MB memory:  -> device: 0, name: Tesla M10, pci bus id: 0000:39:00.0, compute capability: 5.0
+I0000 00:00:1758626422.239556     527 gpu_device.cc:2020] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 7593 MB memory:  -> device: 1, name: Tesla M10, pci bus id: 0000:3a:00.0, compute capability: 5.0
+I0000 00:00:1758626422.240392     527 gpu_device.cc:2020] Created device /job:localhost/replica:0/task:0/device:GPU:2 with 7593 MB memory:  -> device: 2, name: Tesla M10, pci bus id: 0000:3b:00.0, compute capability: 5.0
+I0000 00:00:1758626422.241356     527 gpu_device.cc:2020] Created device /job:localhost/replica:0/task:0/device:GPU:3 with 7593 MB memory:  -> device: 3, name: Tesla M10, pci bus id: 0000:3c:00.0, compute capability: 5.0
+F0000 00:00:1758626422.539323     527 random_op_gpu.h:247] Non-OK-status: GpuLaunchKernel(FillPhiloxRandomKernelLaunch<Distribution>, num_blocks, block_size, 0, d.stream(), key, counter, gen, data, size, dist)
+Status: INTERNAL: no kernel image is available for execution on the device
+*** Check failure stack trace: ***
+    @     0x7f93edfc6fe4  absl::lts_20250127::log_internal::LogMessage::SendToLog()
+    @     0x7f93edfc6976  absl::lts_20250127::log_internal::LogMessage::Flush()
+    @     0x7f93edfc7539  absl::lts_20250127::log_internal::LogMessageFatal::~LogMessageFatal()
+    @     0x7f93ceb9e834  tensorflow::functor::FillPhiloxRandom<>::operator()()
+    @     0x7f93ceb7dbc1  tensorflow::FillRandomTensor<>()
+    @     0x7f93ceb78faa  tensorflow::StatelessRandomOpBaseWithKeyCounter::Compute()
+    @     0x7f93ee03f5a4  tensorflow::BaseGPUDevice::Compute()
+    @     0x7f93ec0fe338  tensorflow::(anonymous namespace)::SingleThreadedExecutorImpl::Run()
+    @     0x7f93ec0cab1d  tensorflow::FunctionLibraryRuntimeImpl::RunSync()
+    @     0x7f93ec0d65ac  tensorflow::ProcessFunctionLibraryRuntime::RunMultiDeviceSync()
+    @     0x7f93ec0dc69d  tensorflow::ProcessFunctionLibraryRuntime::RunSync()
+    @     0x7f93df3a3488  tensorflow::KernelAndDeviceFunc::Run()
+    @     0x7f93df35192d  tensorflow::EagerKernelExecute()
+    @     0x7f93df35b620  tensorflow::ExecuteNode::Run()
+    @     0x7f93df8a8f2f  tensorflow::EagerExecutor::SyncExecute()
+    @     0x7f93df35126a  tensorflow::(anonymous namespace)::EagerLocalExecute()
+    @     0x7f93df34e9a2  tensorflow::DoEagerExecute()
+    @     0x7f93df352680  tensorflow::EagerExecute()
+    @     0x7f93def61077  tensorflow::EagerOperation::Execute()
+    @     0x7f93df39fe87  tensorflow::CustomDeviceOpHandler::Execute()
+    @     0x7f93dcc0a175  TFE_Execute
+    @     0x7f93aff8ef36  TFE_Py_FastPathExecute_C()
+    @     0x7f93af4da663  pybind11::detail::argument_loader<>::call<>()
+    @     0x7f93af4da59f  pybind11::cpp_function::initialize<>()::{lambda()#1}::__invoke()
+    @     0x7f93af4b48c7  pybind11::cpp_function::dispatcher()
+    @           0x5820ff  (unknown)
+    @           0x548ec5  _PyObject_MakeTpCall
+    @           0x5d74d9  _PyEval_EvalFrameDefault
+    @           0x54a7da  _PyObject_Call_Prepend
+    @           0x5a3698  (unknown)
+    @           0x54b07c  PyObject_Call
+    @           0x64fa24  (unknown)
+    @           0x548ec5  _PyObject_MakeTpCall
+    @           0x5d74d9  _PyEval_EvalFrameDefault
+    @           0x54a7da  _PyObject_Call_Prepend
+    @           0x59e0df  (unknown)
+    @           0x599bb3  (unknown)
+    @           0x54b07c  PyObject_Call
+    @           0x5db68a  _PyEval_EvalFrameDefault
+    @           0x54a7da  _PyObject_Call_Prepend
+    @           0x5a3698  (unknown)
+    @           0x548f8e  _PyObject_MakeTpCall
+    @           0x5d74d9  _PyEval_EvalFrameDefault
+    @           0x54cae4  (unknown)
+    @           0x54b0f9  PyObject_Call
+    @           0x5db68a  _PyEval_EvalFrameDefault
+    @           0x54a7da  _PyObject_Call_Prepend
+    @           0x5a3698  (unknown)
+    @           0x548f8e  _PyObject_MakeTpCall
+    @           0x5d74d9  _PyEval_EvalFrameDefault
+    @           0x54a712  _PyObject_Call_Prepend
+    @           0x5a3698  (unknown)
+    @           0x548ec5  _PyObject_MakeTpCall
+    @           0x5d74d9  _PyEval_EvalFrameDefault
+    @           0x5d59fb  PyEval_EvalCode
+    @           0x608b52  (unknown)
+    @           0x6b4d83  (unknown)
+    @           0x6b4aea  _PyRun_SimpleFileObject
+    @           0x6b491f  _PyRun_AnyFileObject
+    @           0x6bc985  Py_RunMain
+    @           0x6bc46d  Py_BytesMain
+    @     0x7f94417661ca  (unknown)
+    @     0x7f944176628b  __libc_start_main
+    @           0x657c15  _start

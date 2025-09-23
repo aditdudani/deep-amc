@@ -1,8 +1,16 @@
-pip
-setuptools
-tensorflow
-numpy
-matplotlib
+# Core ML & Scientific Computing
+# tensorflow and numpy are provided by the base NGC container
 scikit-learn
-pip-tools
+
+# Data Handling & Analysis
+pandas
 kaggle
+
+# Visualization
+matplotlib
+seaborn
+tqdm
+
+# Development & Tooling
+# h5py is required for saving Keras models in.h5 format
+h5py
