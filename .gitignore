@@ -8,6 +8,7 @@ notebooks/
 __pycache__/
 *.pyc
 amc_env/
+.vscode/
 
 # Ignore OS-specific files
 .DS_Store

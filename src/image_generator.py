@@ -37,7 +37,7 @@ def generate_three_channel_image(iq_samples, grid_size=224, alphas=(10, 1, 0.1))
 
 if __name__ == '__main__':
     print("Testing image generator...")
-    sample_path = '~/amc_project/data/RML2018.01A_sample.h5_last10k'
+    sample_path = '~/amc_project/data/RML2018.01A_sample_1.h5'
     X_sample, _, _ = load_data_sample(sample_path)
     
     n=5000
