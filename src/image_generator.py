@@ -4,25 +4,23 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 def iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
+    """
+    Generates an enhanced gray image using a memory-efficient iterative approach.
+    """
     image = np.zeros((grid_size, grid_size), dtype=np.float32)
-    
-    #creating empty grid
     pixel_coords = np.linspace(-plane_range / 2, plane_range / 2, grid_size)
-    #print(f"Pixel coords shape: {pixel_coords.shape}")
-    grid_x, grid_y = np.meshgrid(pixel_coords, pixel_coords)
-    pixel_centers = np.stack([grid_x.ravel(), grid_y.ravel()], axis=1)
-    #print(f"Pixel centers shape: {pixel_centers.shape}")
-    #calculates distance from every sample to every pixel center
-    #iq_samples shape:    (1024, 2)  -> (1024, 1, 2)
-    #pixel_centers shape: (50176, 2) -> (1, 50176, 2)
-    distances = np.sqrt(np.sum((iq_samples[:, np.newaxis, :] - pixel_centers[np.newaxis, :, :])**2, axis=2))
-    influences = np.exp(-alpha * distances) #assume P=1
-    pixel_intensities = np.sum(influences, axis=0) #sum influences for each pixel
-
-    image = pixel_intensities.reshape((grid_size, grid_size)) #now image is 2D grid
     
+    # Iterate through each I/Q sample to avoid creating a massive intermediate array
+    for sample in iq_samples:
+        # Calculate distance from this single sample to all pixel centers
+        dist_sq = (pixel_coords - sample)**2 + (pixel_coords[:, np.newaxis] - sample[1])**2
+        
+        # Calculate influence and add it to the image grid
+        influence = np.exp(-alpha * np.sqrt(dist_sq))
+        image += influence
+
     if image.max() > 0:
-        image /= image.max() #normalize
+        image /= image.max()
         
     return image
 
