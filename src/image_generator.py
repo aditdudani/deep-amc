@@ -9,19 +9,22 @@ def iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
     """
     image = np.zeros((grid_size, grid_size), dtype=np.float32)
     pixel_coords = np.linspace(-plane_range / 2, plane_range / 2, grid_size)
-    
+
+    # Create meshgrid for pixel centers
+    grid_x, grid_y = np.meshgrid(pixel_coords, pixel_coords)
+
     # Iterate through each I/Q sample to avoid creating a massive intermediate array
     for sample in iq_samples:
-        # Calculate distance from this single sample to all pixel centers
-        dist_sq = (pixel_coords - sample)**2 + (pixel_coords[:, np.newaxis] - sample[1])**2
-        
+        # Calculate distance from this single sample to all pixel centers (2D grid)
+        dist_sq = (grid_x - sample[0])**2 + (grid_y - sample[1])**2
+
         # Calculate influence and add it to the image grid
         influence = np.exp(-alpha * np.sqrt(dist_sq))
         image += influence
 
     if image.max() > 0:
         image /= image.max()
-        
+
     return image
 
 def generate_three_channel_image(iq_samples, grid_size=224, alphas=(10, 1, 0.1)): 
