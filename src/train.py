@@ -11,7 +11,7 @@ from image_generator import generate_three_channel_image
 from model_builder import build_googlenet_transfer
 
 # --- Configuration ---
-SAMPLE_PATH = '/app/projects/amc_project/data/RML2018.01A_sample_1.h5'
+SAMPLE_PATH = '/app/data/RML2018.01A_sample_1.h5'
 NUM_CLASSES = 24
 IMAGE_SIZE = 224
 BATCH_SIZE = 32 # Define batch size for the data pipeline

@@ -2,6 +2,7 @@
 models/
 results/
 notebooks/
+data/
 
 # Ignore Python cache and environment files
 __pycache__/
