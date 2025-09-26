@@ -1,6 +1,7 @@
 import numpy as np
 from data_loader import load_data_sample
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 def iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
     image = np.zeros((grid_size, grid_size), dtype=np.float32)
@@ -34,6 +35,17 @@ def generate_three_channel_image(iq_samples, grid_size=224, alphas=(10, 1, 0.1))
     three_channel_image = np.stack([image_ch1, image_ch2, image_ch3], axis=-1)
     
     return three_channel_image
+
+# --- NEW PART: Add a TensorFlow wrapper for the pipeline ---
+@tf.function
+def tf_generate_three_channel_image(iq_samples):
+  # Use tf.py_function to wrap the NumPy-based function
+  # This tells TensorFlow how to execute your Python code in its graph
+  [image,] = tf.py_function(generate_three_channel_image, [iq_samples], [tf.float32])
+  
+  # Set the shape explicitly so TensorFlow knows what to expect
+  image.set_shape((224, 224, 3))
+  return image
 
 if __name__ == '__main__':
     print("Testing image generator...")
