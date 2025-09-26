@@ -1,5 +1,5 @@
 # Step 1: Use the immutable SHA256 digest for 100% reproducibility
-FROM nvcr.io/nvidia/tensorflow@sha256:fdc2f7f3f63c47d71dff5646f26d9c922aeeb5d477a8594a5cd24928a9d5e82e
+FROM nvcr.io/nvidia/tensorflow@sha256:947e32a2649f805bc5159b4fbb9cd70111fc60d3129ccee595d50435df318a92
 
 # Step 2: Install any needed system libraries using apt
 RUN apt-get update && apt-get install -y --no-install-recommends \
