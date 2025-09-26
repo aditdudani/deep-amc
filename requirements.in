@@ -1,16 +1,15 @@
-# Core ML & Scientific Computing
-# tensorflow and numpy are provided by the base NGC container
-scikit-learn
+# Core framework, pinned to the version native to the NGC container
+tensorflow==2.10.1
 
-# Data Handling & Analysis
+# Pin numpy to <2.0 to avoid breaking ABI changes
+numpy<2.0
+
+# Standard data science and utility packages
+scikit-learn
 pandas
 kaggle
-
-# Visualization
 matplotlib
 seaborn
 tqdm
-
-# Development & Tooling
-# h5py is required for saving Keras models in.h5 format
 h5py
+jupyterlab

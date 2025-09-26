@@ -4,6 +4,7 @@ FROM nvcr.io/nvidia/tensorflow@sha256:fdc2f7f3f63c47d71dff5646f26d9c922aeeb5d477
 # Step 2: Install any needed system libraries using apt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libsndfile1 \
+    ffmpeg \
     screen \
     && rm -rf /var/lib/apt/lists/*
 
@@ -16,5 +17,9 @@ RUN pip install --no-cache-dir --require-hashes -r /app/requirements.txt
 # Step 5: Copy the rest of the application source code
 COPY . /app
 
-# Step 6: Set the working directory
+# Step 6: Add git safe.directory config to bash startup script for the root user
+# This will run every time you start an interactive shell (e.g., 'docker run... bash')
+RUN echo "git config --global --add safe.directory /app" >> /root/.bashrc
+
+# Step 7: Set the working directory
 WORKDIR /app

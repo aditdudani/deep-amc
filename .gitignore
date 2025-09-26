@@ -1,5 +1,4 @@
 # Ignore datasets and generated artifacts
-data/
 models/
 results/
 notebooks/
