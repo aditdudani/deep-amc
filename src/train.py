@@ -1,4 +1,5 @@
 import os
+import h5py
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
@@ -6,91 +7,112 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras import mixed_precision
 
 # --- Local Module Imports ---
-from data_loader import load_data_sample
 from image_generator import tf_generate_three_channel_image
 from model_builder import build_googlenet_transfer
 
 # --- 1. V100 Performance Optimization: Enable Mixed-Precision Training ---
-# This is the critical step to activate the V100's Tensor Cores.
-# It instructs Keras to use 16-bit precision for computations where possible,
-# and 32-bit for variable storage, dramatically accelerating training.
 mixed_precision.set_global_policy('mixed_float16')
 print("Mixed-precision training policy set to 'mixed_float16'.")
 
 # --- 2. Configuration ---
-SAMPLE_PATH = '/app/data/RML2018.01A_sample_1.h5'
-MODEL_SAVE_PATH = 'models/googlenet_phase1_best.h5'
+# IMPORTANT: Update this path to point to your full dataset file
+FULL_DATA_PATH = '/app/data/RML2018.01A_sample_1.h5' 
+MODEL_SAVE_PATH = 'models/googlenet_full_dataset.h5'
 NUM_CLASSES = 24
 IMAGE_SIZE = 224
-BATCH_SIZE = 32
-EPOCHS = 20 # Increased for a more robust training session
+BATCH_SIZE = 64 # Increased for the V100
+EPOCHS = 20
+
+# --- 3. High-Performance Data Generator ---
+def hdf5_generator(h5_path, indices):
+    """
+    A Python generator that yields data samples and labels directly from an HDF5 file.
+    This avoids loading the entire dataset into RAM.
+    """
+    def gen():
+        with h5py.File(h5_path, 'r') as hf:
+            X = hf['X']
+            Y = hf['Y']
+            for i in indices:
+                iq_sample = X[i].astype(np.float32)
+                label = np.argmax(Y[i])
+                yield iq_sample, label
+    return gen
 
 def main():
     """Main function to orchestrate the training pipeline."""
-    print("\n--- Starting AMC Training Pipeline ---")
+    print("\n--- Starting AMC Training Pipeline with Full Dataset ---")
 
-    # --- 3. Load and Prepare Data ---
-    print("\nStep 1: Loading data sample...")
-    X_iq, Y_onehot, _ = load_data_sample(SAMPLE_PATH)
-    
-    # Convert one-hot encoded labels to integer labels for SparseCategoricalCrossentropy
-    Y_labels = np.argmax(Y_onehot, axis=1)
-    print(f"Loaded {len(X_iq)} total samples.")
+    # --- 4. Load Data Indices (Not the Data Itself) ---
+    print("\nStep 1: Loading data indices and labels for splitting...")
+    with h5py.File(FULL_DATA_PATH, 'r') as hf:
+        num_samples = hf['X'].shape[0]
+        # Load only the labels for stratification, which is memory-efficient
+        all_labels = np.argmax(hf['Y'][:], axis=1)
 
-    # --- 4. Split Data ---
-    print("\nStep 2: Splitting data into training and validation sets...")
-    X_iq_train, X_iq_val, Y_labels_train, Y_labels_val = train_test_split(
-        X_iq,
-        Y_labels,
+    indices = np.arange(num_samples)
+    print(f"Found {num_samples} total samples in the dataset.")
+
+    # --- 5. Split Indices ---
+    print("\nStep 2: Splitting data indices into training and validation sets...")
+    # We split the indices, not the actual data. This is extremely fast and memory-light.
+    train_indices, val_indices = train_test_split(
+        indices,
         test_size=0.2,
         random_state=42,
-        stratify=Y_labels  # Ensure class distribution is the same in train/val sets
+        stratify=all_labels
     )
-    print(f"Training set size: {len(X_iq_train)}")
-    print(f"Validation set size: {len(X_iq_val)}")
+    print(f"Training set size: {len(train_indices)}")
+    print(f"Validation set size: {len(val_indices)}")
 
-    # --- 5. Create High-Performance tf.data Pipelines ---
-    print("\nStep 3: Creating optimized tf.data pipelines...")
+    # --- 6. Create High-Performance tf.data Pipelines from Generator ---
+    print("\nStep 3: Creating optimized tf.data pipelines from generator...")
+
+    # Define the data types and shapes that our generator will produce.
+    # This is crucial for TensorFlow to build the computation graph correctly.
+    output_signature = (
+        tf.TensorSpec(shape=(1024, 2), dtype=tf.float32),
+        tf.TensorSpec(shape=(), dtype=tf.int64)
+    )
+
+    # Create the training dataset from our HDF5 generator
+    train_dataset = tf.data.Dataset.from_generator(
+        hdf5_generator(FULL_DATA_PATH, train_indices),
+        output_signature=output_signature
+    )
+
+    # Create the validation dataset from our HDF5 generator
+    val_dataset = tf.data.Dataset.from_generator(
+        hdf5_generator(FULL_DATA_PATH, val_indices),
+        output_signature=output_signature
+    )
 
     def process_sample(iq_samples, label):
-        """
-        Applies the TensorFlow-native image generation function.
-        This function will be traced by tf.data.map() into a static graph.
-        """
-        # Directly call the fully vectorized, TF-native image generator.
-        # No tf.py_function is needed, ensuring maximum performance.
+        """Applies the on-the-fly image generation function."""
         image = tf_generate_three_channel_image(iq_samples, grid_size=IMAGE_SIZE)
-        # Explicitly set the shape. This is crucial for graph optimization.
         image.set_shape([IMAGE_SIZE, IMAGE_SIZE, 3])
         return image, label
 
-    # Create the training dataset
-    train_dataset = tf.data.Dataset.from_tensor_slices((X_iq_train, Y_labels_train))
-    train_dataset = train_dataset.shuffle(buffer_size=1024) # Shuffle for better training
+    # Apply the standard high-performance transformations
     train_dataset = train_dataset.map(process_sample, num_parallel_calls=tf.data.AUTOTUNE)
+    train_dataset = train_dataset.shuffle(buffer_size=1024)
     train_dataset = train_dataset.batch(BATCH_SIZE)
-    train_dataset = train_dataset.prefetch(tf.data.AUTOTUNE) # Overlap data preprocessing and model execution
+    train_dataset = train_dataset.prefetch(tf.data.AUTOTUNE)
 
-    # Create the validation dataset
-    val_dataset = tf.data.Dataset.from_tensor_slices((X_iq_val, Y_labels_val))
     val_dataset = val_dataset.map(process_sample, num_parallel_calls=tf.data.AUTOTUNE)
     val_dataset = val_dataset.batch(BATCH_SIZE)
     val_dataset = val_dataset.prefetch(tf.data.AUTOTUNE)
 
     print("Data pipelines created successfully.")
 
-    # --- 6. Build and Compile the Model ---
+    # --- 7. Build and Compile the Model (No changes needed here) ---
     print("\nStep 4: Building and compiling the GoogLeNet model...")
     model = build_googlenet_transfer(
         input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), 
         num_classes=NUM_CLASSES
     )
     
-    # Create the base optimizer
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-    
-    # Wrap the optimizer in LossScaleOptimizer for mixed-precision training.
-    # This automatically handles loss scaling to prevent numerical underflow.
     optimizer = mixed_precision.LossScaleOptimizer(optimizer)
 
     model.compile(
@@ -101,13 +123,10 @@ def main():
     model.summary()
     print("Model compilation complete.")
 
-    # --- 7. Train the Model ---
+    # --- 8. Train the Model ---
     print("\nStep 5: Starting model training...")
-    
-    # Ensure the directory for saving models exists
     os.makedirs(os.path.dirname(MODEL_SAVE_PATH), exist_ok=True)
     
-    # Create a callback to save only the best model during training
     checkpoint_callback = ModelCheckpoint(
         filepath=MODEL_SAVE_PATH,
         monitor='val_accuracy',
@@ -116,7 +135,6 @@ def main():
         mode='max'
     )
     
-    # Train the model using the efficient data pipelines
     model.fit(
         train_dataset,
         epochs=EPOCHS,
