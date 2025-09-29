@@ -3,61 +3,90 @@ from data_loader import load_data_sample
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-def iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
+def _tf_iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
     """
-    Generates an enhanced gray image using a memory-efficient iterative approach.
+    Converts a batch of I/Q samples to a single enhanced gray image using vectorized TensorFlow ops.
+    This function is a corrected implementation that aligns with the Peng et al. (2018) methodology.
+    
+    Args:
+        iq_samples (tf.Tensor): A tensor of I/Q samples with shape [num_samples, 2].
+        grid_size (int): The resolution of the output image (e.g., 224 for a 224x224 image).
+        alpha (float): The exponential decay rate parameter.
+        plane_range (float): The symmetric range of the complex plane (e.g., 7.0 for a -3.5 to 3.5 grid).
+
+    Returns:
+        tf.Tensor: A tensor representing the single-channel grayscale image with shape [grid_size, grid_size].
     """
-    image = np.zeros((grid_size, grid_size), dtype=np.float32)
-    pixel_coords = np.linspace(-plane_range / 2, plane_range / 2, grid_size)
+    # 1. CORRECTION: Define the coordinate grid using the specified plane_range.
+    # This creates the correct [-3.5, 3.5] canvas instead of [-1.0, 1.0].
+    coords = tf.linspace(-plane_range / 2.0, plane_range / 2.0, grid_size)
+    grid_x, grid_y = tf.meshgrid(coords, coords)
+    pixel_centers = tf.stack([tf.reshape(grid_x, [-1]), tf.reshape(grid_y, [-1])], axis=1) # Shape: [grid_size*grid_size, 2]
 
-    # Create meshgrid for pixel centers
-    grid_x, grid_y = np.meshgrid(pixel_coords, pixel_coords)
+    # Prepare tensors for broadcasting
+    # iq_samples shape:      [num_samples, 2] -> [num_samples, 1, 2]
+    # pixel_centers shape: [grid_size*grid_size, 2] -> [1, grid_size*grid_size, 2]
+    iq_samples_b = iq_samples[:, tf.newaxis, :]
+    pixel_centers_b = pixel_centers[tf.newaxis, :, :]
 
-    # Iterate through each I/Q sample to avoid creating a massive intermediate array
-    for sample in iq_samples:
-        # Calculate distance from this single sample to all pixel centers (2D grid)
-        dist_sq = (grid_x - sample[0])**2 + (grid_y - sample[1])**2
+    # Calculate squared Euclidean distance
+    dist_sq = tf.reduce_sum(tf.square(iq_samples_b - pixel_centers_b), axis=2) # Shape: [num_samples, grid_size*grid_size]
 
-        # Calculate influence and add it to the image grid
-        influence = np.exp(-alpha * np.sqrt(dist_sq))
-        image += influence
+    # 2. CORRECTION: Apply tf.sqrt to get the true Euclidean distance.
+    # This fixes the mathematical error of using a Gaussian instead of an exponential decay.
+    distances = tf.sqrt(dist_sq)
 
-    if image.max() > 0:
-        image /= image.max()
+    # Calculate influences based on the corrected distance
+    influences = tf.exp(-alpha * distances) # P=1 is assumed
 
+    # Sum influences for each pixel
+    pixel_intensities = tf.reduce_sum(influences, axis=0)
+    
+    # Reshape the 1D intensity vector back into a 2D image
+    image = tf.reshape(pixel_intensities, (grid_size, grid_size))
+
+    # 3. CORRECTION: Normalize by dividing by the maximum value to match the NumPy baseline.
+    # This replaces the incorrect min-max scaling.
+    image_max = tf.reduce_max(image)
+    if image_max > 0:
+        image = image / image_max
+    
     return image
 
-def generate_three_channel_image(iq_samples, grid_size=224, alphas=(10, 1, 0.1)): 
+def tf_generate_three_channel_image(iq_samples, grid_size=224, alphas=(10.0, 1.0, 0.1), plane_range=7.0):
+    """
+    Generates a 3-channel image from I/Q samples by stacking three corrected enhanced gray images
+    with different alpha values. Implemented with pure TensorFlow operations.
 
-    image_ch1 = iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[0])
-    image_ch2 = iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[1])
-    image_ch3 = iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[2])
+    Args:
+        iq_samples (tf.Tensor): A tensor of I/Q samples with shape [num_samples, 2].
+        grid_size (int): The resolution of the output image.
+        alphas (tuple of float): A tuple of three alpha values for the decay function.
+        plane_range (float): The symmetric range of the complex plane.
 
-    three_channel_image = np.stack([image_ch1, image_ch2, image_ch3], axis=-1)
+    Returns:
+        tf.Tensor: A 3-channel image tensor with shape [grid_size, grid_size, 3].
+    """
+    # Generate each channel using the corrected vectorized gray image function
+    image_ch1 = _tf_iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[0], plane_range)
+    image_ch2 = _tf_iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[1], plane_range)
+    image_ch3 = _tf_iq_to_enhanced_gray_image(iq_samples, grid_size, alphas[2], plane_range)
+
+    # Stack the channels to form the final 3-channel image
+    three_channel_image = tf.stack([image_ch1, image_ch2, image_ch3], axis=-1)
     
     return three_channel_image
 
-# --- NEW PART: Add a TensorFlow wrapper for the pipeline ---
-@tf.function
-def tf_generate_three_channel_image(iq_samples):
-  # Use tf.py_function to wrap the NumPy-based function
-  # This tells TensorFlow how to execute your Python code in its graph
-  [image,] = tf.py_function(generate_three_channel_image, [iq_samples], [tf.float32])
-  
-  # Set the shape explicitly so TensorFlow knows what to expect
-  image.set_shape((224, 224, 3))
-  return image
-
 if __name__ == '__main__':
     print("Testing image generator...")
-    sample_path = '~/amc_project/data/RML2018.01A_sample_1.h5'
+    sample_path = '~/amc_project/data/RML2018.01A_sample.h5'
     X_sample, _, _ = load_data_sample(sample_path)
     
-    n=5000
+    n=1
     signal_frame = X_sample[n] # Pick just the nth frame
     print(f"Processing {n}th signal frame with shape: {signal_frame.shape}")
     
-    generated_image = generate_three_channel_image(signal_frame)
+    generated_image = tf_generate_three_channel_image(signal_frame)
     
     print(f"Generated image shape: {generated_image.shape}")    
 
