@@ -10,8 +10,9 @@ from tqdm import tqdm
 # These parameters are derived directly from the Peng et al. (2018) paper.
 HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Update this path if needed
 OUTPUT_DIR = 'data/processed'
-# Path to the fixed class order file
-CLASSES_FIXED_PATH = 'data/classes-fixed.txt'
+import json
+# Path to the fixed class order file (JSON only)
+CLASSES_FIXED_JSON = 'data/classes-fixed.json'
 IMAGE_SIZE = 224
 SAMPLES_PER_IMAGE = 1024  # Using the full 1024 samples from the dataset frame
 
@@ -71,14 +72,14 @@ def main():
     with h5py.File(HDF5_PATH, 'r') as hf:
         all_labels_onehot = hf['Y'][:]
         all_snrs = hf['Z'][:]
-        # Try to get class order from HDF5, else fallback to CLASSES_FIXED_PATH
+        # Try to get class order from HDF5, else fallback to CLASSES_FIXED_JSON
         if 'mods' in hf:
             all_mods = [mod.decode('utf-8') if isinstance(mod, bytes) else mod for mod in hf['mods'][:]]
         else:
-            if not os.path.exists(CLASSES_FIXED_PATH):
-                raise FileNotFoundError(f"Could not find 'mods' in HDF5 or '{CLASSES_FIXED_PATH}' for class order.")
-            with open(CLASSES_FIXED_PATH, 'r') as f:
-                all_mods = [line.strip() for line in f if line.strip()]
+            if not os.path.exists(CLASSES_FIXED_JSON):
+                raise FileNotFoundError(f"Could not find 'mods' in HDF5 or '{CLASSES_FIXED_JSON}' for class order.")
+            with open(CLASSES_FIXED_JSON, 'r') as f:
+                all_mods = json.load(f)
 
 
     all_labels = np.argmax(all_labels_onehot, axis=1)
