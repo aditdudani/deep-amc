@@ -80,15 +80,26 @@ def main():
             with open(CLASSES_FIXED_PATH, 'r') as f:
                 all_mods = [line.strip() for line in f if line.strip()]
 
+
     all_labels = np.argmax(all_labels_onehot, axis=1)
     # Map label indices to modulation names
     mod_map_from_index = {i: mod for i, mod in enumerate(all_mods)}
 
+    # Debug prints for mapping and SNRs
+    print("First 10 label indices:", all_labels[:10])
+    print("First 10 SNRs:", all_snrs[:10])
+    print("Class mapping (index to name):", {i: mod for i, mod in enumerate(all_mods)})
+    print("Unique SNRs in file:", np.unique(all_snrs))
+    print("Unique mods in first 1000 samples:", set([mod_map_from_index[l] for l in all_labels[:1000]]))
+
     print("Step 2: Filtering indices based on target modulations and SNRs...")
     filtered_indices_by_class = {mod: [] for mod in TARGET_MODS}
 
+
     for idx, (label_idx, snr) in enumerate(zip(all_labels, all_snrs)):
         mod = mod_map_from_index[label_idx]
+        if idx < 20:
+            print(f"Sample {idx}: mod={mod}, snr={snr}")
         if mod in TARGET_MODS and snr in TARGET_SNRS:
             filtered_indices_by_class[mod].append(idx)
 
