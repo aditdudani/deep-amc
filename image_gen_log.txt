@@ -1,0 +1,66 @@
+2025-10-01 14:26:35.865474: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+--- Starting Offline Pre-processing for Peng et al. (2018) Replication ---
+Step 1: Loading metadata from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+First 10 label indices: [0 0 0 0 0 0 0 0 0 0]
+First 10 SNRs: [[-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]
+ [-20]]
+Class mapping (index to name): {0: 'OOK', 1: '4ASK', 2: '8ASK', 3: 'BPSK', 4: 'QPSK', 5: '8PSK', 6: '16PSK', 7: '32PSK', 8: '16APSK', 9: '32APSK', 10: '64APSK', 11: '128APSK', 12: '16QAM', 13: '32QAM', 14: '64QAM', 15: '128QAM', 16: '256QAM', 17: 'AM-SSB-WC', 18: 'AM-SSB-SC', 19: 'AM-DSB-WC', 20: 'AM-DSB-SC', 21: 'FM', 22: 'GMSK', 23: 'OQPSK'}
+Unique SNRs in file: [-20 -18 -16 -14 -12 -10  -8  -6  -4  -2   0   2   4   6   8  10  12  14
+  16  18  20  22  24  26  28  30]
+Unique mods in first 1000 samples: {'OOK'}
+Step 2: Filtering indices based on target modulations and SNRs...
+Sample 0: mod=OOK, snr=[-20]
+Sample 1: mod=OOK, snr=[-20]
+Sample 2: mod=OOK, snr=[-20]
+Sample 3: mod=OOK, snr=[-20]
+Sample 4: mod=OOK, snr=[-20]
+Sample 5: mod=OOK, snr=[-20]
+Sample 6: mod=OOK, snr=[-20]
+Sample 7: mod=OOK, snr=[-20]
+Sample 8: mod=OOK, snr=[-20]
+Sample 9: mod=OOK, snr=[-20]
+Sample 10: mod=OOK, snr=[-20]
+Sample 11: mod=OOK, snr=[-20]
+Sample 12: mod=OOK, snr=[-20]
+Sample 13: mod=OOK, snr=[-20]
+Sample 14: mod=OOK, snr=[-20]
+Sample 15: mod=OOK, snr=[-20]
+Sample 16: mod=OOK, snr=[-20]
+Sample 17: mod=OOK, snr=[-20]
+Sample 18: mod=OOK, snr=[-20]
+Sample 19: mod=OOK, snr=[-20]
+Filtering complete. Index counts per class:
+  BPSK: 24576
+  4ASK: 24576
+  QPSK: 24576
+  OQPSK: 24576
+  8PSK: 24576
+  16QAM: 24576
+  32QAM: 24576
+  64QAM: 24576
+
+Step 3: Sub-sampling indices and generating images...
+WARNING: Not enough samples for class 'BPSK'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class '4ASK'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class 'QPSK'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class 'OQPSK'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class '8PSK'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class '16QAM'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class '32QAM'. Required: 101000, Found: 24576. Skipping this class.
+WARNING: Not enough samples for class '64QAM'. Required: 101000, Found: 24576. Skipping this class.
+
+--- Offline pre-processing finished successfully! ---
+Generated images are saved in: data/processed
+
+Summary of images generated:
+  train:
+  validation:

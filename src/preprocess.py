@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # --- 1. Configuration: Define parameters for replication ---
 # These parameters are derived directly from the Peng et al. (2018) paper.
-HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Update this path if needed
+HDF5_PATH = 'data/RML2018.01A_sample.h5'  # Update this path if needed
 OUTPUT_DIR = 'data/processed'
 import json
 # Path to the fixed class order file (JSON only)
@@ -24,9 +24,8 @@ TARGET_MODS = [
 # The paper specifies a 0-10 dB range. The dataset uses 2 dB steps.
 TARGET_SNRS = [0, 2, 4, 6, 8, 10]
 
-# Define dataset sizes as per the paper
-SAMPLES_PER_CLASS_TRAIN = 100000
-SAMPLES_PER_CLASS_VAL = 1000
+# Define train/val split ratio (use 90% for training, 10% for validation)
+TRAIN_VAL_SPLIT_RATIO = 0.9
 
 # --- 2. Image Generation Logic (Adapted from image_generator.py) ---
 def _tf_iq_to_enhanced_gray_image(iq_samples, grid_size, alpha, plane_range=7.0):
@@ -71,7 +70,8 @@ def main():
 
     with h5py.File(HDF5_PATH, 'r') as hf:
         all_labels_onehot = hf['Y'][:]
-        all_snrs = hf['Z'][:]
+        all_snrs_2d = hf['Z'][:]
+        all_snrs = all_snrs_2d.flatten()  # Ensure SNRs are 1D for comparison
         # Try to get class order from HDF5, else fallback to CLASSES_FIXED_JSON
         if 'mods' in hf:
             all_mods = [mod.decode('utf-8') if isinstance(mod, bytes) else mod for mod in hf['mods'][:]]
@@ -109,55 +109,51 @@ def main():
         print(f"  {mod}: {len(indices)}")
 
 
-    print("\nStep 3: Sub-sampling indices and generating images...")
+
+    print("\nStep 3: Splitting data and generating images...")
     np.random.seed(42)
-    train_indices = {}
-    val_indices = {}
-    for mod, indices in filtered_indices_by_class.items():
-        if len(indices) < SAMPLES_PER_CLASS_TRAIN + SAMPLES_PER_CLASS_VAL:
-            print(f"WARNING: Not enough samples for class '{mod}'. Required: {SAMPLES_PER_CLASS_TRAIN + SAMPLES_PER_CLASS_VAL}, Found: {len(indices)}. Skipping this class.")
-            continue
-        try:
-            train_idx = np.random.choice(indices, SAMPLES_PER_CLASS_TRAIN, replace=False)
-            val_pool = list(set(indices) - set(train_idx))
-            if len(val_pool) < SAMPLES_PER_CLASS_VAL:
-                print(f"WARNING: Not enough validation samples for class '{mod}'. Required: {SAMPLES_PER_CLASS_VAL}, Found: {len(val_pool)}. Skipping validation for this class.")
-                continue
-            val_idx = np.random.choice(val_pool, SAMPLES_PER_CLASS_VAL, replace=False)
-            train_indices[mod] = train_idx
-            val_indices[mod] = val_idx
-        except ValueError as e:
-            print(f"WARNING: Sampling error for class '{mod}': {e}. Skipping this class.")
-            continue
-
-    # Create output directories
-    for split, indices_dict in [('train', train_indices), ('validation', val_indices)]:
-        for mod in indices_dict:
-            out_dir = os.path.join(OUTPUT_DIR, split, mod)
-            os.makedirs(out_dir, exist_ok=True)
-
-    # Track image counts for summary
-    image_counts = {split: {mod: 0 for mod in indices_dict} for split, indices_dict in [('train', train_indices), ('validation', val_indices)]}
-
-    # Open the HDF5 file once to efficiently access 'X'
+    image_counts = {'train': {}, 'validation': {}}
     with h5py.File(HDF5_PATH, 'r') as hf:
         X = hf['X']
-        for split, indices_dict, samples_per_class in [
-            ('train', train_indices, SAMPLES_PER_CLASS_TRAIN),
-            ('validation', val_indices, SAMPLES_PER_CLASS_VAL)
-        ]:
-            for mod in indices_dict:
-                out_dir = os.path.join(OUTPUT_DIR, split, mod)
-                indices = indices_dict[mod]
-                for i, idx in enumerate(tqdm(indices, desc=f"{split}/{mod}")):
-                    iq = X[idx][:SAMPLES_PER_IMAGE]  # shape: (1024, 2)
-                    iq = np.asarray(iq, dtype=np.float32)
-                    img = tf_generate_three_channel_image(iq, grid_size=IMAGE_SIZE)
-                    img = tf.clip_by_value(img, 0, 1)
-                    img_np = (img.numpy() * 255).astype(np.uint8)
-                    fname = f"{i+1:06d}.png" if split == 'train' else f"{i+1:04d}.png"
-                    tf.keras.utils.save_img(os.path.join(out_dir, fname), img_np)
-                    image_counts[split][mod] += 1
+        for mod, indices in tqdm(filtered_indices_by_class.items(), desc="Classes"):
+            if len(indices) == 0:
+                print(f"WARNING: No samples found for class '{mod}'. Skipping.")
+                continue
+            indices = np.array(indices)
+            np.random.shuffle(indices)
+            split_point = int(len(indices) * TRAIN_VAL_SPLIT_RATIO)
+            train_idx = indices[:split_point]
+            val_idx = indices[split_point:]
+
+            # Create output directories
+            train_dir = os.path.join(OUTPUT_DIR, 'train', mod)
+            val_dir = os.path.join(OUTPUT_DIR, 'validation', mod)
+            os.makedirs(train_dir, exist_ok=True)
+            os.makedirs(val_dir, exist_ok=True)
+
+            # Generate training images
+            image_counts['train'][mod] = 0
+            for i, idx in enumerate(tqdm(train_idx, desc=f"train/{mod}", leave=False)):
+                iq = X[idx][:SAMPLES_PER_IMAGE]
+                iq = np.asarray(iq, dtype=np.float32)
+                img = tf_generate_three_channel_image(iq, grid_size=IMAGE_SIZE)
+                img = tf.clip_by_value(img, 0, 1)
+                img_np = (img.numpy() * 255).astype(np.uint8)
+                fname = f"{i+1:06d}.png"
+                tf.keras.utils.save_img(os.path.join(train_dir, fname), img_np)
+                image_counts['train'][mod] += 1
+
+            # Generate validation images
+            image_counts['validation'][mod] = 0
+            for i, idx in enumerate(tqdm(val_idx, desc=f"validation/{mod}", leave=False)):
+                iq = X[idx][:SAMPLES_PER_IMAGE]
+                iq = np.asarray(iq, dtype=np.float32)
+                img = tf_generate_three_channel_image(iq, grid_size=IMAGE_SIZE)
+                img = tf.clip_by_value(img, 0, 1)
+                img_np = (img.numpy() * 255).astype(np.uint8)
+                fname = f"{i+1:04d}.png"
+                tf.keras.utils.save_img(os.path.join(val_dir, fname), img_np)
+                image_counts['validation'][mod] += 1
 
 
     print("\n--- Offline pre-processing finished successfully! ---")
