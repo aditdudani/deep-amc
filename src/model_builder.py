@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Dropou
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications import InceptionV3
 
-def build_googlenet_transfer(input_shape=(224, 224, 3), num_classes=24):
+def build_googlenet_transfer(input_shape=(224, 224, 3), num_classes=24, train_base=False):
     """
     Builds a GoogLeNet (InceptionV3) model using transfer learning.
 
@@ -18,9 +18,9 @@ def build_googlenet_transfer(input_shape=(224, 224, 3), num_classes=24):
     #    'weights="imagenet"' downloads weights pre-trained on the ImageNet dataset.
     base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=input_shape)
 
-    # 2. Freeze the layers of the base model. This prevents their weights from being
-    #    updated during training, so we only train our new classification head.
-    base_model.trainable = False
+    # 2. Control whether the base model is trainable (fine-tuning) or frozen.
+    #    When fine-tuning, we'll allow the pre-trained weights to be updated.
+    base_model.trainable = bool(train_base)
 
     # 3. Create our new classification head.
     #    We take the output of the base model and add our own layers.
@@ -30,7 +30,10 @@ def build_googlenet_transfer(input_shape=(224, 224, 3), num_classes=24):
 
     # The final output layer. It has 'num_classes' neurons, one for each modulation type.
     # We use a linear activation because we will use a loss function that expects raw logits.
-    predictions = Dense(num_classes, activation=None)(x)
+    # When using mixed-precision, keep the final layer in float32 to avoid
+    # numerical issues with the logits. We return raw logits (no activation)
+    # so the loss function can apply from_logits=True.
+    predictions = Dense(num_classes, activation=None, dtype='float32')(x)
 
     # 4. Assemble the final model.
     model = Model(inputs=base_model.input, outputs=predictions)
