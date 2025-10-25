@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger, ReduceLROnPlateau
 
 # Local import: reuse the project's model builder
 from model_builder import build_googlenet_transfer
@@ -13,10 +13,15 @@ VAL_DIR = os.path.join(DATA_DIR, 'validation')
 MODEL_SAVE_PATH = os.path.join('models', 'googlenet_finetuned.h5')
 
 NUM_CLASSES = 8
-IMAGE_SIZE = 224
-BATCH_SIZE = 64
-EPOCHS = 50
-LEARNING_RATE = 1e-4
+IMAGE_SIZE = 299  # Align with InceptionV3 pretraining
+BATCH_SIZE = 48   # Slightly reduced for 299x299 tensors
+EPOCHS = 50       # Total epochs (warm-up + fine-tune)
+
+# Two-phase training configuration
+WARMUP_EPOCHS = 5           # Train head-only with base frozen
+WARMUP_LR = 1e-3            # Higher LR for classifier head
+FINETUNE_LR = 1e-5          # Low LR for fine-tuning base
+MOMENTUM = 0.9
 
 
 def make_datasets(train_dir, val_dir, image_size, batch_size):
@@ -97,24 +102,26 @@ def main():
     if len(class_names) != NUM_CLASSES:
         print(f"Warning: NUM_CLASSES={NUM_CLASSES} but dataset contains {len(class_names)} classes.")
 
-    # Build model and enable fine-tuning of the base model
-    model = build_googlenet_transfer(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
-                                     num_classes=NUM_CLASSES,
-                                     train_base=True)
+    # Phase A: Warm-up head (freeze base)
+    print("\nPhase A: Warm-up classifier head (base frozen)")
+    model = build_googlenet_transfer(
+        input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
+        num_classes=NUM_CLASSES,
+        train_base=False
+    )
 
-    # Optimizer: lower learning rate for fine-tuning pretrained weights
-    optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
-    # Wrap with LossScaleOptimizer for mixed-precision stability
-    optimizer = mixed_precision.LossScaleOptimizer(optimizer)
-
+    warmup_opt = tf.keras.optimizers.SGD(learning_rate=WARMUP_LR, momentum=MOMENTUM)
+    warmup_opt = mixed_precision.LossScaleOptimizer(warmup_opt)
     model.compile(
-        optimizer=optimizer,
+        optimizer=warmup_opt,
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=['accuracy']
+        metrics=['accuracy'],
+        steps_per_execution=32
     )
 
     os.makedirs(os.path.dirname(MODEL_SAVE_PATH), exist_ok=True)
-
+    os.makedirs('results', exist_ok=True)
+    csv_logger = CSVLogger(os.path.join('results', 'training_log.csv'), append=True)
     checkpoint = ModelCheckpoint(
         filepath=MODEL_SAVE_PATH,
         monitor='val_accuracy',
@@ -123,12 +130,51 @@ def main():
         mode='max'
     )
 
-    print('\nBeginning training...')
-    history = model.fit(
+    model.fit(
         train_ds,
         validation_data=val_ds,
-        epochs=EPOCHS,
-        callbacks=[checkpoint],
+        epochs=WARMUP_EPOCHS,
+        callbacks=[checkpoint, csv_logger],
+        verbose=1
+    )
+
+    # Phase B: Fine-tune base (unfreeze base; keep BatchNorm layers frozen)
+    print("\nPhase B: Fine-tune base (unfreeze backbone with BN frozen)")
+    base = None
+    try:
+        base = model.get_layer('inception_v3')
+    except Exception:
+        base = None
+    if base is not None:
+        base.trainable = True
+        for layer in base.layers:
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.trainable = False
+            else:
+                layer.trainable = True
+    else:
+        for layer in model.layers:
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                layer.trainable = False
+            else:
+                layer.trainable = True
+
+    finetune_opt = tf.keras.optimizers.SGD(learning_rate=FINETUNE_LR, momentum=MOMENTUM)
+    finetune_opt = mixed_precision.LossScaleOptimizer(finetune_opt)
+    model.compile(
+        optimizer=finetune_opt,
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        metrics=['accuracy'],
+        steps_per_execution=32
+    )
+
+    lr_plateau = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+
+    model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=EPOCHS - WARMUP_EPOCHS,
+        callbacks=[checkpoint, csv_logger, lr_plateau],
         verbose=1
     )
 
