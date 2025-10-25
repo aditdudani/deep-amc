@@ -55,15 +55,24 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
 
     AUTOTUNE = tf.data.AUTOTUNE
 
+    # Enable non-deterministic order for increased throughput
+    options = tf.data.Options()
+    options.experimental_deterministic = False
+
     train_ds = train_ds.map(lambda x, y: (preprocess(x), y), num_parallel_calls=AUTOTUNE)
-    # Cache in memory after first epoch to eliminate disk I/O for later epochs
-    train_ds = train_ds.cache()
+    # Use disk-backed cache to avoid excessive RAM usage on large datasets
+    cache_root = os.path.dirname(train_dir)
+    train_cache_path = os.path.join(cache_root, 'train.cache')
+    train_ds = train_ds.cache(train_cache_path)
     train_ds = train_ds.shuffle(1024)
     train_ds = train_ds.prefetch(AUTOTUNE)
+    train_ds = train_ds.with_options(options)
 
     val_ds = val_ds.map(lambda x, y: (preprocess(x), y), num_parallel_calls=AUTOTUNE)
-    val_ds = val_ds.cache()
+    val_cache_path = os.path.join(cache_root, 'val.cache')
+    val_ds = val_ds.cache(val_cache_path)
     val_ds = val_ds.prefetch(AUTOTUNE)
+    val_ds = val_ds.with_options(options)
 
     return train_ds, val_ds, class_names
 
