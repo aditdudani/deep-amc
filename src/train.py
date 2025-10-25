@@ -16,7 +16,7 @@ print("Mixed-precision training policy set to 'mixed_float16'.")
 
 # --- 2. Configuration ---
 # IMPORTANT: Update this path to point to your full dataset file
-FULL_DATA_PATH = '/app/data/RML2018.01A_sample_1.h5' 
+FULL_DATA_PATH = '/app/data/GOLD_XYZ_OSC.0001_1024.hdf5' 
 MODEL_SAVE_PATH = 'models/googlenet_full_dataset.h5'
 NUM_CLASSES = 24
 IMAGE_SIZE = 224
@@ -120,7 +120,7 @@ def main():
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy']
     )
-    model.summary()
+    #model.summary()
     print("Model compilation complete.")
 
     # --- 8. Train the Model ---

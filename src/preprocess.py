@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # --- 1. Configuration: Define parameters for replication ---
 # These parameters are derived directly from the Peng et al. (2018) paper.
-HDF5_PATH = 'data/RML2018.01A_sample.h5'  # Update this path if needed
+HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Update this path if needed
 OUTPUT_DIR = 'data/processed'
 import json
 # Path to the fixed class order file (JSON only)
