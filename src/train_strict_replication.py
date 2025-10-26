@@ -23,21 +23,14 @@ HEAD_LR = 1e-3
 SGD_MOMENTUM = 0.9
 
 
-def caffe_preprocess_rgb_to_bgr_mean(inputs):
-    """Caffe-style preprocessing: RGB -> BGR and subtract per-channel means.
-    Assumes input pixels in [0, 255] float32.
-    """
-    # RGB -> BGR
-    x = inputs[..., ::-1]
-    # Subtract means [B, G, R] as in Caffe (typical values)
-    mean = tf.constant([104.0, 117.0, 123.0], dtype=tf.float32)
-    x = x - mean
-    return x
+def iv3_preprocess(inputs):
+    """InceptionV3 native preprocessing: scales RGB inputs from [0,255] to [-1,1]."""
+    return tf.keras.applications.inception_v3.preprocess_input(inputs)
 
 
-def build_inceptionv3_with_caffe_preprocess(input_shape=(224, 224, 3), num_classes=8, freeze_bn=False):
+def build_inceptionv3_with_native_preprocess(input_shape=(224, 224, 3), num_classes=8, freeze_bn=False):
     inputs = layers.Input(shape=input_shape, dtype='float32')
-    x = layers.Lambda(caffe_preprocess_rgb_to_bgr_mean, name='caffe_preprocess')(inputs)
+    x = layers.Lambda(iv3_preprocess, name='iv3_preprocess')(inputs)
 
     base = tf.keras.applications.InceptionV3(
         include_top=False,
@@ -55,7 +48,7 @@ def build_inceptionv3_with_caffe_preprocess(input_shape=(224, 224, 3), num_class
     # Keep logits in float32 for numerical stability
     outputs = layers.Dense(num_classes, activation=None, dtype='float32', name='logits')(y)
 
-    model = models.Model(inputs=inputs, outputs=outputs, name='inceptionv3_caffe_head')
+    model = models.Model(inputs=inputs, outputs=outputs, name='inceptionv3_native_head')
     return model, base
 
 
@@ -105,7 +98,7 @@ def main():
     train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, IMAGE_SIZE, BATCH_SIZE)
 
     # Build model with BN frozen initially (helps stability when fine-tuning later)
-    model, base = build_inceptionv3_with_caffe_preprocess(
+    model, base = build_inceptionv3_with_native_preprocess(
         input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3),
         num_classes=NUM_CLASSES,
         freeze_bn=True,
@@ -142,7 +135,7 @@ def main():
     lr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(boundaries, values)
 
     model.compile(
-        optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=SGD_MOMENTUM),
+        optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=SGD_MOMENTUM, clipnorm=1.0),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'],
     )
