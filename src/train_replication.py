@@ -85,8 +85,24 @@ def main():
         train_base=True
     )
 
-    optimizer = tf.keras.optimizers.SGD(learning_rate=LR, momentum=MOMENTUM)
-    optimizer = mixed_precision.LossScaleOptimizer(optimizer)
+    # Piecewise LR schedule in steps (epochs 0-14: 1e-3, 15-29: 1e-4, 30+: 1e-5)
+    # We compute boundaries in steps to work robustly with the optimizer.
+    try:
+        steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
+    except Exception:
+        steps_per_epoch = None
+
+    if steps_per_epoch is None or steps_per_epoch < 0:
+        # Fallback: no known cardinality; use fixed LR and emit a warning.
+        print("Warning: could not determine steps_per_epoch; using fixed LR.")
+        base_optimizer = tf.keras.optimizers.SGD(learning_rate=LR, momentum=MOMENTUM)
+    else:
+        boundaries = [15 * steps_per_epoch, 30 * steps_per_epoch]
+        values = [1e-3, 1e-4, 1e-5]
+        lr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(boundaries, values)
+        base_optimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=MOMENTUM)
+
+    optimizer = mixed_precision.LossScaleOptimizer(base_optimizer)
 
     model.compile(
         optimizer=optimizer,
@@ -103,12 +119,23 @@ def main():
         mode='max'
     )
 
+    class LrPrinter(tf.keras.callbacks.Callback):
+        def on_epoch_begin(self, epoch, logs=None):
+            lr = self.model.optimizer.learning_rate
+            # If wrapped by LossScaleOptimizer, fetch inner optimizer's LR
+            try:
+                lr = self.model.optimizer._optimizer.learning_rate  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            current_lr = lr(self.model.optimizer.iterations) if callable(lr) else float(tf.keras.backend.get_value(lr))
+            print(f"\n[Epoch {epoch+1}] Learning rate: {current_lr:.6g}")
+
     print('\nBeginning training...')
     model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=EPOCHS,
-        callbacks=[checkpoint],
+        callbacks=[checkpoint, LrPrinter()],
         verbose=1
     )
 
