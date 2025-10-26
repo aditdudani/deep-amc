@@ -12,7 +12,7 @@ from image_generator import tf_generate_three_channel_image
 
 # Paths and config
 HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Full RadioML 2018.01A file
-MODEL_PATH = 'models/googlenet_fidelity_sgd.h5'
+MODEL_PATH = 'models/strict_googlenet_proxy_incv3.h5'
 TRAIN_DIR = os.path.join('data', 'processed', 'train')  # To infer class order
 RESULTS_DIR = 'results'
 OUTPUT_JSON = os.path.join(RESULTS_DIR, 'accuracy_by_snr.json')
@@ -101,7 +101,6 @@ def main():
     # Build buckets of indices per SNR and modulation
     buckets = _indices_by_mod_and_snr(HDF5_PATH, TARGET_MODS, TARGET_SNRS)
 
-    preprocess = tf.keras.applications.inception_v3.preprocess_input
     acc_by_snr = {}
 
     for snr in TARGET_SNRS:
@@ -121,16 +120,14 @@ def main():
             print(f"No data for SNR={snr}; skipping.")
             continue
 
-        X = np.concatenate(all_imgs, axis=0)
-        y_true = np.concatenate(all_labels, axis=0)
-        # Apply same preprocessing as training
-        X_p = preprocess(X)
-
-        logits = model.predict(X_p, batch_size=32, verbose=0)
-        y_pred = np.argmax(logits, axis=1)
-        acc = float((y_pred == y_true).mean())
-        acc_by_snr[snr] = acc
-        print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={len(y_true)})")
+    X = np.concatenate(all_imgs, axis=0).astype(np.float32)
+    y_true = np.concatenate(all_labels, axis=0)
+    # Model contains its own Caffe-style preprocessing layer; feed raw 0..255 inputs.
+    logits = model.predict(X, batch_size=32, verbose=0)
+    y_pred = np.argmax(logits, axis=1)
+    acc = float((y_pred == y_true).mean())
+    acc_by_snr[snr] = acc
+    print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={len(y_true)})")
 
     # Persist results
     with open(OUTPUT_JSON, 'w') as f:
