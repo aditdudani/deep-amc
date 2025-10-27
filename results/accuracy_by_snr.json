@@ -1,0 +1,23 @@
+{
+  "accuracy_by_snr": {
+    "10": 0.94125
+  },
+  "snrs": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "classes": [
+    "16QAM",
+    "32QAM",
+    "4ASK",
+    "64QAM",
+    "8PSK",
+    "BPSK",
+    "OQPSK",
+    "QPSK"
+  ]
+}

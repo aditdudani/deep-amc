@@ -1,6 +1,5 @@
 # Ignore datasets and generated artifacts
 models/
-results/
 notebooks/
 data/
 references/
