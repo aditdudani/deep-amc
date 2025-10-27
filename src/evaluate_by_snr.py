@@ -24,7 +24,7 @@ TARGET_SNRS = [0, 2, 4, 6, 8, 10]
 IMAGE_SIZE = 224
 ALPHAS = (10.0, 1.0, 0.1)
 SAMPLES_PER_IMAGE = 1024
-MAX_SAMPLES_PER_CLASS_PER_SNR = None  # e.g., set to 200 for a quicker run
+MAX_SAMPLES_PER_CLASS_PER_SNR = 200  # reduce runtime and memory; set None for full eval
 
 
 def _infer_class_order(train_dir: str) -> List[str]:
@@ -104,30 +104,32 @@ def main():
     acc_by_snr = {}
 
     for snr in TARGET_SNRS:
-        all_imgs = []
-        all_labels = []
+        total = 0
+        correct = 0
+        batch = 32
         for mod, idxs in buckets[snr].items():
             if MAX_SAMPLES_PER_CLASS_PER_SNR is not None and len(idxs) > MAX_SAMPLES_PER_CLASS_PER_SNR:
                 idxs = idxs[:MAX_SAMPLES_PER_CLASS_PER_SNR]
             if not idxs:
                 continue
-            imgs = _gen_images_for_indices(HDF5_PATH, idxs)
-            labels = np.full((imgs.shape[0],), mod_to_class_idx[mod], dtype=np.int64)
-            all_imgs.append(imgs)
-            all_labels.append(labels)
+            # Stream in small batches to cap memory and finish faster
+            class_id = mod_to_class_idx[mod]
+            for start in range(0, len(idxs), batch):
+                chunk = idxs[start:start + batch]
+                X_chunk = _gen_images_for_indices(HDF5_PATH, chunk).astype(np.float32)
+                y_chunk = np.full((X_chunk.shape[0],), class_id, dtype=np.int64)
+                logits = model.predict(X_chunk, batch_size=batch, verbose=0)
+                y_pred = np.argmax(logits, axis=1)
+                correct += int((y_pred == y_chunk).sum())
+                total += y_chunk.size
 
-        if not all_imgs:
+        if total == 0:
             print(f"No data for SNR={snr}; skipping.")
             continue
 
-    X = np.concatenate(all_imgs, axis=0).astype(np.float32)
-    y_true = np.concatenate(all_labels, axis=0)
-    # Model contains its own Caffe-style preprocessing layer; feed raw 0..255 inputs.
-    logits = model.predict(X, batch_size=32, verbose=0)
-    y_pred = np.argmax(logits, axis=1)
-    acc = float((y_pred == y_true).mean())
+        acc = float(correct / total)
     acc_by_snr[snr] = acc
-    print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={len(y_true)})")
+    print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={total})")
 
     # Persist results
     with open(OUTPUT_JSON, 'w') as f:
