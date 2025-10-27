@@ -128,8 +128,8 @@ def main():
             continue
 
         acc = float(correct / total)
-    acc_by_snr[snr] = acc
-    print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={total})")
+        acc_by_snr[snr] = acc
+        print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={total})")
 
     # Persist results
     with open(OUTPUT_JSON, 'w') as f:
