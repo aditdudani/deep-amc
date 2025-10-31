@@ -63,8 +63,8 @@ def build_squeezenet_v11(input_shape=(224, 224, 3), num_classes=24, dropout_rate
     # Final conv to num_classes, then global average pool -> logits
     x = layers.Conv2D(num_classes, (1, 1), activation=None, padding='valid', name='conv_final', dtype='float32', kernel_initializer='he_normal')(x)
     x = layers.GlobalAveragePooling2D(name='global_avgpool')(x)
-    # Output is logits in float32
-    outputs = layers.Activation('linear', dtype='float32', name='logits')(x)
+    # Output explicit probabilities
+    outputs = layers.Softmax(name='predictions')(x)
 
     model = models.Model(inputs=inputs, outputs=outputs, name='squeezenet_v1_1')
     return model
