@@ -69,10 +69,10 @@ def main():
     num_classes = len(class_names)
     print(f"Detected {num_classes} classes: {class_names}")
 
-    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.2)
+    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.0)
 
-    # Optimizer choice: RMSprop (stable for this small net). Switch to SGD if desired.
-    optimizer = optimizers.SGD(learning_rate=LEARNING_RATE, momentum=0.9)
+    # Optimizer: RMSprop at LR that previously worked well
+    optimizer = optimizers.RMSprop(learning_rate=LEARNING_RATE, rho=0.9)
 
     model.compile(
         optimizer=optimizer,
