@@ -13,8 +13,8 @@ TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 VAL_DIR = os.path.join(DATA_DIR, 'validation')
 IMAGE_SIZE = 224
 BATCH_SIZE = 64
-EPOCHS = 10  # start with a shorter run to verify learning; can increase after
-LEARNING_RATE = 1e-2  # higher LR for SGD to kickstart learning
+EPOCHS = 40  # extend now that learning is confirmed; ReduceLROnPlateau will anneal LR
+LEARNING_RATE = 1e-2  # keep LR that worked in the successful probe
 MODEL_OUT = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
 LOG_CSV = os.path.join('results', 'squeezenet_train_log.csv')
 TB_LOGDIR = os.path.join('results', 'logs', 'squeezenet')
@@ -69,7 +69,7 @@ def main():
     num_classes = len(class_names)
     print(f"Detected {num_classes} classes: {class_names}")
 
-    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.0)
+    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.2)
 
     # Optimizer choice: RMSprop (stable for this small net). Switch to SGD if desired.
     optimizer = optimizers.SGD(learning_rate=LEARNING_RATE, momentum=0.9)
