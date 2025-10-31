@@ -13,8 +13,8 @@ TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 VAL_DIR = os.path.join(DATA_DIR, 'validation')
 IMAGE_SIZE = 224
 BATCH_SIZE = 64
-EPOCHS = 40
-LEARNING_RATE = 5e-4  # RMSprop per Chahil 2024 recommendation
+EPOCHS = 10  # start with a shorter run to verify learning; can increase after
+LEARNING_RATE = 1e-2  # higher LR for SGD to kickstart learning
 MODEL_OUT = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
 LOG_CSV = os.path.join('results', 'squeezenet_train_log.csv')
 TB_LOGDIR = os.path.join('results', 'logs', 'squeezenet')
@@ -69,10 +69,10 @@ def main():
     num_classes = len(class_names)
     print(f"Detected {num_classes} classes: {class_names}")
 
-    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.5)
+    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.0)
 
     # Optimizer choice: RMSprop (stable for this small net). Switch to SGD if desired.
-    optimizer = optimizers.RMSprop(learning_rate=LEARNING_RATE, rho=0.9)
+    optimizer = optimizers.SGD(learning_rate=LEARNING_RATE, momentum=0.9)
 
     model.compile(
         optimizer=optimizer,
