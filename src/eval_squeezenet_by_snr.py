@@ -25,6 +25,8 @@ IMAGE_SIZE = 224
 ALPHAS = (10.0, 1.0, 0.1)
 SAMPLES_PER_IMAGE = 1024
 MAX_SAMPLES_PER_CLASS_PER_SNR = None  # e.g., set to 200 for a quicker sweep
+CHUNK_SIZE = 128                     # stream in small chunks to avoid OOM
+PREDICT_BATCH = 64                   # batch size for model.predict
 
 
 def _infer_class_order(train_dir: str) -> List[str]:
@@ -70,6 +72,9 @@ def _indices_by_mod_and_snr(h5_path: str,
 
 
 def _gen_images_for_indices(h5_path: str, indices: List[int], samples_per_image: int, image_size: int, alphas) -> np.ndarray:
+    """Generate a numpy batch of images for the provided indices.
+    NOTE: For streaming usage only on small slices; use CHUNK_SIZE to keep memory bounded.
+    """
     imgs = []
     with h5py.File(h5_path, 'r') as hf:
         X_dset = hf['X']
@@ -77,7 +82,7 @@ def _gen_images_for_indices(h5_path: str, indices: List[int], samples_per_image:
             iq = np.asarray(X_dset[idx][:samples_per_image], dtype=np.float32)
             img = tf_generate_three_channel_image(iq, grid_size=image_size, alphas=alphas)
             img = tf.clip_by_value(img, 0, 1)
-            img_np = (img.numpy() * 255.0).astype(np.float32)  # model expects 0..255; Rescaling layer handles 1/255
+            img_np = (img.numpy() * 255.0).astype(np.float32)
             imgs.append(img_np)
     return np.stack(imgs, axis=0)
 
@@ -102,30 +107,32 @@ def main():
     acc_by_snr: Dict[int, float] = {}
 
     for snr in TARGET_SNRS:
-        all_imgs = []
-        all_labels = []
+        total = 0
+        correct = 0
         for mod, idxs in buckets[snr].items():
             if MAX_SAMPLES_PER_CLASS_PER_SNR is not None and len(idxs) > MAX_SAMPLES_PER_CLASS_PER_SNR:
                 idxs = idxs[:MAX_SAMPLES_PER_CLASS_PER_SNR]
             if not idxs:
                 continue
-            imgs = _gen_images_for_indices(HDF5_PATH, idxs, SAMPLES_PER_IMAGE, IMAGE_SIZE, ALPHAS)
-            labels = np.full((imgs.shape[0],), mod_to_class_idx[mod], dtype=np.int64)
-            all_imgs.append(imgs)
-            all_labels.append(labels)
 
-        if not all_imgs:
+            # Stream in small chunks to avoid building a 20GB array
+            for start in range(0, len(idxs), CHUNK_SIZE):
+                chunk_indices = idxs[start:start + CHUNK_SIZE]
+                X_chunk = _gen_images_for_indices(HDF5_PATH, chunk_indices, SAMPLES_PER_IMAGE, IMAGE_SIZE, ALPHAS)
+                y_chunk = np.full((X_chunk.shape[0],), mod_to_class_idx[mod], dtype=np.int64)
+
+                probs = model.predict(X_chunk, batch_size=PREDICT_BATCH, verbose=0)
+                y_pred = np.argmax(probs, axis=1)
+                correct += int((y_pred == y_chunk).sum())
+                total += y_chunk.shape[0]
+
+        if total == 0:
             print(f"No data for SNR={snr}; skipping.")
             continue
 
-        X = np.concatenate(all_imgs, axis=0).astype(np.float32)
-        y_true = np.concatenate(all_labels, axis=0)
-
-        probs = model.predict(X, batch_size=64, verbose=0)  # Softmax head
-        y_pred = np.argmax(probs, axis=1)
-        acc = float((y_pred == y_true).mean())
-        acc_by_snr[snr] = acc
-        print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={len(y_true)})")
+        acc = correct / total
+        acc_by_snr[snr] = float(acc)
+        print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={total})")
 
     # Persist results
     with open(OUT_JSON, 'w') as f:
