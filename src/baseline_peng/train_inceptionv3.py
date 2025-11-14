@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -15,7 +16,8 @@ if SRC_DIR not in sys.path:
 DATA_DIR = os.path.join('data', 'processed')
 TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 VAL_DIR = os.path.join(DATA_DIR, 'validation')
-MODEL_SAVE_PATH = os.path.join('models', 'strict_googlenet_proxy_incv3.h5')
+RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+MODEL_SAVE_PATH = os.path.join('models', f'strict_googlenet_proxy_incv3_{RUN_TAG}.h5')
 
 NUM_CLASSES = 8
 IMAGE_SIZE = 224

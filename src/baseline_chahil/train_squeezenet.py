@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras import callbacks, optimizers
 
@@ -22,7 +23,8 @@ IMAGE_SIZE = 224
 BATCH_SIZE = 64
 EPOCHS = 40  # extend now that learning is confirmed; ReduceLROnPlateau will anneal LR
 LEARNING_RATE = 1e-2  # keep LR that worked in the successful probe
-MODEL_OUT = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
+RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+MODEL_OUT = os.path.join('models', f'squeezenet_v11_rmsprop_{RUN_TAG}.h5')
 LOG_CSV = os.path.join('results', 'squeezenet_train_log.csv')
 TB_LOGDIR = os.path.join('results', 'logs', 'squeezenet')
 

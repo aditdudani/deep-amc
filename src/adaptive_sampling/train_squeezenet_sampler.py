@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import math
+from datetime import datetime
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import callbacks, optimizers
@@ -35,7 +36,8 @@ BATCH_SIZE = 64
 EPOCHS = 40
 LEARNING_RATE = 1e-2
 RESULTS_DIR = os.path.join('results', 'adaptive_sampling')
-MODEL_OUT = os.path.join('models', 'squeezenet_sampler.h5')
+RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+MODEL_OUT = os.path.join('models', f'squeezenet_sampler_{RUN_TAG}.h5')
 LOG_CSV = os.path.join(RESULTS_DIR, 'squeezenet_sampler_train_log.csv')
 TB_LOGDIR = os.path.join(RESULTS_DIR, 'logs')
 

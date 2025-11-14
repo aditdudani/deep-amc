@@ -16,6 +16,7 @@ from typing import Dict, List
 
 import h5py
 import numpy as np
+import tensorflow as tf
 
 # Ensure 'src' is on sys.path so `common` package is importable when running as a file
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -91,7 +92,18 @@ from typing import Tuple
 
 
 def _build_records(splits: Dict[str, Dict[str, List[int]]], labels, snrs, mods) -> Tuple[List[Record], List[Record]]:
-    mod_to_id = {m: i for i, m in enumerate(sorted(TARGET_MODS))}
+    # Align class_id with directory order used by image_dataset_from_directory
+    train_dir_root = os.path.join(OUTPUT_DIR, TRAIN_SUBDIR)
+    train_ds = tf.keras.utils.image_dataset_from_directory(
+        train_dir_root,
+        labels='inferred',
+        label_mode='int',
+        image_size=(IMAGE_SIZE, IMAGE_SIZE),
+        batch_size=64,
+        shuffle=False,
+    )
+    dir_class_names = train_ds.class_names
+    mod_to_id = {m: i for i, m in enumerate(dir_class_names)}
     train_records: List[Record] = []
     val_records: List[Record] = []
     for mod in TARGET_MODS:
