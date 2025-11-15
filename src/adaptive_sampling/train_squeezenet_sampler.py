@@ -3,6 +3,11 @@ import sys
 import json
 import argparse
 from datetime import datetime
+
+# Silence TensorFlow C++ logs by default (unless user overrides)
+if 'TF_CPP_MIN_LOG_LEVEL' not in os.environ:
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress INFO and WARNING
+
 import tensorflow as tf
 from tensorflow.keras import callbacks, optimizers
 
@@ -14,13 +19,10 @@ Modes:
 - adaptive: sampler + confusion-by-SNR weight updates (with warmup and gate)
 
 Run examples:
-    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
     python src/adaptive_sampling/train_squeezenet_sampler.py --mode parity
 
-    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
     python src/adaptive_sampling/train_squeezenet_sampler.py --mode sampler-uniform
 
-    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
     python src/adaptive_sampling/train_squeezenet_sampler.py --mode adaptive --warmup-epochs 3 --min-val-acc 0.15
 """
 
@@ -109,6 +111,17 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    # Further reduce Python-side TF logs (keep training progress)
+    try:
+        import absl.logging
+        absl.logging.set_verbosity(absl.logging.ERROR)
+    except Exception:
+        pass
+    try:
+        tf.get_logger().setLevel('ERROR')
+    except Exception:
+        pass
 
     tf.keras.mixed_precision.set_global_policy('float32')
 
