@@ -28,7 +28,7 @@ from common.squeezenet import build_squeezenet_v11
 DATA_DIR = os.path.join('data', 'processed')
 TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 VAL_DIR = os.path.join(DATA_DIR, 'validation')
-
+IMAGE_SIZE = 224
 BATCH_SIZE = 64
 EPOCHS = 40
 LEARNING_RATE = 1e-2
