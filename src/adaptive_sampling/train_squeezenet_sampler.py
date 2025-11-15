@@ -3,6 +3,7 @@ import sys
 import json
 import argparse
 from datetime import datetime
+import numpy as np
 
 # Silence TensorFlow C++ logs by default (unless user overrides)
 if 'TF_CPP_MIN_LOG_LEVEL' not in os.environ:
@@ -106,7 +107,49 @@ def parse_args():
     p.add_argument('--min-val-acc', type=float, default=0.15, help='Adaptive: min val_acc to allow updates')
     p.add_argument('--metadata-train', type=str, default=TRAIN_META_CSV)
     p.add_argument('--metadata-val', type=str, default=VAL_META_CSV)
+    p.add_argument('--verify-metadata', action='store_true', help='Quickly verify metadata paths/SNRs before sampler/adaptive runs')
+    p.add_argument('--debug-sampler', action='store_true', help='Dump a preview batch from sampler and basic stats')
+    p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
     return p.parse_args()
+def _verify_metadata_quick(csv_path: str, class_names):
+    """Lightweight checks: file exists, folder-based class in class_names, SNR in TARGET_SNRS.
+    Scans up to ~5000 entries for speed and prints summary warnings.
+    """
+    import csv as _csv
+    total = 0
+    missing = 0
+    bad_class = 0
+    bad_snr = 0
+    try:
+        with tf.io.gfile.GFile(csv_path, 'r') as f:
+            reader = _csv.reader(f)
+            header = next(reader, None)
+            for i, row in enumerate(reader):
+                if len(row) < 4:
+                    continue
+                fp = row[0]
+                try:
+                    snr = int(row[3])
+                except Exception:
+                    snr = None
+                total += 1
+                if not tf.io.gfile.exists(fp):
+                    missing += 1
+                folder = os.path.basename(os.path.dirname(fp))
+                if folder not in class_names:
+                    bad_class += 1
+                if snr not in TARGET_SNRS:
+                    bad_snr += 1
+                if i >= 5000:
+                    break
+    except Exception as e:
+        print(f"[verify-metadata] Failed to read {csv_path}: {e}")
+        return
+    if total == 0:
+        print(f"[verify-metadata] No rows read from {csv_path}")
+        return
+    print(f"[verify-metadata] Checked {total} rows from {csv_path} | missing_files={missing}, bad_class_names={bad_class}, bad_snrs={bad_snr}")
+
 
 
 def main():
@@ -190,6 +233,10 @@ def main():
                 "  PYTHONPATH=src python src/adaptive_sampling/dataset_metadata.py\n"
                 f"Expected: {args.metadata_train} and {args.metadata_val}")
 
+        if args.verify_metadata:
+            _verify_metadata_quick(args.metadata_train, class_names)
+            _verify_metadata_quick(args.metadata_val, class_names)
+
         # Initialize external weights array (mutable) for sampler and callback to share
         weights = init_uniform_weights(num_classes, TARGET_SNRS)
         train_seq = WeightedSamplerSequence(
@@ -197,13 +244,33 @@ def main():
             class_count=num_classes,
             snrs=TARGET_SNRS,
             batch_size=batch_size,
-            epoch_size=None,
+            epoch_size=args.epoch_size,
             weights=weights,
             shuffle_within_bucket=True,
             class_names=class_names,
         )
 
         cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
+
+        if args.debug_sampler:
+            try:
+                X_dbg, y_dbg = train_seq[0]
+                unique, counts = np.unique(y_dbg, return_counts=True)
+                print(f"[debug-sampler] y unique/counts: {list(zip(unique.tolist(), counts.tolist()))}")
+                # Print a few sample folder->label pairs
+                shown = 0
+                for key, paths in train_seq.buckets.items():
+                    if not paths:
+                        continue
+                    p0 = paths[0]
+                    folder = os.path.basename(os.path.dirname(p0))
+                    cid = train_seq.class_name_to_id.get(folder, None) if train_seq.class_name_to_id else None
+                    print(f"[debug-sampler] example path: {p0} | folder={folder} -> label={cid}")
+                    shown += 1
+                    if shown >= 8:
+                        break
+            except Exception as e:
+                print(f"[debug-sampler] Failed to preview sampler batch: {e}")
         if args.mode == 'adaptive':
             cb_list.append(ConfusionBySNRCallback(
                 val_metadata_csv=args.metadata_val,
