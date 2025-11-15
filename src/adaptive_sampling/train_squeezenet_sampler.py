@@ -117,6 +117,10 @@ def parse_args():
     p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
     p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata'],
                    help='Use Keras Sequence or tf.data backend for sampler modes')
+    p.add_argument('--uniform-scope', type=str, default='class', choices=['class', 'class_snr'],
+                   help='Uniform over classes (default) or over (class,SNR) buckets')
+    p.add_argument('--snr-filter', type=str, default=None,
+                   help='Comma-separated SNR list to sample from (e.g., "6,8,10"). If omitted, use all TARGET_SNRS')
     p.add_argument('--debug-trainstep', action='store_true', help='Run a few train_on_batch steps to verify learning')
     return p.parse_args()
 def _verify_metadata_quick(csv_path: str, class_names):
@@ -160,43 +164,59 @@ def _verify_metadata_quick(csv_path: str, class_names):
 
 
 def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weights: np.ndarray,
-                                    epoch_size: int, batch_size: int, image_size: int):
+                                    epoch_size: int, batch_size: int, image_size: int,
+                                    uniform_scope: str = 'class', snr_filter: list | None = None):
     # Build buckets consistent with WeightedSamplerSequence
     records = load_metadata_csv(train_meta_csv)
     class_name_to_id = {name: i for i, name in enumerate(class_names)}
-    buckets, snr_to_idx = build_buckets(records, TARGET_SNRS, class_name_to_id)
+    snrs_use = snr_filter if snr_filter is not None else TARGET_SNRS
+    buckets, snr_to_idx = build_buckets(records, snrs_use, class_name_to_id)
+
+    # Also build per-class lists (ignore SNR) for class-only uniform
+    class_to_paths = {i: [] for i in range(len(class_names))}
+    for (cid, _snr), lst in buckets.items():
+        if lst:
+            class_to_paths[cid].extend(lst)
 
     # Pre-sample a list of (path, label) for this epoch
-    flat = weights.flatten()
     num_classes = len(class_names)
-    num_snrs = len(TARGET_SNRS)
     paths = []
     labels = []
     rng = np.random.default_rng()
-    for _ in range(epoch_size):
-        choice = rng.choice(len(flat), p=flat)
-        cid = choice // num_snrs
-        snr_idx = choice % num_snrs
-        snr = TARGET_SNRS[snr_idx]
-        key = (cid, snr)
-        lst = buckets.get(key, [])
-        if not lst:
-            # fallback within class
-            class_paths = []
-            for (c, s), l in buckets.items():
-                if c == cid and l:
-                    class_paths.extend(l)
-            if class_paths:
-                pth = class_paths[rng.integers(0, len(class_paths))]
-            else:
-                # worst-case fallback: random record path
-                pth = records[rng.integers(0, len(records))][0]
+    if uniform_scope == 'class_snr':
+        num_snrs = len(snrs_use)
+        if weights.shape != (num_classes, num_snrs):
+            flat = np.ones((num_classes, num_snrs), dtype=np.float32)
+            flat = (flat / flat.sum()).flatten()
         else:
-            pth = lst[rng.integers(0, len(lst))]
-        folder = os.path.basename(os.path.dirname(pth))
-        label = class_name_to_id.get(folder, cid)
-        paths.append(pth)
-        labels.append(label)
+            flat = (weights / max(float(weights.sum()), 1e-8)).flatten()
+        for _ in range(epoch_size):
+            choice = rng.choice(len(flat), p=flat)
+            cid = int(choice // num_snrs)
+            snr_idx = int(choice % num_snrs)
+            snr = snrs_use[snr_idx]
+            key = (cid, snr)
+            lst = buckets.get(key, [])
+            if not lst:
+                c_list = class_to_paths.get(cid, [])
+                if c_list:
+                    pth = c_list[rng.integers(0, len(c_list))]
+                else:
+                    all_any = sum((v for v in class_to_paths.values()), [])
+                    pth = all_any[rng.integers(0, len(all_any))]
+            else:
+                pth = lst[rng.integers(0, len(lst))]
+            paths.append(pth)
+            labels.append(cid)
+    else:
+        # Uniform over classes; within class, keep natural SNR mix among selected snrs
+        non_empty = [k for k, v in class_to_paths.items() if v]
+        for _ in range(epoch_size):
+            cid = int(rng.choice(non_empty))
+            c_list = class_to_paths[cid]
+            pth = c_list[rng.integers(0, len(c_list))]
+            paths.append(pth)
+            labels.append(cid)
 
     ds = tf.data.Dataset.from_tensor_slices((paths, labels))
     def _load_fn(pth, y):
@@ -204,7 +224,7 @@ def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weig
         img = tf.io.decode_png(img_bytes, channels=3)
         img = tf.image.resize(img, [image_size, image_size])
         img = tf.cast(img, tf.float32)
-        return img, y
+        return img, tf.cast(y, tf.int32)
     AUTOTUNE = tf.data.AUTOTUNE
     ds = ds.shuffle(min(10000, epoch_size)).map(_load_fn, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
     return ds
@@ -351,7 +371,15 @@ def main():
             )
         else:
             ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
-            print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}")
+            snr_list = None
+            if args.snr_filter:
+                try:
+                    candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
+                    snr_list = [s for s in candidate if s in TARGET_SNRS]
+                except Exception:
+                    snr_list = None
+            scope = args.uniform_scope
+            print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}, scope={scope}, snrs={snr_list or TARGET_SNRS}")
             train_input = _make_tfdata_from_sampler_draws(
                 train_meta_csv=args.metadata_train,
                 class_names=class_names,
@@ -359,6 +387,8 @@ def main():
                 epoch_size=ep_size,
                 batch_size=batch_size,
                 image_size=image_size,
+                uniform_scope=scope,
+                snr_filter=snr_list,
             )
 
         cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
@@ -368,18 +398,18 @@ def main():
                 X_dbg, y_dbg = train_input[0]
                 unique, counts = np.unique(y_dbg, return_counts=True)
                 print(f"[debug-sampler] y unique/counts: {list(zip(unique.tolist(), counts.tolist()))}")
-                # Print a few sample folder->label pairs
-                shown = 0
-                for key, paths in train_input.buckets.items():
-                    if not paths:
+                # Print a few random sample folder->label pairs from buckets
+                import random as _rnd
+                keys = list(train_input.buckets.keys())
+                _rnd.shuffle(keys)
+                for key in keys[:8]:
+                    paths_k = train_input.buckets.get(key, [])
+                    if not paths_k:
                         continue
-                    p0 = paths[0]
+                    p0 = paths_k[_rnd.randrange(len(paths_k))]
                     folder = os.path.basename(os.path.dirname(p0))
                     cid = train_input.class_name_to_id.get(folder, None) if train_input.class_name_to_id else None
                     print(f"[debug-sampler] example path: {p0} | folder={folder} -> label={cid}")
-                    shown += 1
-                    if shown >= 8:
-                        break
             except Exception as e:
                 print(f"[debug-sampler] Failed to preview sampler batch: {e}")
 
