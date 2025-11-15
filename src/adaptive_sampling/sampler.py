@@ -2,7 +2,7 @@ import os
 import sys
 import math
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -17,7 +17,12 @@ from common.config import IMAGE_SIZE, TARGET_SNRS
 
 
 def load_metadata_csv(path: str) -> List[Tuple[str, int, int]]:
-    """Load metadata CSV returning a list of (file_path, class_id, snr)."""
+    """Load metadata CSV returning a list of (file_path, class_id, snr).
+
+    Note: class_id in CSV may reflect an older directory order. We will
+    recompute class ids from folder names if class_names are provided to
+    WeightedSamplerSequence.
+    """
     rows: List[Tuple[str, int, int]] = []
     with tf.io.gfile.GFile(path, 'r') as f:
         header = f.readline().strip().split(',')
@@ -33,11 +38,19 @@ def load_metadata_csv(path: str) -> List[Tuple[str, int, int]]:
     return rows
 
 
-def build_buckets(records: List[Tuple[str, int, int]], snrs: List[int]) -> Tuple[Dict[Tuple[int, int], List[str]], Dict[int, int]]:
-    """Group file paths into buckets keyed by (class_id, snr). Returns (buckets, snr_to_idx)."""
+def build_buckets(records: List[Tuple[str, int, int]], snrs: List[int], class_name_to_id: Optional[Dict[str, int]] = None) -> Tuple[Dict[Tuple[int, int], List[str]], Dict[int, int]]:
+    """Group file paths into buckets keyed by (class_id, snr). Returns (buckets, snr_to_idx).
+
+    If class_name_to_id is provided, class_id is derived from the folder name
+    of the file path to ensure alignment with current directory-based mapping.
+    """
     snr_to_idx = {s: i for i, s in enumerate(snrs)}
     buckets: Dict[Tuple[int, int], List[str]] = {}
     for file_path, class_id, snr in records:
+        if class_name_to_id is not None:
+            # Derive class id from folder name to avoid stale CSV ids
+            class_name = os.path.basename(os.path.dirname(file_path))
+            class_id = class_name_to_id.get(class_name, class_id)
         if snr not in snr_to_idx:
             continue
         key = (class_id, snr)
@@ -60,7 +73,8 @@ class WeightedSamplerSequence(tf.keras.utils.Sequence):
                  epoch_size: int = None,
                  weights: np.ndarray = None,
                  shuffle_within_bucket: bool = True,
-                 seed: int = 1234):
+                 seed: int = 1234,
+                 class_names: Optional[List[str]] = None):
         """
         - epoch_size: number of samples per epoch; defaults to number of records in metadata.
         - weights: 2D array [num_classes, num_snrs] (will be normalized in-place).
@@ -71,7 +85,8 @@ class WeightedSamplerSequence(tf.keras.utils.Sequence):
         self.batch_size = batch_size
         self.epoch_size = epoch_size or len(self.records)
         self.steps = math.ceil(self.epoch_size / self.batch_size)
-        self.buckets, self.snr_to_idx = build_buckets(self.records, self.snrs)
+        self.class_name_to_id = {name: i for i, name in enumerate(class_names)} if class_names else None
+        self.buckets, self.snr_to_idx = build_buckets(self.records, self.snrs, self.class_name_to_id)
         self.rng = random.Random(seed)
         self.shuffle_within_bucket = shuffle_within_bucket
 
@@ -124,6 +139,10 @@ class WeightedSamplerSequence(tf.keras.utils.Sequence):
         # Load image: returns float32 array [H,W,3] scaled to [0,1]
         img = tf.keras.utils.load_img(p, target_size=(IMAGE_SIZE, IMAGE_SIZE))
         arr = tf.keras.utils.img_to_array(img)  # [H,W,3], float32 in [0,255]; model rescales internally
+        # If we were passed class_names, recompute id from folder to be safe
+        if self.class_name_to_id is not None:
+            folder_name = os.path.basename(os.path.dirname(p))
+            class_id = self.class_name_to_id.get(folder_name, class_id)
         return arr, class_id
 
     def __getitem__(self, idx):

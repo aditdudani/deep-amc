@@ -200,6 +200,7 @@ def main():
             epoch_size=None,
             weights=weights,
             shuffle_within_bucket=True,
+            class_names=class_names,
         )
 
         cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
@@ -215,6 +216,7 @@ def main():
                 snrs=TARGET_SNRS,
                 warmup_epochs=args.warmup_epochs,
                 min_val_acc_for_updates=args.min_val_acc,
+                class_names=class_names,
             ))
         fit_kwargs['callbacks'] = cb_list
         model.fit(train_seq, **fit_kwargs)

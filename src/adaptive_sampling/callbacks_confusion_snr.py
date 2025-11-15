@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -30,7 +30,7 @@ def load_validation_metadata(path: str) -> List[Tuple[str, int, int]]:
     return rows
 
 
-def _predict_in_batches(model, items: List[Tuple[str, int, int]], batch_size: int = 64):
+def _predict_in_batches(model, items: List[Tuple[str, int, int]], batch_size: int = 64, class_name_to_id: Optional[Dict[str, int]] = None):
     X_batch = []
     y_true = []
     preds = []
@@ -38,7 +38,11 @@ def _predict_in_batches(model, items: List[Tuple[str, int, int]], batch_size: in
         img = tf.keras.utils.load_img(fp, target_size=(model.input_shape[1], model.input_shape[2]))
         arr = tf.keras.utils.img_to_array(img)  # model applies Rescaling(1/255)
         X_batch.append(arr)
-        y_true.append(class_id)
+        if class_name_to_id is not None:
+            folder = os.path.basename(os.path.dirname(fp))
+            y_true.append(class_name_to_id.get(folder, class_id))
+        else:
+            y_true.append(class_id)
         if len(X_batch) == batch_size:
             logits = model.predict(np.array(X_batch, dtype=np.float32), verbose=0)
             preds.extend(np.argmax(logits, axis=1))
@@ -67,7 +71,8 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                  batch_size: int = 64,
                  snrs: List[int] = None,
                  warmup_epochs: int = 3,
-                 min_val_acc_for_updates: float = 0.15):
+                 min_val_acc_for_updates: float = 0.15,
+                 class_names: Optional[List[str]] = None):
         super().__init__()
         self.val_metadata_csv = val_metadata_csv
         self.weights_ref = weights_ref  # external mutable weights array
@@ -81,6 +86,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.min_val_acc_for_updates = float(min_val_acc_for_updates)
         os.makedirs(self.out_dir, exist_ok=True)
         self.val_items = load_validation_metadata(self.val_metadata_csv)
+        self.class_name_to_id = {name: i for i, name in enumerate(class_names)} if class_names else None
 
     def on_epoch_end(self, epoch, logs=None):
         # Optional warmup: don't alter weights for first N epochs
@@ -125,7 +131,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
             items = by_snr.get(snr, [])
             if not items:
                 continue
-            y_true, y_pred = _predict_in_batches(self.model, items, batch_size=self.batch_size)
+            y_true, y_pred = _predict_in_batches(self.model, items, batch_size=self.batch_size, class_name_to_id=self.class_name_to_id)
             cm = _confusion_matrix(y_true, y_pred, num_classes)
             confusion_per_snr[snr] = cm.tolist()
             # per-class accuracy for this SNR
