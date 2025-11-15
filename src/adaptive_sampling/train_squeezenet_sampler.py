@@ -116,7 +116,7 @@ def parse_args():
     p.add_argument('--verify-metadata', action='store_true', help='Quickly verify metadata paths/SNRs before sampler/adaptive runs')
     p.add_argument('--debug-sampler', action='store_true', help='Dump a preview batch from sampler and basic stats')
     p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
-    p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata'],
+    p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata', 'tfdata-dir-class'],
                    help='Use Keras Sequence or tf.data backend for sampler modes')
     p.add_argument('--uniform-scope', type=str, default='class', choices=['class', 'class_snr'],
                    help='Uniform over classes (default) or over (class,SNR) buckets')
@@ -271,6 +271,42 @@ def _debug_train_steps(model: tf.keras.Model, input_source, num_classes: int, st
         print(f"[debug-trainstep] weight L2 delta after {steps} steps: {delta:.6f}")
 
 
+def _make_tfdata_class_uniform_from_dir(train_dir: str, class_names: list, epoch_size: int, batch_size: int, image_size: int):
+    # Build per-class file lists by scanning directory
+    per_class = {i: [] for i in range(len(class_names))}
+    for i, cname in enumerate(class_names):
+        cdir = os.path.join(train_dir, cname)
+        if not os.path.isdir(cdir):
+            continue
+        for root, _dirs, files in os.walk(cdir):
+            for fn in files:
+                if fn.lower().endswith('.png'):
+                    per_class[i].append(os.path.join(root, fn))
+    non_empty = [k for k, v in per_class.items() if v]
+    if not non_empty:
+        raise RuntimeError("No training images found when scanning directory for class-uniform tf.data")
+
+    # Pre-sample (path,label)
+    rng = np.random.default_rng()
+    paths, labels = [], []
+    for _ in range(epoch_size):
+        cid = int(rng.choice(non_empty))
+        lst = per_class[cid]
+        pth = lst[rng.integers(0, len(lst))]
+        paths.append(pth)
+        labels.append(cid)
+
+    ds = tf.data.Dataset.from_tensor_slices((paths, labels))
+    def _load_fn(pth, y):
+        img_bytes = tf.io.read_file(pth)
+        img = tf.io.decode_png(img_bytes, channels=3)
+        img = tf.image.resize(img, [image_size, image_size])
+        img = tf.cast(img, tf.float32)
+        return img, tf.cast(y, tf.int32)
+    AUTOTUNE = tf.data.AUTOTUNE
+    return ds.shuffle(min(10000, epoch_size)).map(_load_fn, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
+
+
 
 def main():
     args = parse_args()
@@ -372,25 +408,35 @@ def main():
             )
         else:
             ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
-            snr_list = None
-            if args.snr_filter:
-                try:
-                    candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
-                    snr_list = [s for s in candidate if s in TARGET_SNRS]
-                except Exception:
-                    snr_list = None
-            scope = args.uniform_scope
-            print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}, scope={scope}, snrs={snr_list or TARGET_SNRS}")
-            train_input = _make_tfdata_from_sampler_draws(
-                train_meta_csv=args.metadata_train,
-                class_names=class_names,
-                weights=weights,
-                epoch_size=ep_size,
-                batch_size=batch_size,
-                image_size=image_size,
-                uniform_scope=scope,
-                snr_filter=snr_list,
-            )
+            if args.sampler_backend == 'tfdata':
+                snr_list = None
+                if args.snr_filter:
+                    try:
+                        candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
+                        snr_list = [s for s in candidate if s in TARGET_SNRS]
+                    except Exception:
+                        snr_list = None
+                scope = args.uniform_scope
+                print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}, scope={scope}, snrs={snr_list or TARGET_SNRS}")
+                train_input = _make_tfdata_from_sampler_draws(
+                    train_meta_csv=args.metadata_train,
+                    class_names=class_names,
+                    weights=weights,
+                    epoch_size=ep_size,
+                    batch_size=batch_size,
+                    image_size=image_size,
+                    uniform_scope=scope,
+                    snr_filter=snr_list,
+                )
+            else:
+                print(f"[sampler-backend] Using tf.data-dir-class with epoch_size={ep_size}")
+                train_input = _make_tfdata_class_uniform_from_dir(
+                    train_dir=TRAIN_DIR,
+                    class_names=class_names,
+                    epoch_size=ep_size,
+                    batch_size=batch_size,
+                    image_size=image_size,
+                )
 
         cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
 
