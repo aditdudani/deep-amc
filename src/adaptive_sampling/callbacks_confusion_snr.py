@@ -66,7 +66,8 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                  max_cap: float = 0.4,
                  batch_size: int = 64,
                  snrs: List[int] = None,
-                 warmup_epochs: int = 3):
+                 warmup_epochs: int = 3,
+                 min_val_acc_for_updates: float = 0.15):
         super().__init__()
         self.val_metadata_csv = val_metadata_csv
         self.weights_ref = weights_ref  # external mutable weights array
@@ -77,6 +78,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.batch_size = batch_size
         self.snrs = snrs if snrs is not None else TARGET_SNRS
         self.warmup_epochs = max(int(warmup_epochs), 0)
+        self.min_val_acc_for_updates = float(min_val_acc_for_updates)
         os.makedirs(self.out_dir, exist_ok=True)
         self.val_items = load_validation_metadata(self.val_metadata_csv)
 
@@ -90,6 +92,23 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                            'snrs': self.snrs,
                            'note': f'warmup_no_update_until_epoch_{self.warmup_epochs}'}, f, indent=2)
             print(f"[ConfusionBySNR] Warmup epoch {epoch+1}/{self.warmup_epochs}: weights not updated. Saved {weights_path}")
+            return
+
+        # Guardrail: skip updates if validation accuracy is too low
+        val_acc = None
+        if logs and 'val_accuracy' in logs:
+            try:
+                val_acc = float(logs['val_accuracy'])
+            except Exception:
+                val_acc = None
+        if val_acc is not None and val_acc < self.min_val_acc_for_updates:
+            weights_path = os.path.join(self.out_dir, f'weights_epoch{epoch+1}.json')
+            with open(weights_path, 'w') as f:
+                json.dump({'epoch': epoch+1,
+                           'weights': self.weights_ref.tolist(),
+                           'snrs': self.snrs,
+                           'note': f'skipped_update_val_acc_below_{self.min_val_acc_for_updates}'}, f, indent=2)
+            print(f"[ConfusionBySNR] Skipping update (val_acc={val_acc:.4f} < {self.min_val_acc_for_updates}); saved {weights_path}")
             return
 
         # Group validation items by SNR

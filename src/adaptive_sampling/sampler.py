@@ -129,12 +129,12 @@ class WeightedSamplerSequence(tf.keras.utils.Sequence):
     def __getitem__(self, idx):
         bs = self.batch_size
         X = np.zeros((bs, IMAGE_SIZE, IMAGE_SIZE, 3), dtype=np.float32)
-        y = np.zeros((bs,), dtype=np.int64)
+        y = np.zeros((bs,), dtype=np.int32)
         for i in range(bs):
             c, snr = self._draw_bucket()
             arr, label = self._sample_from_bucket(c, snr)
             X[i] = arr
-            y[i] = label
+            y[i] = int(label)
         return X, y
 
     def on_epoch_end(self):

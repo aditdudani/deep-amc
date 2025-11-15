@@ -36,6 +36,7 @@ BATCH_SIZE = 64
 EPOCHS = 40
 LEARNING_RATE = 1e-2
 RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+WARMUP_EPOCHS = EPOCHS  # Keep adaptive weights frozen to match baseline behavior
 RESULTS_DIR = os.path.join('results', 'adaptive_sampling', RUN_TAG)
 MODEL_OUT = os.path.join('models', f'squeezenet_sampler_{RUN_TAG}.h5')
 LOG_CSV = os.path.join(RESULTS_DIR, 'squeezenet_sampler_train_log.csv')
@@ -130,7 +131,8 @@ def main():
         max_cap=0.25,     # cap a single bucket to 25%
         batch_size=BATCH_SIZE,
         snrs=TARGET_SNRS,
-        warmup_epochs=3,
+        warmup_epochs=WARMUP_EPOCHS,
+        min_val_acc_for_updates=0.15,
     )
 
     print("\n--- Training SqueezeNet v1.1 with adaptive sampler ---")
