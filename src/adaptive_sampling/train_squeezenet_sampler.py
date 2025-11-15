@@ -4,6 +4,7 @@ import json
 import argparse
 from datetime import datetime
 import numpy as np
+from typing import Optional, List
 
 # Silence TensorFlow C++ logs by default (unless user overrides)
 if 'TF_CPP_MIN_LOG_LEVEL' not in os.environ:
@@ -165,7 +166,7 @@ def _verify_metadata_quick(csv_path: str, class_names):
 
 def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weights: np.ndarray,
                                     epoch_size: int, batch_size: int, image_size: int,
-                                    uniform_scope: str = 'class', snr_filter: list | None = None):
+                                    uniform_scope: str = 'class', snr_filter: Optional[List[int]] = None):
     # Build buckets consistent with WeightedSamplerSequence
     records = load_metadata_csv(train_meta_csv)
     class_name_to_id = {name: i for i, name in enumerate(class_names)}
