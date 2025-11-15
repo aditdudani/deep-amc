@@ -46,7 +46,7 @@ class LrPrinter(tf.keras.callbacks.Callback):
         print(f"\n[Epoch {epoch+1}] Learning rate: {current_lr:.6g}")
 
 
-def make_datasets(train_dir, val_dir, image_size, batch_size):
+def make_datasets(train_dir, val_dir, image_size, batch_size, class_names=None):
     AUTOTUNE = tf.data.AUTOTUNE
     options = tf.data.Options()
     options.experimental_deterministic = False
@@ -58,6 +58,7 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
         image_size=(image_size, image_size),
         batch_size=batch_size,
         shuffle=True,
+        class_names=class_names,
     )
     val_ds = tf.keras.utils.image_dataset_from_directory(
         val_dir,
@@ -66,6 +67,7 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
         image_size=(image_size, image_size),
         batch_size=batch_size,
         shuffle=False,
+        class_names=class_names,
     )
 
     # Prefetch for performance; SqueezeNet model handles normalization (Rescaling layer)
@@ -84,14 +86,19 @@ def main():
     if not os.path.isdir(TRAIN_DIR) or not os.path.isdir(VAL_DIR):
         raise FileNotFoundError(f"Expected directories: {TRAIN_DIR} and {VAL_DIR}")
 
-    train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, IMAGE_SIZE, BATCH_SIZE)
+    # Determine class_names once from train dir; force same mapping for val
+    class_names = sorted([d for d in os.listdir(TRAIN_DIR) if os.path.isdir(os.path.join(TRAIN_DIR, d))])
+    train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, IMAGE_SIZE, BATCH_SIZE, class_names=class_names)
 
-    # Infer number of classes from directories (matches baseline)
-    class_names = train_ds.class_names if hasattr(train_ds, 'class_names') else None
-    if class_names is None:
-        class_names = sorted([d for d in os.listdir(TRAIN_DIR) if os.path.isdir(os.path.join(TRAIN_DIR, d))])
+    # Verify val contains same set
+    val_set = sorted([d for d in os.listdir(VAL_DIR) if os.path.isdir(os.path.join(VAL_DIR, d))])
+    print(f"Train classes ({len(class_names)}): {class_names}")
+    print(f"Val   classes ({len(val_set)}): {val_set}")
+    if class_names != val_set:
+        raise RuntimeError(
+            "Train/Val class folders differ. This will break label alignment.\n"
+            f"Train: {class_names}\nVal:   {val_set}")
     num_classes = len(class_names)
-    print(f"Detected {num_classes} classes: {class_names}")
 
     # Build model
     model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.0)
