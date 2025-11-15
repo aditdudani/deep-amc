@@ -123,6 +123,7 @@ def parse_args():
     p.add_argument('--snr-filter', type=str, default=None,
                    help='Comma-separated SNR list to sample from (e.g., "6,8,10"). If omitted, use all TARGET_SNRS')
     p.add_argument('--debug-trainstep', action='store_true', help='Run a few train_on_batch steps to verify learning')
+    p.add_argument('--valprobe-batches', type=int, default=0, help='Probe validation preds over first N batches before/after training')
     return p.parse_args()
 def _verify_metadata_quick(csv_path: str, class_names):
     """Lightweight checks: file exists, folder-based class in class_names, SNR in TARGET_SNRS.
@@ -271,6 +272,39 @@ def _debug_train_steps(model: tf.keras.Model, input_source, num_classes: int, st
         print(f"[debug-trainstep] weight L2 delta after {steps} steps: {delta:.6f}")
 
 
+def _val_probe(model: tf.keras.Model, val_ds, class_names, n_batches: int = 10, tag: str = ''):
+    import itertools
+    preds_hist = np.zeros((len(class_names),), dtype=np.int64)
+    true_hist = np.zeros((len(class_names),), dtype=np.int64)
+    correct = 0
+    total = 0
+    for i, (x, y) in enumerate(val_ds):
+        logits = model.predict(x, verbose=0)
+        p = np.argmax(logits, axis=1)
+        y_np = y.numpy() if hasattr(y, 'numpy') else np.array(y)
+        for cls in range(len(class_names)):
+            preds_hist[cls] += int(np.sum(p == cls))
+            true_hist[cls] += int(np.sum(y_np == cls))
+        correct += int(np.sum(p == y_np))
+        total += int(y_np.shape[0])
+        if (i + 1) >= n_batches:
+            break
+    acc = (correct / total) if total else 0.0
+    top_pred = int(np.argmax(preds_hist)) if preds_hist.sum() > 0 else -1
+    print(f"[valprobe{':' + tag if tag else ''}] batches={n_batches} acc={acc:.4f} total={total} top_pred={top_pred} ({class_names[top_pred] if top_pred>=0 else 'n/a'})")
+    print(f"[valprobe] preds_hist={preds_hist.tolist()} true_hist={true_hist.tolist()}")
+
+
+class ValProbeCallback(tf.keras.callbacks.Callback):
+    def __init__(self, val_ds, class_names, n_batches: int):
+        super().__init__()
+        self.val_ds = val_ds
+        self.class_names = class_names
+        self.n_batches = n_batches
+    def on_epoch_end(self, epoch, logs=None):
+        _val_probe(self.model, self.val_ds, self.class_names, self.n_batches, tag=f'epoch{epoch+1}')
+
+
 def _make_tfdata_class_uniform_from_dir(train_dir: str, class_names: list, epoch_size: int, batch_size: int, image_size: int):
     # Build per-class file lists by scanning directory
     per_class = {i: [] for i in range(len(class_names))}
@@ -379,6 +413,10 @@ def main():
         'verbose': 1,
     }
 
+    # Optional probe before training
+    if args.valprobe_batches and args.mode != 'parity':
+        _val_probe(model, val_ds, class_names, n_batches=int(args.valprobe_batches), tag='pre')
+
     if args.mode == 'parity':
         model.fit(train_ds, **fit_kwargs)
     else:
@@ -476,6 +514,8 @@ def main():
                 min_val_acc_for_updates=args.min_val_acc,
                 class_names=class_names,
             ))
+        if args.valprobe_batches:
+            cb_list.append(ValProbeCallback(val_ds=val_ds, class_names=class_names, n_batches=int(args.valprobe_batches)))
         fit_kwargs['callbacks'] = cb_list
         model.fit(train_input, **fit_kwargs)
 
