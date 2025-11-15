@@ -35,7 +35,12 @@ if SRC_DIR not in sys.path:
 
 from common.squeezenet import build_squeezenet_v11
 from common.config import IMAGE_SIZE as CFG_IMAGE_SIZE, TARGET_SNRS
-from adaptive_sampling.sampler import WeightedSamplerSequence, init_uniform_weights
+from adaptive_sampling.sampler import (
+    WeightedSamplerSequence,
+    init_uniform_weights,
+    load_metadata_csv,
+    build_buckets,
+)
 from adaptive_sampling.callbacks_confusion_snr import ConfusionBySNRCallback
 
 
@@ -110,6 +115,8 @@ def parse_args():
     p.add_argument('--verify-metadata', action='store_true', help='Quickly verify metadata paths/SNRs before sampler/adaptive runs')
     p.add_argument('--debug-sampler', action='store_true', help='Dump a preview batch from sampler and basic stats')
     p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
+    p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata'],
+                   help='Use Keras Sequence or tf.data backend for sampler modes')
     return p.parse_args()
 def _verify_metadata_quick(csv_path: str, class_names):
     """Lightweight checks: file exists, folder-based class in class_names, SNR in TARGET_SNRS.
@@ -149,6 +156,57 @@ def _verify_metadata_quick(csv_path: str, class_names):
         print(f"[verify-metadata] No rows read from {csv_path}")
         return
     print(f"[verify-metadata] Checked {total} rows from {csv_path} | missing_files={missing}, bad_class_names={bad_class}, bad_snrs={bad_snr}")
+
+
+def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weights: np.ndarray,
+                                    epoch_size: int, batch_size: int, image_size: int):
+    # Build buckets consistent with WeightedSamplerSequence
+    records = load_metadata_csv(train_meta_csv)
+    class_name_to_id = {name: i for i, name in enumerate(class_names)}
+    buckets, snr_to_idx = build_buckets(records, TARGET_SNRS, class_name_to_id)
+
+    # Pre-sample a list of (path, label) for this epoch
+    flat = weights.flatten()
+    num_classes = len(class_names)
+    num_snrs = len(TARGET_SNRS)
+    paths = []
+    labels = []
+    rng = np.random.default_rng()
+    for _ in range(epoch_size):
+        choice = rng.choice(len(flat), p=flat)
+        cid = choice // num_snrs
+        snr_idx = choice % num_snrs
+        snr = TARGET_SNRS[snr_idx]
+        key = (cid, snr)
+        lst = buckets.get(key, [])
+        if not lst:
+            # fallback within class
+            class_paths = []
+            for (c, s), l in buckets.items():
+                if c == cid and l:
+                    class_paths.extend(l)
+            if class_paths:
+                pth = class_paths[rng.integers(0, len(class_paths))]
+            else:
+                # worst-case fallback: random record path
+                pth = records[rng.integers(0, len(records))][0]
+        else:
+            pth = lst[rng.integers(0, len(lst))]
+        folder = os.path.basename(os.path.dirname(pth))
+        label = class_name_to_id.get(folder, cid)
+        paths.append(pth)
+        labels.append(label)
+
+    ds = tf.data.Dataset.from_tensor_slices((paths, labels))
+    def _load_fn(pth, y):
+        img_bytes = tf.io.read_file(pth)
+        img = tf.io.decode_png(img_bytes, channels=3)
+        img = tf.image.resize(img, [image_size, image_size])
+        img = tf.cast(img, tf.float32)
+        return img, y
+    AUTOTUNE = tf.data.AUTOTUNE
+    ds = ds.shuffle(min(10000, epoch_size)).map(_load_fn, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
+    return ds
 
 
 
@@ -239,32 +297,44 @@ def main():
 
         # Initialize external weights array (mutable) for sampler and callback to share
         weights = init_uniform_weights(num_classes, TARGET_SNRS)
-        train_seq = WeightedSamplerSequence(
-            train_metadata_csv=args.metadata_train,
-            class_count=num_classes,
-            snrs=TARGET_SNRS,
-            batch_size=batch_size,
-            epoch_size=args.epoch_size,
-            weights=weights,
-            shuffle_within_bucket=True,
-            class_names=class_names,
-        )
+        if args.sampler_backend == 'sequence':
+            train_input = WeightedSamplerSequence(
+                train_metadata_csv=args.metadata_train,
+                class_count=num_classes,
+                snrs=TARGET_SNRS,
+                batch_size=batch_size,
+                epoch_size=args.epoch_size,
+                weights=weights,
+                shuffle_within_bucket=True,
+                class_names=class_names,
+            )
+        else:
+            ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
+            print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}")
+            train_input = _make_tfdata_from_sampler_draws(
+                train_meta_csv=args.metadata_train,
+                class_names=class_names,
+                weights=weights,
+                epoch_size=ep_size,
+                batch_size=batch_size,
+                image_size=image_size,
+            )
 
         cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
 
-        if args.debug_sampler:
+        if args.debug_sampler and args.sampler_backend == 'sequence':
             try:
-                X_dbg, y_dbg = train_seq[0]
+                X_dbg, y_dbg = train_input[0]
                 unique, counts = np.unique(y_dbg, return_counts=True)
                 print(f"[debug-sampler] y unique/counts: {list(zip(unique.tolist(), counts.tolist()))}")
                 # Print a few sample folder->label pairs
                 shown = 0
-                for key, paths in train_seq.buckets.items():
+                for key, paths in train_input.buckets.items():
                     if not paths:
                         continue
                     p0 = paths[0]
                     folder = os.path.basename(os.path.dirname(p0))
-                    cid = train_seq.class_name_to_id.get(folder, None) if train_seq.class_name_to_id else None
+                    cid = train_input.class_name_to_id.get(folder, None) if train_input.class_name_to_id else None
                     print(f"[debug-sampler] example path: {p0} | folder={folder} -> label={cid}")
                     shown += 1
                     if shown >= 8:
@@ -286,7 +356,7 @@ def main():
                 class_names=class_names,
             ))
         fit_kwargs['callbacks'] = cb_list
-        model.fit(train_seq, **fit_kwargs)
+        model.fit(train_input, **fit_kwargs)
 
     print(f"\nTraining complete. Best model saved to: {MODEL_OUT}")
 
