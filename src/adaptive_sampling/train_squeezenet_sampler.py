@@ -117,6 +117,7 @@ def parse_args():
     p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
     p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata'],
                    help='Use Keras Sequence or tf.data backend for sampler modes')
+    p.add_argument('--debug-trainstep', action='store_true', help='Run a few train_on_batch steps to verify learning')
     return p.parse_args()
 def _verify_metadata_quick(csv_path: str, class_names):
     """Lightweight checks: file exists, folder-based class in class_names, SNR in TARGET_SNRS.
@@ -207,6 +208,46 @@ def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weig
     AUTOTUNE = tf.data.AUTOTUNE
     ds = ds.shuffle(min(10000, epoch_size)).map(_load_fn, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
     return ds
+
+
+def _first_weight_vector(model: tf.keras.Model):
+    for w in model.trainable_weights:
+        if 'kernel' in w.name or 'weights' in w.name:
+            return tf.reshape(w, [-1])
+    return None
+
+
+def _debug_train_steps(model: tf.keras.Model, input_source, num_classes: int, steps: int = 5):
+    print("[debug-trainstep] Running a few train_on_batch steps...")
+    w0 = _first_weight_vector(model)
+    w0_val = tf.identity(w0) if w0 is not None else None
+    get_batch = None
+    if isinstance(input_source, tf.keras.utils.Sequence):
+        idx = 0
+        def _gb():
+            nonlocal idx
+            X, y = input_source[idx]
+            idx = (idx + 1) % len(input_source)
+            return X, y
+        get_batch = _gb
+    else:
+        it = iter(input_source)
+        def _gb():
+            X, y = next(it)
+            return X.numpy() if hasattr(X, 'numpy') else X, y.numpy() if hasattr(y, 'numpy') else y
+        get_batch = _gb
+
+    for i in range(steps):
+        X, y = get_batch()
+        y_min, y_max = int(np.min(y)), int(np.max(y))
+        if y_min < 0 or y_max >= num_classes:
+            print(f"[debug-trainstep] Label out of range: min={y_min}, max={y_max}, num_classes={num_classes}")
+        loss, acc = model.train_on_batch(X, y, return_dict=False)
+        print(f"[debug-trainstep] step {i+1}: loss={loss:.4f}, acc={acc:.4f}")
+    if w0 is not None:
+        w1 = _first_weight_vector(model)
+        delta = tf.norm(w1 - w0_val).numpy()
+        print(f"[debug-trainstep] weight L2 delta after {steps} steps: {delta:.6f}")
 
 
 
@@ -341,6 +382,9 @@ def main():
                         break
             except Exception as e:
                 print(f"[debug-sampler] Failed to preview sampler batch: {e}")
+
+        if args.debug_trainstep:
+            _debug_train_steps(model, train_input, num_classes, steps=5)
         if args.mode == 'adaptive':
             cb_list.append(ConfusionBySNRCallback(
                 val_metadata_csv=args.metadata_val,
