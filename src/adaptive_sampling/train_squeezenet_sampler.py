@@ -35,8 +35,8 @@ VAL_DIR = os.path.join(DATA_DIR, 'validation')
 BATCH_SIZE = 64
 EPOCHS = 40
 LEARNING_RATE = 1e-2
-RESULTS_DIR = os.path.join('results', 'adaptive_sampling')
 RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+RESULTS_DIR = os.path.join('results', 'adaptive_sampling', RUN_TAG)
 MODEL_OUT = os.path.join('models', f'squeezenet_sampler_{RUN_TAG}.h5')
 LOG_CSV = os.path.join(RESULTS_DIR, 'squeezenet_sampler_train_log.csv')
 TB_LOGDIR = os.path.join(RESULTS_DIR, 'logs')
@@ -125,11 +125,12 @@ def main():
         val_metadata_csv=VAL_META,
         weights_ref=weights,
         out_dir=RESULTS_DIR,
-        beta=0.3,
-        epsilon=0.02,
-        max_cap=0.4,
+        beta=0.1,         # milder updates; safer vs baseline
+        epsilon=0.01,     # smaller floor to reduce perturbation
+        max_cap=0.25,     # cap a single bucket to 25%
         batch_size=BATCH_SIZE,
         snrs=TARGET_SNRS,
+        warmup_epochs=3,
     )
 
     print("\n--- Training SqueezeNet v1.1 with adaptive sampler ---")

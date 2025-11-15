@@ -36,7 +36,7 @@ def _predict_in_batches(model, items: List[Tuple[str, int, int]], batch_size: in
     preds = []
     for fp, class_id, _ in items:
         img = tf.keras.utils.load_img(fp, target_size=(model.input_shape[1], model.input_shape[2]))
-        arr = tf.keras.utils.img_to_array(img) / 255.0
+        arr = tf.keras.utils.img_to_array(img)  # model applies Rescaling(1/255)
         X_batch.append(arr)
         y_true.append(class_id)
         if len(X_batch) == batch_size:
@@ -65,7 +65,8 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                  epsilon: float = 0.02,
                  max_cap: float = 0.4,
                  batch_size: int = 64,
-                 snrs: List[int] = None):
+                 snrs: List[int] = None,
+                 warmup_epochs: int = 3):
         super().__init__()
         self.val_metadata_csv = val_metadata_csv
         self.weights_ref = weights_ref  # external mutable weights array
@@ -75,10 +76,22 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.max_cap = max_cap
         self.batch_size = batch_size
         self.snrs = snrs if snrs is not None else TARGET_SNRS
+        self.warmup_epochs = max(int(warmup_epochs), 0)
         os.makedirs(self.out_dir, exist_ok=True)
         self.val_items = load_validation_metadata(self.val_metadata_csv)
 
     def on_epoch_end(self, epoch, logs=None):
+        # Optional warmup: don't alter weights for first N epochs
+        if (epoch + 1) <= self.warmup_epochs:
+            weights_path = os.path.join(self.out_dir, f'weights_epoch{epoch+1}.json')
+            with open(weights_path, 'w') as f:
+                json.dump({'epoch': epoch+1,
+                           'weights': self.weights_ref.tolist(),
+                           'snrs': self.snrs,
+                           'note': f'warmup_no_update_until_epoch_{self.warmup_epochs}'}, f, indent=2)
+            print(f"[ConfusionBySNR] Warmup epoch {epoch+1}/{self.warmup_epochs}: weights not updated. Saved {weights_path}")
+            return
+
         # Group validation items by SNR
         by_snr: Dict[int, List[Tuple[str, int, int]]] = {s: [] for s in self.snrs}
         for fp, cid, snr in self.val_items:

@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from typing import List, Dict
 
 import h5py
@@ -14,7 +15,8 @@ from image_generator import tf_generate_three_channel_image
 HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Full RadioML 2018.01A file
 MODEL_PATH = 'models/strict_googlenet_proxy_incv3.h5'
 TRAIN_DIR = os.path.join('data', 'processed', 'train')  # To infer class order
-RESULTS_DIR = 'results'
+RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
+RESULTS_DIR = os.path.join('results', 'evals', 'inceptionv3', RUN_TAG)
 OUTPUT_JSON = os.path.join(RESULTS_DIR, 'accuracy_by_snr.json')
 OUTPUT_PNG = os.path.join(RESULTS_DIR, 'accuracy_by_snr.png')
 

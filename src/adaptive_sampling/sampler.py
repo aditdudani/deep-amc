@@ -123,8 +123,7 @@ class WeightedSamplerSequence(tf.keras.utils.Sequence):
 
         # Load image: returns float32 array [H,W,3] scaled to [0,1]
         img = tf.keras.utils.load_img(p, target_size=(IMAGE_SIZE, IMAGE_SIZE))
-        arr = tf.keras.utils.img_to_array(img)  # [H,W,3], float32 in [0,255]
-        arr = arr / 255.0
+        arr = tf.keras.utils.img_to_array(img)  # [H,W,3], float32 in [0,255]; model rescales internally
         return arr, class_id
 
     def __getitem__(self, idx):

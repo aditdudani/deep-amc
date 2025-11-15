@@ -18,8 +18,10 @@ EPOCHS = 40  # extend now that learning is confirmed; ReduceLROnPlateau will ann
 LEARNING_RATE = 1e-2  # keep LR that worked in the successful probe
 RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
 MODEL_OUT = os.path.join('models', f'squeezenet_v11_rmsprop_{RUN_TAG}.h5')
-LOG_CSV = os.path.join('results', 'squeezenet_train_log.csv')
-TB_LOGDIR = os.path.join('results', 'logs', 'squeezenet')
+# Per-run results directory to isolate artifacts
+RESULTS_DIR = os.path.join('results', 'squeezenet', RUN_TAG)
+LOG_CSV = os.path.join(RESULTS_DIR, 'squeezenet_train_log.csv')
+TB_LOGDIR = os.path.join(RESULTS_DIR, 'logs')
 
 
 def make_datasets(train_dir, val_dir, image_size, batch_size):
@@ -83,7 +85,7 @@ def main():
     )
 
     os.makedirs(os.path.dirname(MODEL_OUT), exist_ok=True)
-    os.makedirs(os.path.dirname(LOG_CSV), exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     os.makedirs(TB_LOGDIR, exist_ok=True)
 
     ckpt = callbacks.ModelCheckpoint(
