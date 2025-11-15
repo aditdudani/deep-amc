@@ -1,16 +1,27 @@
 import os
 import sys
 import json
+import argparse
 from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras import callbacks, optimizers
 
 """Train SqueezeNet with (optionally) adaptive sampler.
 
-For baseline-equivalent behavior, this script now mirrors
-`baseline_chahil/train_squeezenet.py`'s data pipeline and callbacks.
-Adaptive components can be re-enabled incrementally later.
-Run as: python src/adaptive_sampling/train_squeezenet_sampler.py
+Modes:
+- parity (default): use tf.data directory pipeline (baseline-identical)
+- sampler-uniform: use WeightedSamplerSequence with uniform bucket weights
+- adaptive: sampler + confusion-by-SNR weight updates (with warmup and gate)
+
+Run examples:
+    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
+    python src/adaptive_sampling/train_squeezenet_sampler.py --mode parity
+
+    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
+    python src/adaptive_sampling/train_squeezenet_sampler.py --mode sampler-uniform
+
+    TF_CPP_MIN_LOG_LEVEL=2 PYTHONPATH=src \
+    python src/adaptive_sampling/train_squeezenet_sampler.py --mode adaptive --warmup-epochs 3 --min-val-acc 0.15
 """
 
 # Ensure src/ is on sys.path so `common` imports work when run as a script
@@ -20,15 +31,18 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from common.squeezenet import build_squeezenet_v11
+from common.config import IMAGE_SIZE as CFG_IMAGE_SIZE, TARGET_SNRS
+from adaptive_sampling.sampler import WeightedSamplerSequence, init_uniform_weights
+from adaptive_sampling.callbacks_confusion_snr import ConfusionBySNRCallback
 
 
 # --------------------
-# Config (no CLI)
+# Defaults; can be overridden via CLI
 # --------------------
 DATA_DIR = os.path.join('data', 'processed')
 TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 VAL_DIR = os.path.join(DATA_DIR, 'validation')
-IMAGE_SIZE = 224
+IMAGE_SIZE = CFG_IMAGE_SIZE
 BATCH_SIZE = 64
 EPOCHS = 40
 LEARNING_RATE = 1e-2
@@ -37,6 +51,8 @@ RESULTS_DIR = os.path.join('results', 'adaptive_sampling', RUN_TAG)
 MODEL_OUT = os.path.join('models', f'squeezenet_sampler_{RUN_TAG}.h5')
 LOG_CSV = os.path.join(RESULTS_DIR, 'squeezenet_sampler_train_log.csv')
 TB_LOGDIR = os.path.join(RESULTS_DIR, 'logs')
+TRAIN_META_CSV = os.path.join(DATA_DIR, 'metadata_train.csv')
+VAL_META_CSV = os.path.join(DATA_DIR, 'metadata_val.csv')
 
 
 class LrPrinter(tf.keras.callbacks.Callback):
@@ -76,7 +92,24 @@ def make_datasets(train_dir, val_dir, image_size, batch_size, class_names=None):
     return train_ds, val_ds
 
 
+def parse_args():
+    p = argparse.ArgumentParser(description='Train SqueezeNet with optional adaptive sampler')
+    p.add_argument('--mode', type=str, default='parity', choices=['parity', 'sampler-uniform', 'adaptive'],
+                   help='Training mode: baseline-parity (tf.data), sampler-uniform, or adaptive')
+    p.add_argument('--epochs', type=int, default=EPOCHS)
+    p.add_argument('--batch-size', type=int, default=BATCH_SIZE)
+    p.add_argument('--lr', type=float, default=LEARNING_RATE)
+    p.add_argument('--image-size', type=int, default=IMAGE_SIZE)
+    p.add_argument('--warmup-epochs', type=int, default=3, help='Adaptive: epochs to skip updates')
+    p.add_argument('--min-val-acc', type=float, default=0.15, help='Adaptive: min val_acc to allow updates')
+    p.add_argument('--metadata-train', type=str, default=TRAIN_META_CSV)
+    p.add_argument('--metadata-val', type=str, default=VAL_META_CSV)
+    return p.parse_args()
+
+
 def main():
+    args = parse_args()
+
     tf.keras.mixed_precision.set_global_policy('float32')
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -87,8 +120,13 @@ def main():
         raise FileNotFoundError(f"Expected directories: {TRAIN_DIR} and {VAL_DIR}")
 
     # Determine class_names once from train dir; force same mapping for val
+    image_size = int(args.image_size)
+    batch_size = int(args.batch_size)
+    epochs = int(args.epochs)
+    learning_rate = float(args.lr)
+
     class_names = sorted([d for d in os.listdir(TRAIN_DIR) if os.path.isdir(os.path.join(TRAIN_DIR, d))])
-    train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, IMAGE_SIZE, BATCH_SIZE, class_names=class_names)
+    train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, image_size, batch_size, class_names=class_names)
 
     # Verify val contains same set
     val_set = sorted([d for d in os.listdir(VAL_DIR) if os.path.isdir(os.path.join(VAL_DIR, d))])
@@ -101,8 +139,8 @@ def main():
     num_classes = len(class_names)
 
     # Build model
-    model = build_squeezenet_v11(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), num_classes=num_classes, dropout_rate=0.0)
-    optimizer = optimizers.SGD(learning_rate=LEARNING_RATE, momentum=0.9)
+    model = build_squeezenet_v11(input_shape=(image_size, image_size, 3), num_classes=num_classes, dropout_rate=0.0)
+    optimizer = optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
     model.compile(
         optimizer=optimizer,
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -121,13 +159,52 @@ def main():
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
 
     print("\n--- Training SqueezeNet v1.1 with adaptive sampler ---")
-    model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=EPOCHS,
-        callbacks=[ckpt, csv, tb, reduce_lr, LrPrinter()],
-        verbose=1,
-    )
+
+    fit_kwargs = {
+        'validation_data': val_ds,
+        'epochs': epochs,
+        'callbacks': [ckpt, csv, tb, reduce_lr, LrPrinter()],
+        'verbose': 1,
+    }
+
+    if args.mode == 'parity':
+        model.fit(train_ds, **fit_kwargs)
+    else:
+        # Sampler-based modes require metadata CSVs
+        if not os.path.exists(args.metadata_train) or not os.path.exists(args.metadata_val):
+            raise FileNotFoundError(
+                "Metadata CSVs not found. Please generate them first via:\n"
+                "  PYTHONPATH=src python src/adaptive_sampling/dataset_metadata.py\n"
+                f"Expected: {args.metadata_train} and {args.metadata_val}")
+
+        # Initialize external weights array (mutable) for sampler and callback to share
+        weights = init_uniform_weights(num_classes, TARGET_SNRS)
+        train_seq = WeightedSamplerSequence(
+            train_metadata_csv=args.metadata_train,
+            class_count=num_classes,
+            snrs=TARGET_SNRS,
+            batch_size=batch_size,
+            epoch_size=None,
+            weights=weights,
+            shuffle_within_bucket=True,
+        )
+
+        cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
+        if args.mode == 'adaptive':
+            cb_list.append(ConfusionBySNRCallback(
+                val_metadata_csv=args.metadata_val,
+                weights_ref=weights,
+                out_dir=RESULTS_DIR,
+                beta=0.3,
+                epsilon=0.02,
+                max_cap=0.4,
+                batch_size=batch_size,
+                snrs=TARGET_SNRS,
+                warmup_epochs=args.warmup_epochs,
+                min_val_acc_for_updates=args.min_val_acc,
+            ))
+        fit_kwargs['callbacks'] = cb_list
+        model.fit(train_seq, **fit_kwargs)
 
     print(f"\nTraining complete. Best model saved to: {MODEL_OUT}")
 
