@@ -43,6 +43,7 @@ from adaptive_sampling.sampler import (
     build_buckets,
 )
 from adaptive_sampling.callbacks_confusion_snr import ConfusionBySNRCallback
+from adaptive_sampling.debug_utils import debug_train_steps, val_probe, ValProbeCallback
 
 
 # --------------------
@@ -108,6 +109,7 @@ def parse_args():
     p.add_argument('--epochs', type=int, default=EPOCHS)
     p.add_argument('--batch-size', type=int, default=BATCH_SIZE)
     p.add_argument('--lr', type=float, default=LEARNING_RATE)
+    p.add_argument('--clipnorm', type=float, default=0.0, help='Optional gradient clipnorm for optimizer (0 disables)')
     p.add_argument('--image-size', type=int, default=IMAGE_SIZE)
     p.add_argument('--warmup-epochs', type=int, default=3, help='Adaptive: epochs to skip updates')
     p.add_argument('--min-val-acc', type=float, default=0.15, help='Adaptive: min val_acc to allow updates')
@@ -118,6 +120,8 @@ def parse_args():
     p.add_argument('--epoch-size', type=int, default=None, help='Sampler: number of samples per epoch (for quick tests)')
     p.add_argument('--sampler-backend', type=str, default='sequence', choices=['sequence', 'tfdata', 'tfdata-dir-class'],
                    help='Use Keras Sequence or tf.data backend for sampler modes')
+    p.add_argument('--resample-each-epoch', action='store_true',
+                   help='For tf.data sampler backends: rebuild sampled dataset each epoch (recommended)')
     p.add_argument('--uniform-scope', type=str, default='class', choices=['class', 'class_snr'],
                    help='Uniform over classes (default) or over (class,SNR) buckets')
     p.add_argument('--snr-filter', type=str, default=None,
@@ -231,80 +235,6 @@ def _make_tfdata_from_sampler_draws(train_meta_csv: str, class_names: list, weig
     ds = ds.shuffle(min(10000, epoch_size)).map(_load_fn, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
     return ds
 
-
-def _first_weight_vector(model: tf.keras.Model):
-    for w in model.trainable_weights:
-        if 'kernel' in w.name or 'weights' in w.name:
-            return tf.reshape(w, [-1])
-    return None
-
-
-def _debug_train_steps(model: tf.keras.Model, input_source, num_classes: int, steps: int = 5):
-    print("[debug-trainstep] Running a few train_on_batch steps...")
-    w0 = _first_weight_vector(model)
-    w0_val = tf.identity(w0) if w0 is not None else None
-    get_batch = None
-    if isinstance(input_source, tf.keras.utils.Sequence):
-        idx = 0
-        def _gb():
-            nonlocal idx
-            X, y = input_source[idx]
-            idx = (idx + 1) % len(input_source)
-            return X, y
-        get_batch = _gb
-    else:
-        it = iter(input_source)
-        def _gb():
-            X, y = next(it)
-            return X.numpy() if hasattr(X, 'numpy') else X, y.numpy() if hasattr(y, 'numpy') else y
-        get_batch = _gb
-
-    for i in range(steps):
-        X, y = get_batch()
-        y_min, y_max = int(np.min(y)), int(np.max(y))
-        if y_min < 0 or y_max >= num_classes:
-            print(f"[debug-trainstep] Label out of range: min={y_min}, max={y_max}, num_classes={num_classes}")
-        loss, acc = model.train_on_batch(X, y, return_dict=False)
-        print(f"[debug-trainstep] step {i+1}: loss={loss:.4f}, acc={acc:.4f}")
-    if w0 is not None:
-        w1 = _first_weight_vector(model)
-        delta = tf.norm(w1 - w0_val).numpy()
-        print(f"[debug-trainstep] weight L2 delta after {steps} steps: {delta:.6f}")
-
-
-def _val_probe(model: tf.keras.Model, val_ds, class_names, n_batches: int = 10, tag: str = ''):
-    import itertools
-    preds_hist = np.zeros((len(class_names),), dtype=np.int64)
-    true_hist = np.zeros((len(class_names),), dtype=np.int64)
-    correct = 0
-    total = 0
-    for i, (x, y) in enumerate(val_ds):
-        logits = model.predict(x, verbose=0)
-        p = np.argmax(logits, axis=1)
-        y_np = y.numpy() if hasattr(y, 'numpy') else np.array(y)
-        for cls in range(len(class_names)):
-            preds_hist[cls] += int(np.sum(p == cls))
-            true_hist[cls] += int(np.sum(y_np == cls))
-        correct += int(np.sum(p == y_np))
-        total += int(y_np.shape[0])
-        if (i + 1) >= n_batches:
-            break
-    acc = (correct / total) if total else 0.0
-    top_pred = int(np.argmax(preds_hist)) if preds_hist.sum() > 0 else -1
-    print(f"[valprobe{':' + tag if tag else ''}] batches={n_batches} acc={acc:.4f} total={total} top_pred={top_pred} ({class_names[top_pred] if top_pred>=0 else 'n/a'})")
-    print(f"[valprobe] preds_hist={preds_hist.tolist()} true_hist={true_hist.tolist()}")
-
-
-class ValProbeCallback(tf.keras.callbacks.Callback):
-    def __init__(self, val_ds, class_names, n_batches: int):
-        super().__init__()
-        self.val_ds = val_ds
-        self.class_names = class_names
-        self.n_batches = n_batches
-    def on_epoch_end(self, epoch, logs=None):
-        _val_probe(self.model, self.val_ds, self.class_names, self.n_batches, tag=f'epoch{epoch+1}')
-
-
 def _make_tfdata_class_uniform_from_dir(train_dir: str, class_names: list, epoch_size: int, batch_size: int, image_size: int):
     # Build per-class file lists by scanning directory
     per_class = {i: [] for i in range(len(class_names))}
@@ -386,7 +316,8 @@ def main():
 
     # Build model
     model = build_squeezenet_v11(input_shape=(image_size, image_size, 3), num_classes=num_classes, dropout_rate=0.0)
-    optimizer = optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
+    clipnorm = float(args.clipnorm)
+    optimizer = optimizers.SGD(learning_rate=learning_rate, momentum=0.9, clipnorm=clipnorm if clipnorm > 0 else None)
     model.compile(
         optimizer=optimizer,
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
@@ -415,7 +346,7 @@ def main():
 
     # Optional probe before training
     if args.valprobe_batches and args.mode != 'parity':
-        _val_probe(model, val_ds, class_names, n_batches=int(args.valprobe_batches), tag='pre')
+        val_probe(model, val_ds, class_names, n_batches=int(args.valprobe_batches), tag='pre')
 
     if args.mode == 'parity':
         model.fit(train_ds, **fit_kwargs)
@@ -499,7 +430,7 @@ def main():
                 print(f"[debug-sampler] Failed to preview sampler batch: {e}")
 
         if args.debug_trainstep:
-            _debug_train_steps(model, train_input, num_classes, steps=5)
+            debug_train_steps(model, train_input, num_classes, steps=5)
         if args.mode == 'adaptive':
             cb_list.append(ConfusionBySNRCallback(
                 val_metadata_csv=args.metadata_val,
@@ -517,7 +448,48 @@ def main():
         if args.valprobe_batches:
             cb_list.append(ValProbeCallback(val_ds=val_ds, class_names=class_names, n_batches=int(args.valprobe_batches)))
         fit_kwargs['callbacks'] = cb_list
-        model.fit(train_input, **fit_kwargs)
+
+        # Dynamic resampling loop for tf.data backends if requested
+        if args.sampler_backend in ('tfdata', 'tfdata-dir-class') and args.resample_each_epoch:
+            print(f"[resample-loop] Enabled per-epoch resampling (backend={args.sampler_backend})")
+            ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
+            snr_list = None
+            if args.snr_filter:
+                try:
+                    candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
+                    snr_list = [s for s in candidate if s in TARGET_SNRS]
+                except Exception:
+                    snr_list = None
+            scope = args.uniform_scope
+            for epoch in range(epochs):
+                if args.sampler_backend == 'tfdata':
+                    train_input = _make_tfdata_from_sampler_draws(
+                        train_meta_csv=args.metadata_train,
+                        class_names=class_names,
+                        weights=weights,
+                        epoch_size=ep_size,
+                        batch_size=batch_size,
+                        image_size=image_size,
+                        uniform_scope=scope,
+                        snr_filter=snr_list,
+                    )
+                else:
+                    train_input = _make_tfdata_class_uniform_from_dir(
+                        train_dir=TRAIN_DIR,
+                        class_names=class_names,
+                        epoch_size=ep_size,
+                        batch_size=batch_size,
+                        image_size=image_size,
+                    )
+                print(f"[resample-loop] Epoch {epoch+1}/{epochs}: built dataset with {ep_size} samples")
+                model.fit(train_input,
+                          validation_data=val_ds,
+                          epochs=epoch+1,
+                          initial_epoch=epoch,
+                          callbacks=cb_list,
+                          verbose=1)
+        else:
+            model.fit(train_input, **fit_kwargs)
 
     print(f"\nTraining complete. Best model saved to: {MODEL_OUT}")
 
