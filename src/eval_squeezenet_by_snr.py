@@ -4,6 +4,10 @@ import argparse
 from datetime import datetime
 from typing import List, Dict
 
+# Suppress verbose TF C++ logs before importing TF
+if 'TF_CPP_MIN_LOG_LEVEL' not in os.environ:
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import h5py
 import numpy as np
 import tensorflow as tf
@@ -113,6 +117,16 @@ def main():
     out_png = os.path.join(results_dir, 'accuracy_by_snr_squeezenet.png')
 
     print("\n--- Evaluating SqueezeNet accuracy by SNR ---\n")
+    # Further suppress Python-side TF and absl logs
+    try:
+        import absl.logging as _absl
+        _absl.set_verbosity(_absl.ERROR)
+    except Exception:
+        pass
+    try:
+        tf.get_logger().setLevel('ERROR')
+    except Exception:
+        pass
     print(f"Model: {args.model}")
     print(f"HDF5: {args.hdf5}")
     print(f"Classes inferred from: {args.train_dir}")
