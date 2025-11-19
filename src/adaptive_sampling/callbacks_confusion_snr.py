@@ -68,6 +68,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                  beta: float = 0.3,
                  epsilon: float = 0.02,
                  max_cap: float = 0.4,
+                 replay_fraction: float = 0.0,
                  batch_size: int = 64,
                  snrs: List[int] = None,
                  warmup_epochs: int = 3,
@@ -80,6 +81,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.beta = beta
         self.epsilon = epsilon
         self.max_cap = max_cap
+        self.replay_fraction = max(0.0, min(float(replay_fraction), 0.95))  # clamp for safety
         self.batch_size = batch_size
         self.snrs = snrs if snrs is not None else TARGET_SNRS
         self.warmup_epochs = max(int(warmup_epochs), 0)
@@ -141,14 +143,26 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
             snr_idx = self.snrs.index(snr)
             per_class_snr_acc[:, snr_idx] = acc_class
 
-        # Update weights: error = 1 - acc; smooth & cap
+        # Update weights: error = 1 - acc; smooth
         errors = 1.0 - per_class_snr_acc
         updated = (1 - self.beta) * self.weights_ref + self.beta * (errors + self.epsilon)
-        # Cap individual bucket weight to prevent collapse
+
+        # Optional uniform replay blending before capping/renorm
+        if self.replay_fraction > 0.0:
+            uniform = np.ones_like(updated, dtype=np.float32)
+            uniform /= uniform.sum()
+            updated = (1.0 - self.replay_fraction) * updated + self.replay_fraction * uniform
+
+        # Cap individual bucket weight to prevent collapse then renormalize
         flat = updated.flatten()
-        flat = np.minimum(flat, self.max_cap)
-        # Renormalize
-        flat /= flat.sum() if flat.sum() > 0 else 1.0
+        if self.max_cap is not None and self.max_cap > 0:
+            flat = np.minimum(flat, self.max_cap)
+        flat_sum = flat.sum()
+        if flat_sum <= 0:
+            # Fallback to uniform if numerical issues occur
+            flat = np.ones_like(flat) / flat.size
+        else:
+            flat /= flat_sum
         self.weights_ref[:] = flat.reshape(self.weights_ref.shape)
 
         # Persist artifacts
@@ -157,7 +171,12 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         with open(weights_path, 'w') as f:
             json.dump({'epoch': epoch+1,
                        'weights': self.weights_ref.tolist(),
-                       'snrs': self.snrs}, f, indent=2)
+                       'snrs': self.snrs,
+                       'beta': self.beta,
+                       'epsilon': self.epsilon,
+                       'max_cap': self.max_cap,
+                       'replay_fraction': self.replay_fraction,
+                       'per_class_snr_acc': per_class_snr_acc.tolist()}, f, indent=2)
         with open(confusion_path, 'w') as f:
             json.dump({'epoch': epoch+1,
                        'confusion_per_snr': confusion_per_snr,

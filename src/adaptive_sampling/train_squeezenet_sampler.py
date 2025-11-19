@@ -113,6 +113,10 @@ def parse_args():
     p.add_argument('--image-size', type=int, default=IMAGE_SIZE)
     p.add_argument('--warmup-epochs', type=int, default=3, help='Adaptive: epochs to skip updates')
     p.add_argument('--min-val-acc', type=float, default=0.15, help='Adaptive: min val_acc to allow updates')
+    p.add_argument('--beta', type=float, default=0.3, help='Adaptive: smoothing factor for weight updates')
+    p.add_argument('--epsilon', type=float, default=0.02, help='Adaptive: additive error floor')
+    p.add_argument('--max-cap', type=float, default=0.4, help='Adaptive: per-bucket max weight before renorm (collapse guard)')
+    p.add_argument('--replay-fraction', type=float, default=0.0, help='Adaptive: fraction of uniform distribution blended in each update (0 disables)')
     p.add_argument('--metadata-train', type=str, default=TRAIN_META_CSV)
     p.add_argument('--metadata-val', type=str, default=VAL_META_CSV)
     p.add_argument('--verify-metadata', action='store_true', help='Quickly verify metadata paths/SNRs before sampler/adaptive runs')
@@ -436,9 +440,10 @@ def main():
                 val_metadata_csv=args.metadata_val,
                 weights_ref=weights,
                 out_dir=RESULTS_DIR,
-                beta=0.3,
-                epsilon=0.02,
-                max_cap=0.4,
+                beta=float(args.beta),
+                epsilon=float(args.epsilon),
+                max_cap=float(args.max_cap),
+                replay_fraction=float(args.replay_fraction),
                 batch_size=batch_size,
                 snrs=TARGET_SNRS,
                 warmup_epochs=args.warmup_epochs,

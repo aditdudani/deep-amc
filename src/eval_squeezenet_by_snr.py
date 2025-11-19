@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 from datetime import datetime
 from typing import List, Dict
 
@@ -10,25 +11,35 @@ import matplotlib.pyplot as plt
 
 from image_generator import tf_generate_three_channel_image
 
+# Defaults (can be overridden via CLI)
+DEFAULT_HDF5 = os.path.join('data', 'GOLD_XYZ_OSC.0001_1024.hdf5')
+DEFAULT_MODEL = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
+DEFAULT_TRAIN_DIR = os.path.join('data', 'processed', 'train')
+DEFAULT_TARGET_MODS = ['BPSK', '4ASK', 'QPSK', 'OQPSK', '8PSK', '16QAM', '32QAM', '64QAM']
+DEFAULT_TARGET_SNRS = [0, 2, 4, 6, 8, 10]
+DEFAULT_IMAGE_SIZE = 224
+DEFAULT_ALPHAS = (10.0, 1.0, 0.1)
+DEFAULT_SAMPLES_PER_IMAGE = 1024
+DEFAULT_CHUNK_SIZE = 128
+DEFAULT_PREDICT_BATCH = 64
 
-# --------- Config (no CLI) ---------
-HDF5_PATH = os.path.join('data', 'GOLD_XYZ_OSC.0001_1024.hdf5')
-MODEL_PATH = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
-TRAIN_DIR = os.path.join('data', 'processed', 'train')  # used to infer class order
-RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
-RESULTS_DIR = os.path.join('results', 'evals', 'squeezenet', RUN_TAG)
-OUT_JSON = os.path.join(RESULTS_DIR, 'accuracy_by_snr_squeezenet.json')
-OUT_PNG = os.path.join(RESULTS_DIR, 'accuracy_by_snr_squeezenet.png')
 
-# Scope (matches your current 8-class subset)
-TARGET_MODS = ['BPSK', '4ASK', 'QPSK', 'OQPSK', '8PSK', '16QAM', '32QAM', '64QAM']
-TARGET_SNRS = [0, 2, 4, 6, 8, 10]
-IMAGE_SIZE = 224
-ALPHAS = (10.0, 1.0, 0.1)
-SAMPLES_PER_IMAGE = 1024
-MAX_SAMPLES_PER_CLASS_PER_SNR = None  # e.g., set to 200 for a quicker sweep
-CHUNK_SIZE = 128                     # stream in small chunks to avoid OOM
-PREDICT_BATCH = 64                   # batch size for model.predict
+def parse_args():
+    p = argparse.ArgumentParser(description='Evaluate SqueezeNet accuracy by SNR (with optional per-class detail)')
+    p.add_argument('--hdf5', type=str, default=DEFAULT_HDF5, help='RadioML HDF5 path')
+    p.add_argument('--model', type=str, default=DEFAULT_MODEL, help='Model .h5 path to evaluate')
+    p.add_argument('--train-dir', type=str, default=DEFAULT_TRAIN_DIR, help='Directory to infer class order')
+    p.add_argument('--out-base', type=str, default=os.path.join('results', 'evals', 'squeezenet'), help='Base output dir')
+    p.add_argument('--image-size', type=int, default=DEFAULT_IMAGE_SIZE)
+    p.add_argument('--samples-per-image', type=int, default=DEFAULT_SAMPLES_PER_IMAGE)
+    p.add_argument('--chunk-size', type=int, default=DEFAULT_CHUNK_SIZE, help='Streaming chunk size for image generation')
+    p.add_argument('--predict-batch', type=int, default=DEFAULT_PREDICT_BATCH, help='Batch size for model.predict')
+    p.add_argument('--limit-per-bucket', type=int, default=None, help='Max samples per (class,SNR); None=all')
+    p.add_argument('--target-mods', type=str, default=','.join(DEFAULT_TARGET_MODS), help='Comma-separated modulation list')
+    p.add_argument('--target-snrs', type=str, default=','.join(str(s) for s in DEFAULT_TARGET_SNRS), help='Comma-separated SNR list')
+    p.add_argument('--per-class', action='store_true', help='Include per-(class,SNR) accuracy matrix in JSON output')
+    p.add_argument('--alphas', type=str, default='10.0,1.0,0.1', help='Comma-separated alphas for image generator')
+    return p.parse_args()
 
 
 def _infer_class_order(train_dir: str) -> List[str]:
@@ -90,69 +101,98 @@ def _gen_images_for_indices(h5_path: str, indices: List[int], samples_per_image:
 
 
 def main():
+    args = parse_args()
+    target_mods = [m.strip() for m in args.target_mods.split(',') if m.strip()]
+    target_snrs = [int(s.strip()) for s in args.target_snrs.split(',') if s.strip()]
+    alphas = tuple(float(a.strip()) for a in args.alphas.split(',') if a.strip())
+
+    run_tag = datetime.now().strftime('%Y%m%d_%H%M%S')
+    results_dir = os.path.join(args.out_base, run_tag)
+    os.makedirs(results_dir, exist_ok=True)
+    out_json = os.path.join(results_dir, 'accuracy_by_snr_squeezenet.json')
+    out_png = os.path.join(results_dir, 'accuracy_by_snr_squeezenet.png')
+
     print("\n--- Evaluating SqueezeNet accuracy by SNR ---\n")
-    os.makedirs(RESULTS_DIR, exist_ok=True)
+    print(f"Model: {args.model}")
+    print(f"HDF5: {args.hdf5}")
+    print(f"Classes inferred from: {args.train_dir}")
+    print(f"Target mods: {target_mods}")
+    print(f"Target SNRs: {target_snrs}")
 
-    # Load model
-    if not os.path.exists(MODEL_PATH):
-        raise FileNotFoundError(f"Model not found at {MODEL_PATH}")
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+    if not os.path.exists(args.model):
+        raise FileNotFoundError(f"Model not found at {args.model}")
+    model = tf.keras.models.load_model(args.model, compile=False)
 
-    # Match class order to training directories
-    train_classes = _infer_class_order(TRAIN_DIR)
+    train_classes = _infer_class_order(args.train_dir)
     print(f"Training class order ({len(train_classes)}): {train_classes}")
     mod_to_class_idx = {m: i for i, m in enumerate(train_classes)}
 
-    # Bucket indices per SNR and modulation
-    buckets = _indices_by_mod_and_snr(HDF5_PATH, TARGET_MODS, TARGET_SNRS)
-
+    buckets = _indices_by_mod_and_snr(args.hdf5, target_mods, target_snrs)
     acc_by_snr: Dict[int, float] = {}
+    per_class_matrix: Dict[int, Dict[str, float]] = {}
 
-    for snr in TARGET_SNRS:
+    limit = args.limit_per_bucket
+    chunk_size = max(1, int(args.chunk_size))
+    predict_batch = max(1, int(args.predict_batch))
+
+    for snr in target_snrs:
         total = 0
         correct = 0
+        per_class_correct = {m: 0 for m in target_mods}
+        per_class_total = {m: 0 for m in target_mods}
         for mod, idxs in buckets[snr].items():
-            if MAX_SAMPLES_PER_CLASS_PER_SNR is not None and len(idxs) > MAX_SAMPLES_PER_CLASS_PER_SNR:
-                idxs = idxs[:MAX_SAMPLES_PER_CLASS_PER_SNR]
+            if limit is not None and len(idxs) > limit:
+                idxs = idxs[:limit]
             if not idxs:
                 continue
-
-            # Stream in small chunks to avoid building a 20GB array
-            for start in range(0, len(idxs), CHUNK_SIZE):
-                chunk_indices = idxs[start:start + CHUNK_SIZE]
-                X_chunk = _gen_images_for_indices(HDF5_PATH, chunk_indices, SAMPLES_PER_IMAGE, IMAGE_SIZE, ALPHAS)
-                y_chunk = np.full((X_chunk.shape[0],), mod_to_class_idx[mod], dtype=np.int64)
-
-                probs = model.predict(X_chunk, batch_size=PREDICT_BATCH, verbose=0)
+            class_id = mod_to_class_idx[mod]
+            for start in range(0, len(idxs), chunk_size):
+                chunk = idxs[start:start + chunk_size]
+                X_chunk = _gen_images_for_indices(args.hdf5, chunk, args.samples_per_image, args.image_size, alphas).astype(np.float32)
+                y_chunk = np.full((X_chunk.shape[0],), class_id, dtype=np.int64)
+                probs = model.predict(X_chunk, batch_size=predict_batch, verbose=0)
                 y_pred = np.argmax(probs, axis=1)
-                correct += int((y_pred == y_chunk).sum())
-                total += y_chunk.shape[0]
-
+                match = (y_pred == y_chunk)
+                n_match = int(match.sum())
+                correct += n_match
+                total += y_chunk.size
+                per_class_correct[mod] += n_match
+                per_class_total[mod] += y_chunk.size
         if total == 0:
             print(f"No data for SNR={snr}; skipping.")
             continue
-
-        acc = correct / total
-        acc_by_snr[snr] = float(acc)
+        acc = float(correct / total)
+        acc_by_snr[snr] = acc
+        if args.per_class:
+            per_class_matrix[snr] = {m: (per_class_correct[m] / per_class_total[m]) if per_class_total[m] > 0 else None for m in target_mods}
         print(f"SNR {snr:>2} dB -> accuracy: {acc:.4f} (n={total})")
 
-    # Persist results
-    with open(OUT_JSON, 'w') as f:
-        json.dump({"accuracy_by_snr": acc_by_snr, "snrs": TARGET_SNRS, "classes": train_classes}, f, indent=2)
-    print(f"Saved JSON: {OUT_JSON}")
+    payload = {
+        'accuracy_by_snr': acc_by_snr,
+        'snrs': target_snrs,
+        'classes': train_classes,
+        'target_mods': target_mods,
+        'model_path': args.model,
+        'limit_per_bucket': limit,
+    }
+    if args.per_class:
+        payload['per_class_accuracy_by_snr'] = per_class_matrix
 
-    # Plot
-    snrs = sorted(acc_by_snr.keys())
-    accs = [acc_by_snr[s] for s in snrs]
+    with open(out_json, 'w') as f:
+        json.dump(payload, f, indent=2)
+    print(f"Saved JSON: {out_json}")
+
+    snrs_plotted = sorted(acc_by_snr.keys())
+    accs = [acc_by_snr[s] for s in snrs_plotted]
     plt.figure(figsize=(7, 4))
-    plt.plot(snrs, accs, marker='o')
+    plt.plot(snrs_plotted, accs, marker='o')
     plt.xlabel('SNR (dB)')
     plt.ylabel('Accuracy')
     plt.title('SqueezeNet: Accuracy vs SNR')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUT_PNG)
-    print(f"Saved plot: {OUT_PNG}")
+    plt.savefig(out_png)
+    print(f"Saved plot: {out_png}")
 
 
 if __name__ == '__main__':
