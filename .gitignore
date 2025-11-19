@@ -2,6 +2,7 @@
 models/
 data/
 references/
+results/
 logs/
 
 # Ignore Python cache and environment files
@@ -9,6 +10,8 @@ __pycache__/
 *.pyc
 amc_env/
 .vscode/
+--sampler-backend
+.]
 
 # Ignore OS-specific files
 .DS_Store
