@@ -12,6 +12,10 @@ If --dir is omitted, it will default to results/adaptive_sampling and pick the l
 """
 
 import argparse
+from math import isnan
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 def _list_epochs(dir_path: str, prefix: str) -> List[int]:
     eps = []
@@ -49,7 +53,6 @@ def _per_snr_share(weights_json: dict) -> Dict[int, float]:
     W: List[List[float]] = weights_json.get('weights', [])
     if not W or not snrs:
         return {}
-    import numpy as np
     Wm = np.array(W, dtype=float)
     shares: Dict[int, float] = {}
     for j, snr in enumerate(snrs):
@@ -106,6 +109,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dir', default=os.path.join('results', 'adaptive_sampling'), help='Run directory or parent folder')
     ap.add_argument('--top', type=int, default=5, help='Top-N positive (focus -> accuracy) shifts to show')
+    ap.add_argument('--no-plot', action='store_true', help='Disable plot generation')
     args = ap.parse_args()
 
     run_dir = args.dir
@@ -169,6 +173,85 @@ def main():
                 lines.append(f"    {c_disp} @ SNR {snr:>2}: Δweight=+{dW:.4f}, Δacc=+{dA:.4f}")
         else:
             lines.append("  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.")
+
+    # Build plots: accuracy vs epoch and weight share vs epoch per SNR
+    if not args.no_plot:
+        try:
+            snr_keys = sorted({k for e in common_epochs for k in per_epoch_acc.get(e, {}).keys()})
+            # Accuracy vs epoch per SNR
+            plt.figure(figsize=(10, 6))
+            for snr in snr_keys:
+                ys = [per_epoch_acc.get(e, {}).get(snr, np.nan) for e in common_epochs]
+                plt.plot(common_epochs, ys, marker='o', label=f'SNR {snr}')
+            plt.xlabel('Epoch')
+            plt.ylabel('Validation accuracy (per SNR)')
+            plt.title('Per-SNR Validation Accuracy vs Epoch')
+            plt.grid(True, alpha=0.3)
+            plt.legend(ncol=3, fontsize=8)
+            acc_fig = os.path.join(run_dir, 'explain_accuracy_by_epoch.png')
+            plt.tight_layout()
+            plt.savefig(acc_fig, dpi=150)
+            plt.close()
+
+            # Weight share vs epoch per SNR
+            plt.figure(figsize=(10, 6))
+            for snr in snr_keys:
+                ys = [per_epoch_share.get(e, {}).get(snr, np.nan) for e in common_epochs]
+                plt.plot(common_epochs, ys, marker='o', label=f'SNR {snr}')
+            plt.xlabel('Epoch')
+            plt.ylabel('Sampler share (sum over classes)')
+            plt.title('Per-SNR Sampler Share vs Epoch')
+            plt.grid(True, alpha=0.3)
+            plt.legend(ncol=3, fontsize=8)
+            share_fig = os.path.join(run_dir, 'explain_weight_share_by_epoch.png')
+            plt.tight_layout()
+            plt.savefig(share_fig, dpi=150)
+            plt.close()
+
+            # Correlation between Δweight and Δaccuracy per SNR
+            corr_by_snr: Dict[int, float] = {}
+            for snr in snr_keys:
+                dW: List[float] = []
+                dA: List[float] = []
+                for e in common_epochs[:-1]:
+                    ep1 = e + 1
+                    w0 = per_epoch_share.get(e, {}).get(snr, np.nan)
+                    w1 = per_epoch_share.get(ep1, {}).get(snr, np.nan)
+                    a0 = per_epoch_acc.get(e, {}).get(snr, np.nan)
+                    a1 = per_epoch_acc.get(ep1, {}).get(snr, np.nan)
+                    if any(isnan(v) for v in (w0, w1, a0, a1)):
+                        continue
+                    dW.append(w1 - w0)
+                    dA.append(a1 - a0)
+                if len(dW) >= 2 and np.std(dW) > 1e-12 and np.std(dA) > 1e-12:
+                    r = float(np.corrcoef(dW, dA)[0, 1])
+                else:
+                    r = float('nan')
+                corr_by_snr[int(snr)] = r
+
+            # Bar chart for correlations
+            plt.figure(figsize=(8, 4))
+            xs = list(sorted(corr_by_snr.keys()))
+            ys = [corr_by_snr[k] if not isnan(corr_by_snr[k]) else 0.0 for k in xs]
+            labels = [str(k) for k in xs]
+            bars = plt.bar(labels, ys, color=['#1f77b4' if y >= 0 else '#d62728' for y in ys])
+            plt.axhline(0, color='k', linewidth=0.8)
+            plt.ylabel('corr(Δweight, Δaccuracy)')
+            plt.title('Alignment per SNR: Δweight vs Δaccuracy')
+            plt.tight_layout()
+            corr_fig = os.path.join(run_dir, 'explain_alignment_correlation.png')
+            plt.savefig(corr_fig, dpi=150)
+            plt.close()
+
+            # Append correlation summary to text
+            lines.append("\n=== Weight–Accuracy Alignment (per SNR) ===")
+            for snr in xs:
+                r = corr_by_snr[snr]
+                r_disp = f"{r:.3f}" if not isnan(r) else "NA"
+                lines.append(f"  SNR {snr:>2}: corr = {r_disp}")
+
+        except Exception as plot_ex:
+            lines.append(f"\n[warn] Plotting failed: {plot_ex}")
 
     # Write summary file and print
     out_path = os.path.join(run_dir, 'explain_summary.txt')
