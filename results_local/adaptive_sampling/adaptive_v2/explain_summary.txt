@@ -1,0 +1,268 @@
+
+=== Focus Shifts and Accuracy Response ===
+
+Epoch 4 -> 5
+  SNR  0: weight +0.0410 -> accuracy +0.0130
+  SNR  2: weight +0.0145 -> accuracy +0.0137
+  SNR  4: weight -0.0020 -> accuracy +0.0043
+  SNR  6: weight -0.0154 -> accuracy +0.0251
+  SNR 10: weight -0.0181 -> accuracy +0.0235
+  SNR  8: weight -0.0200 -> accuracy +0.0295
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 7 @ SNR  0: Δweight=+0.0069, Δacc=+0.0877
+    Class 4 @ SNR  0: Δweight=+0.0055, Δacc=+0.0799
+
+Epoch 5 -> 6
+  SNR  0: weight +0.0117 -> accuracy +0.0009
+  SNR  2: weight -0.0000 -> accuracy +0.0098
+  SNR  4: weight -0.0014 -> accuracy +0.0034
+  SNR  6: weight -0.0023 -> accuracy -0.0009
+  SNR 10: weight -0.0034 -> accuracy -0.0018
+  SNR  8: weight -0.0044 -> accuracy +0.0003
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 3 @ SNR  0: Δweight=+0.0013, Δacc=+0.0279
+    Class 6 @ SNR  0: Δweight=+0.0028, Δacc=+0.0145
+
+Epoch 6 -> 7
+  SNR  6: weight +0.0039 -> accuracy -0.0124
+  SNR  4: weight +0.0027 -> accuracy -0.0104
+  SNR  8: weight +0.0006 -> accuracy -0.0061
+  SNR 10: weight -0.0006 -> accuracy -0.0034
+  SNR  0: weight -0.0022 -> accuracy +0.0042
+  SNR  2: weight -0.0044 -> accuracy +0.0082
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 7 -> 8
+  SNR  4: weight +0.0038 -> accuracy +0.0009
+  SNR  8: weight +0.0010 -> accuracy +0.0040
+  SNR  6: weight +0.0010 -> accuracy +0.0065
+  SNR  2: weight +0.0009 -> accuracy +0.0070
+  SNR 10: weight -0.0013 -> accuracy +0.0086
+  SNR  0: weight -0.0054 -> accuracy +0.0335
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 1 @ SNR  2: Δweight=+0.0020, Δacc=+0.0437
+
+Epoch 8 -> 9
+  SNR  0: weight +0.0130 -> accuracy -0.0401
+  SNR  2: weight +0.0016 -> accuracy -0.0085
+  SNR  6: weight -0.0024 -> accuracy +0.0034
+  SNR  8: weight -0.0025 -> accuracy +0.0052
+  SNR  4: weight -0.0041 -> accuracy +0.0097
+  SNR 10: weight -0.0055 -> accuracy +0.0113
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 9 -> 10
+  SNR  0: weight +0.0047 -> accuracy +0.0211
+  SNR 10: weight +0.0032 -> accuracy -0.0046
+  SNR  8: weight +0.0003 -> accuracy +0.0033
+  SNR  2: weight -0.0010 -> accuracy +0.0186
+  SNR  4: weight -0.0027 -> accuracy +0.0146
+  SNR  6: weight -0.0044 -> accuracy +0.0152
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 0 @ SNR  0: Δweight=+0.0005, Δacc=+0.0670
+    Class 7 @ SNR  2: Δweight=+0.0000, Δacc=+0.0140
+    Class 2 @ SNR  2: Δweight=+0.0000, Δacc=+0.0025
+
+Epoch 10 -> 11
+  SNR  2: weight +0.0087 -> accuracy -0.0256
+  SNR  4: weight +0.0016 -> accuracy -0.0088
+  SNR 10: weight +0.0007 -> accuracy -0.0024
+  SNR  8: weight +0.0004 -> accuracy -0.0037
+  SNR  6: weight -0.0009 -> accuracy -0.0040
+  SNR  0: weight -0.0105 -> accuracy +0.0142
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 11 -> 12
+  SNR  4: weight +0.0059 -> accuracy -0.0088
+  SNR  6: weight +0.0044 -> accuracy -0.0056
+  SNR  2: weight +0.0001 -> accuracy +0.0122
+  SNR  8: weight -0.0025 -> accuracy +0.0094
+  SNR 10: weight -0.0037 -> accuracy +0.0110
+  SNR  0: weight -0.0041 -> accuracy +0.0178
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 1 @ SNR  0: Δweight=+0.0017, Δacc=+0.0743
+    Class 1 @ SNR  4: Δweight=+0.0013, Δacc=+0.0166
+
+Epoch 12 -> 13
+  SNR  0: weight +0.0085 -> accuracy -0.0190
+  SNR 10: weight +0.0029 -> accuracy -0.0064
+  SNR  2: weight -0.0013 -> accuracy +0.0052
+  SNR  8: weight -0.0015 -> accuracy +0.0027
+  SNR  4: weight -0.0038 -> accuracy +0.0146
+  SNR  6: weight -0.0048 -> accuracy +0.0130
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 13 -> 14
+  SNR  2: weight +0.0031 -> accuracy -0.0116
+  SNR  8: weight +0.0029 -> accuracy -0.0094
+  SNR  6: weight +0.0021 -> accuracy -0.0090
+  SNR 10: weight -0.0025 -> accuracy +0.0046
+  SNR  4: weight -0.0026 -> accuracy +0.0009
+  SNR  0: weight -0.0029 -> accuracy +0.0039
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 4 @ SNR  2: Δweight=+0.0008, Δacc=+0.0051
+
+Epoch 14 -> 15
+  SNR  0: weight +0.0156 -> accuracy -0.0226
+  SNR  4: weight +0.0013 -> accuracy =0.0000
+  SNR  2: weight -0.0013 -> accuracy +0.0113
+  SNR  8: weight -0.0042 -> accuracy +0.0146
+  SNR 10: weight -0.0054 -> accuracy +0.0138
+  SNR  6: weight -0.0060 -> accuracy +0.0186
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 1 @ SNR  0: Δweight=+0.0000, Δacc=+0.0504
+
+Epoch 15 -> 16
+  SNR  6: weight +0.0067 -> accuracy -0.0207
+  SNR  4: weight +0.0060 -> accuracy -0.0189
+  SNR  8: weight -0.0003 -> accuracy -0.0046
+  SNR 10: weight -0.0012 -> accuracy -0.0037
+  SNR  0: weight -0.0030 -> accuracy +0.0045
+  SNR  2: weight -0.0081 -> accuracy +0.0110
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 16 -> 17
+  SNR  2: weight +0.0097 -> accuracy -0.0351
+  SNR 10: weight +0.0068 -> accuracy -0.0196
+  SNR  8: weight +0.0058 -> accuracy -0.0177
+  SNR  6: weight -0.0006 -> accuracy +0.0006
+  SNR  4: weight -0.0059 -> accuracy +0.0113
+  SNR  0: weight -0.0158 -> accuracy +0.0196
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 1 @ SNR  4: Δweight=+0.0009, Δacc=+0.0024
+
+Epoch 17 -> 18
+  SNR  0: weight +0.0149 -> accuracy -0.0148
+  SNR  4: weight -0.0006 -> accuracy +0.0116
+  SNR  6: weight -0.0008 -> accuracy +0.0087
+  SNR  8: weight -0.0023 -> accuracy +0.0164
+  SNR 10: weight -0.0026 -> accuracy +0.0177
+  SNR  2: weight -0.0086 -> accuracy +0.0431
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 6 @ SNR  0: Δweight=+0.0020, Δacc=+0.0578
+    Class 5 @ SNR  8: Δweight=+0.0000, Δacc=+0.0025
+    Class 6 @ SNR  8: Δweight=+0.0000, Δacc=+0.0025
+    Class 4 @ SNR  8: Δweight=+0.0000, Δacc=+0.0023
+
+Epoch 18 -> 19
+  SNR  2: weight +0.0099 -> accuracy -0.0247
+  SNR  4: weight +0.0013 -> accuracy -0.0034
+  SNR  0: weight +0.0012 -> accuracy +0.0109
+  SNR  6: weight -0.0026 -> accuracy +0.0074
+  SNR 10: weight -0.0049 -> accuracy +0.0095
+  SNR  8: weight -0.0049 -> accuracy +0.0110
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 3 @ SNR  0: Δweight=+0.0004, Δacc=+0.1186
+
+Epoch 19 -> 20
+  SNR  0: weight +0.0056 -> accuracy -0.0051
+  SNR  4: weight +0.0033 -> accuracy -0.0024
+  SNR  8: weight +0.0014 -> accuracy -0.0046
+  SNR 10: weight +0.0006 -> accuracy -0.0024
+  SNR  6: weight -0.0007 -> accuracy +0.0012
+  SNR  2: weight -0.0103 -> accuracy +0.0321
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 20 -> 21
+  SNR  2: weight +0.0062 -> accuracy -0.0244
+  SNR  6: weight +0.0024 -> accuracy -0.0084
+  SNR  8: weight +0.0012 -> accuracy -0.0046
+  SNR 10: weight +0.0011 -> accuracy -0.0043
+  SNR  4: weight -0.0021 -> accuracy +0.0021
+  SNR  0: weight -0.0086 -> accuracy +0.0124
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 3 @ SNR  4: Δweight=+0.0013, Δacc=+0.0205
+
+Epoch 21 -> 22
+  SNR 10: weight +0.0074 -> accuracy -0.0174
+  SNR  8: weight +0.0057 -> accuracy -0.0146
+  SNR  6: weight +0.0022 -> accuracy -0.0068
+  SNR  0: weight -0.0005 -> accuracy -0.0145
+  SNR  4: weight -0.0054 -> accuracy +0.0082
+  SNR  2: weight -0.0094 -> accuracy +0.0177
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 22 -> 23
+  SNR  0: weight +0.0073 -> accuracy +0.0078
+  SNR  2: weight +0.0072 -> accuracy -0.0073
+  SNR  4: weight +0.0041 -> accuracy -0.0040
+  SNR  6: weight -0.0027 -> accuracy +0.0145
+  SNR  8: weight -0.0060 -> accuracy +0.0228
+  SNR 10: weight -0.0099 -> accuracy +0.0306
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 6 @ SNR  0: Δweight=+0.0010, Δacc=+0.0072
+
+Epoch 23 -> 24
+  SNR  4: weight +0.0051 -> accuracy -0.0113
+  SNR  6: weight +0.0031 -> accuracy -0.0102
+  SNR  0: weight +0.0019 -> accuracy -0.0060
+  SNR 10: weight +0.0013 -> accuracy -0.0092
+  SNR  8: weight -0.0035 -> accuracy +0.0030
+  SNR  2: weight -0.0079 -> accuracy +0.0168
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 24 -> 25
+  SNR  2: weight +0.0114 -> accuracy -0.0388
+  SNR  8: weight +0.0010 -> accuracy -0.0076
+  SNR  4: weight -0.0023 -> accuracy +0.0012
+  SNR  6: weight -0.0029 -> accuracy +0.0043
+  SNR  0: weight -0.0035 -> accuracy -0.0063
+  SNR 10: weight -0.0036 -> accuracy +0.0052
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 25 -> 26
+  SNR 10: weight +0.0036 -> accuracy -0.0073
+  SNR  2: weight +0.0020 -> accuracy +0.0101
+  SNR  0: weight +0.0005 -> accuracy +0.0081
+  SNR  8: weight +0.0002 -> accuracy +0.0024
+  SNR  4: weight -0.0027 -> accuracy +0.0097
+  SNR  6: weight -0.0035 -> accuracy +0.0087
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 4 @ SNR  2: Δweight=+0.0000, Δacc=+0.0279
+    Class 1 @ SNR 10: Δweight=+0.0001, Δacc=+0.0070
+
+Epoch 26 -> 27
+  SNR 10: weight +0.0028 -> accuracy -0.0058
+  SNR  8: weight +0.0021 -> accuracy -0.0067
+  SNR  2: weight +0.0015 -> accuracy -0.0082
+  SNR  0: weight +0.0006 -> accuracy -0.0084
+  SNR  6: weight -0.0014 -> accuracy -0.0009
+  SNR  4: weight -0.0057 -> accuracy +0.0076
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 3 @ SNR  6: Δweight=+0.0007, Δacc=+0.0121
+
+Epoch 27 -> 28
+  SNR  4: weight +0.0087 -> accuracy -0.0161
+  SNR  6: weight +0.0052 -> accuracy -0.0077
+  SNR  0: weight +0.0005 -> accuracy +0.0139
+  SNR  8: weight -0.0014 -> accuracy +0.0085
+  SNR 10: weight -0.0036 -> accuracy +0.0125
+  SNR  2: weight -0.0095 -> accuracy +0.0324
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 28 -> 29
+  SNR  2: weight +0.0042 -> accuracy -0.0202
+  SNR 10: weight +0.0014 -> accuracy -0.0080
+  SNR  8: weight +0.0008 -> accuracy -0.0055
+  SNR  6: weight -0.0007 -> accuracy +0.0022
+  SNR  4: weight -0.0024 -> accuracy +0.0055
+  SNR  0: weight -0.0033 -> accuracy -0.0012
+  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.
+
+Epoch 29 -> 30
+  SNR  0: weight +0.0024 -> accuracy -0.0063
+  SNR  8: weight +0.0013 -> accuracy -0.0018
+  SNR 10: weight +0.0006 -> accuracy +0.0012
+  SNR  6: weight -0.0006 -> accuracy +0.0003
+  SNR  2: weight -0.0009 -> accuracy +0.0043
+  SNR  4: weight -0.0028 -> accuracy +0.0070
+  Top (class,SNR) where focus coincided with accuracy gain:
+    Class 0 @ SNR  0: Δweight=+0.0028, Δacc=+0.0072
+
+=== Weight–Accuracy Alignment (per SNR) ===
+  SNR  0: corr = -0.350
+  SNR  2: corr = -0.781
+  SNR  4: corr = -0.866
+  SNR  6: corr = -0.893
+  SNR  8: corr = -0.861
+  SNR 10: corr = -0.884
