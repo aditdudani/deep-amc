@@ -110,6 +110,8 @@ def main():
     ap.add_argument('--dir', default=os.path.join('results', 'adaptive_sampling'), help='Run directory or parent folder')
     ap.add_argument('--top', type=int, default=5, help='Top-N positive (focus -> accuracy) shifts to show')
     ap.add_argument('--no-plot', action='store_true', help='Disable plot generation')
+    ap.add_argument('--corr-lags', default='1,2', help='Comma-separated epoch lags for lagged corr(ΔW_e, ΔA_{e+lag})')
+    ap.add_argument('--smooth-window', type=int, default=3, help='Rolling window for smoothed accuracy (epochs)')
     args = ap.parse_args()
 
     run_dir = args.dir
@@ -174,6 +176,15 @@ def main():
         else:
             lines.append("  No clear (class,SNR) pairs with both weight↑ and accuracy↑ this step.")
 
+    # Prepare JSON outputs for time series and correlations
+    ts_json = {
+        'epochs': common_epochs,
+        'per_snr_accuracy': {int(snr): [per_epoch_acc.get(e, {}).get(int(snr), float('nan')) for e in common_epochs]
+                              for snr in sorted({k for e in common_epochs for k in per_epoch_acc.get(e, {}).keys()})},
+        'per_snr_share': {int(snr): [per_epoch_share.get(e, {}).get(int(snr), float('nan')) for e in common_epochs]
+                           for snr in sorted({k for e in common_epochs for k in per_epoch_share.get(e, {}).keys()})}
+    }
+
     # Build plots: accuracy vs epoch and weight share vs epoch per SNR
     if not args.no_plot:
         try:
@@ -192,6 +203,30 @@ def main():
             plt.tight_layout()
             plt.savefig(acc_fig, dpi=150)
             plt.close()
+
+            # Smoothed accuracy (rolling mean)
+            if args.smooth_window and args.smooth_window > 1:
+                plt.figure(figsize=(10, 6))
+                w = args.smooth_window
+                for snr in snr_keys:
+                    ys = np.array([per_epoch_acc.get(e, {}).get(snr, np.nan) for e in common_epochs], dtype=float)
+                    # simple nan-aware rolling mean
+                    sm = []
+                    for i in range(len(ys)):
+                        s = max(0, i - w + 1)
+                        window = ys[s:i+1]
+                        window = window[~np.isnan(window)]
+                        sm.append(np.mean(window) if window.size > 0 else np.nan)
+                    plt.plot(common_epochs, sm, marker='o', label=f'SNR {snr}')
+                plt.xlabel('Epoch')
+                plt.ylabel(f'Validation accuracy (rolling {args.smooth_window})')
+                plt.title('Per-SNR Accuracy (Smoothed) vs Epoch')
+                plt.grid(True, alpha=0.3)
+                plt.legend(ncol=3, fontsize=8)
+                acc_sm_fig = os.path.join(run_dir, 'explain_accuracy_by_epoch_smoothed.png')
+                plt.tight_layout()
+                plt.savefig(acc_sm_fig, dpi=150)
+                plt.close()
 
             # Weight share vs epoch per SNR
             plt.figure(figsize=(10, 6))
@@ -250,6 +285,60 @@ def main():
                 r_disp = f"{r:.3f}" if not isnan(r) else "NA"
                 lines.append(f"  SNR {snr:>2}: corr = {r_disp}")
 
+            # Lagged correlations
+            lag_vals = [int(x.strip()) for x in args.corr_lags.split(',') if x.strip().isdigit()]
+            lag_corrs: Dict[int, Dict[int, float]] = {}
+            for lag in lag_vals:
+                lag_corrs[lag] = {}
+                for snr in snr_keys:
+                    dW: List[float] = []
+                    dA_lag: List[float] = []
+                    # pair ΔW at e with ΔA at e+lag
+                    for idx, e in enumerate(common_epochs[:-1]):
+                        ep1 = e + 1
+                        j = idx + lag
+                        if j >= len(common_epochs) - 1:
+                            break
+                        e_l = common_epochs[j]
+                        ep1_l = common_epochs[j + 1]
+                        w0 = per_epoch_share.get(e, {}).get(snr, np.nan)
+                        w1 = per_epoch_share.get(ep1, {}).get(snr, np.nan)
+                        a0 = per_epoch_acc.get(e_l, {}).get(snr, np.nan)
+                        a1 = per_epoch_acc.get(ep1_l, {}).get(snr, np.nan)
+                        if any(isnan(v) for v in (w0, w1, a0, a1)):
+                            continue
+                        dW.append(w1 - w0)
+                        dA_lag.append(a1 - a0)
+                    if len(dW) >= 2 and np.std(dW) > 1e-12 and np.std(dA_lag) > 1e-12:
+                        r = float(np.corrcoef(dW, dA_lag)[0, 1])
+                    else:
+                        r = float('nan')
+                    lag_corrs[lag][int(snr)] = r
+
+            # Save lag correlation as additional bar plots
+            for lag, corr_map in lag_corrs.items():
+                plt.figure(figsize=(8, 4))
+                xs_l = list(sorted(int(k) for k in corr_map.keys()))
+                ys_l = [corr_map[k] if not isnan(corr_map[k]) else 0.0 for k in xs_l]
+                labels_l = [str(k) for k in xs_l]
+                plt.bar(labels_l, ys_l, color=['#1f77b4' if y >= 0 else '#d62728' for y in ys_l])
+                plt.axhline(0, color='k', linewidth=0.8)
+                plt.ylabel('corr(ΔW_e, ΔA_{e+lag})')
+                plt.title(f'Lagged Alignment (lag={lag}) per SNR')
+                plt.tight_layout()
+                lag_fig = os.path.join(run_dir, f'explain_alignment_correlation_lag{lag}.png')
+                plt.savefig(lag_fig, dpi=150)
+                plt.close()
+
+            # Write correlations JSON
+            corr_json = {
+                'corr_deltaW_deltaA': corr_by_snr,
+                'lagged_corrs': {int(lag): {int(s): (None if isnan(v) else float(v)) for s, v in snrmap.items()}
+                                 for lag, snrmap in lag_corrs.items()}
+            }
+            with open(os.path.join(run_dir, 'explain_alignment_correlation.json'), 'w') as f:
+                json.dump(corr_json, f, indent=2)
+
         except Exception as plot_ex:
             lines.append(f"\n[warn] Plotting failed: {plot_ex}")
 
@@ -259,6 +348,13 @@ def main():
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines))
     print(f"\nSaved explanation to: {out_path}")
+
+    # Write time series JSON
+    try:
+        with open(os.path.join(run_dir, 'explain_time_series.json'), 'w') as f:
+            json.dump(ts_json, f, indent=2)
+    except Exception:
+        pass
 
 if __name__ == '__main__':
     main()
