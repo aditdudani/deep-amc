@@ -40,15 +40,18 @@ OUTPUT_DIR = 'results_local/paper_figures'
 
 # ============= FIGURE 1 CONFIGURATION =============
 # Single class, single SNR - showing alpha channel decomposition
+# RECOMMENDATION: QPSK at 10dB - clear 4-point constellation, shows alpha effects well
 FIG1_CLASS = 'QPSK'      # Modulation class to use
-FIG1_SNR = 6            # SNR in dB
-FIG1_FRAME_INDEX = 500     # Which frame to use (0-4095 available per class/SNR)
+FIG1_SNR = 10            # SNR in dB (10 dB for clean constellation)
+FIG1_FRAME_INDEX = 0     # Which frame to use (0-4095 available per class/SNR)
 
 # ============= FIGURE 2 CONFIGURATION =============
 # Single class across multiple SNRs - showing noise effect
-FIG2_CLASS = '16QAM'     # Modulation class (different from Fig 1)
-FIG2_SNRS = [0, 4, 8]  # Three SNR values to compare
-FIG2_FRAME_INDEX = 500     # Which frame to use
+# RECOMMENDATION: 8PSK - clear 8-point ring, degrades gracefully with noise
+# Avoid 16QAM - becomes indistinct blob at low SNR
+FIG2_CLASS = '8PSK'      # Modulation class (different from Fig 1)
+FIG2_SNRS = [0, 6, 10] # Three SNR values: low/medium/high contrast
+FIG2_FRAME_INDEX = 0     # Which frame to use
 
 # =============================================================================
 # END CONFIGURATION
@@ -89,9 +92,9 @@ def generate_figure_1(h5_path, mod_class, snr, frame_idx, classes, output_dir):
     """
     Generate Figure 1: Alpha channel decomposition for a single sample.
     
-    Creates two sub-figures:
-    1. Three individual alpha channel images side-by-side (grayscale)
-    2. The combined 3-channel RGB representation
+    Creates a single figure with 4 images:
+    - Three individual alpha channel images (grayscale)
+    - The combined 3-channel RGB representation
     """
     print(f"\n--- Generating Figure 1 ---")
     print(f"Class: {mod_class}, SNR: {snr} dB, Frame: {frame_idx}")
@@ -120,72 +123,24 @@ def generate_figure_1(h5_path, mod_class, snr, frame_idx, classes, output_dir):
     three_channel = tf_generate_three_channel_image(iq_tf, IMAGE_SIZE, ALPHAS, PLANE_RANGE)
     three_channel_np = three_channel.numpy()
     
-    # =========== Figure 1a: Three alpha channels side-by-side ===========
-    fig1a, axes = plt.subplots(1, 3, figsize=(12, 4))
-    
-    for i, (ax, alpha) in enumerate(zip(axes, ALPHAS)):
-        im = ax.imshow(channels[i], cmap='viridis', vmin=0, vmax=1)
-        ax.set_title(f'α = {alpha}', fontsize=14)
-        ax.axis('off')
-    
-    # Add colorbar
-    fig1a.colorbar(im, ax=axes, orientation='vertical', fraction=0.02, pad=0.04)
-    
-    fig1a.suptitle(f'{mod_class} at SNR = {snr} dB\nIndividual Alpha Channels', 
-                   fontsize=14, fontweight='bold')
-    plt.tight_layout()
-    
-    # Save
-    os.makedirs(output_dir, exist_ok=True)
-    path_1a = os.path.join(output_dir, f'fig1a_{mod_class}_SNR{snr}_alpha_channels.png')
-    fig1a.savefig(path_1a, dpi=300, bbox_inches='tight', facecolor='white')
-    path_1a_pdf = os.path.join(output_dir, f'fig1a_{mod_class}_SNR{snr}_alpha_channels.pdf')
-    fig1a.savefig(path_1a_pdf, bbox_inches='tight', facecolor='white')
-    print(f"Saved: {path_1a}")
-    print(f"Saved: {path_1a_pdf}")
-    plt.close(fig1a)
-    
-    # =========== Figure 1b: Three-channel composite ===========
-    fig1b, ax = plt.subplots(1, 1, figsize=(5, 5))
-    
-    # The 3-channel image treated as RGB
-    ax.imshow(three_channel_np)
-    ax.set_title(f'{mod_class} at SNR = {snr} dB\n3-Channel Composite (R: α=10, G: α=1, B: α=0.1)', 
-                 fontsize=12)
-    ax.axis('off')
-    
-    plt.tight_layout()
-    
-    path_1b = os.path.join(output_dir, f'fig1b_{mod_class}_SNR{snr}_3channel.png')
-    fig1b.savefig(path_1b, dpi=300, bbox_inches='tight', facecolor='white')
-    path_1b_pdf = os.path.join(output_dir, f'fig1b_{mod_class}_SNR{snr}_3channel.pdf')
-    fig1b.savefig(path_1b_pdf, bbox_inches='tight', facecolor='white')
-    print(f"Saved: {path_1b}")
-    print(f"Saved: {path_1b_pdf}")
-    plt.close(fig1b)
-    
-    # =========== Figure 1 Combined: All in one figure (4 images) ===========
-    fig1_combined, axes = plt.subplots(1, 4, figsize=(16, 4))
+    # =========== Figure 1: All in one figure (4 images) ===========
+    fig1, axes = plt.subplots(1, 4, figsize=(16, 4))
     
     for i, (ax, alpha) in enumerate(zip(axes[:3], ALPHAS)):
         ax.imshow(channels[i], cmap='viridis', vmin=0, vmax=1)
-        ax.set_title(f'α = {alpha}', fontsize=14)
         ax.axis('off')
     
     axes[3].imshow(three_channel_np)
-    axes[3].set_title('3-Channel\n(RGB)', fontsize=14)
     axes[3].axis('off')
     
-    fig1_combined.suptitle(f'{mod_class} at SNR = {snr} dB', fontsize=16, fontweight='bold')
     plt.tight_layout()
     
-    path_1c = os.path.join(output_dir, f'fig1_combined_{mod_class}_SNR{snr}.png')
-    fig1_combined.savefig(path_1c, dpi=300, bbox_inches='tight', facecolor='white')
-    path_1c_pdf = os.path.join(output_dir, f'fig1_combined_{mod_class}_SNR{snr}.pdf')
-    fig1_combined.savefig(path_1c_pdf, bbox_inches='tight', facecolor='white')
-    print(f"Saved: {path_1c}")
-    print(f"Saved: {path_1c_pdf}")
-    plt.close(fig1_combined)
+    # Save PNG only
+    os.makedirs(output_dir, exist_ok=True)
+    path_1 = os.path.join(output_dir, f'fig1_{mod_class}_SNR{snr}.png')
+    fig1.savefig(path_1, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Saved: {path_1}")
+    plt.close(fig1)
     
     return sample_index
 
@@ -224,21 +179,16 @@ def generate_figure_2(h5_path, mod_class, snrs, frame_idx, classes, output_dir):
     
     for ax, img, snr in zip(axes, images, snrs):
         ax.imshow(img)
-        ax.set_title(f'SNR = {snr} dB', fontsize=14)
         ax.axis('off')
     
-    fig2.suptitle(f'{mod_class} Modulation Across Different SNR Levels\n(3-Channel Representation)', 
-                  fontsize=14, fontweight='bold')
     plt.tight_layout()
     
+    # Save PNG only
     os.makedirs(output_dir, exist_ok=True)
     snr_str = '_'.join([str(s) for s in snrs])
     path_2 = os.path.join(output_dir, f'fig2_{mod_class}_SNR_{snr_str}.png')
     fig2.savefig(path_2, dpi=300, bbox_inches='tight', facecolor='white')
-    path_2_pdf = os.path.join(output_dir, f'fig2_{mod_class}_SNR_{snr_str}.pdf')
-    fig2.savefig(path_2_pdf, bbox_inches='tight', facecolor='white')
     print(f"Saved: {path_2}")
-    print(f"Saved: {path_2_pdf}")
     plt.close(fig2)
     
     return used_indices
