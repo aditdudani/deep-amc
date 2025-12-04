@@ -72,13 +72,23 @@ def get_sample_indices(h5_path, target_class, target_snr, classes):
     """
     with h5py.File(h5_path, 'r') as hf:
         Y_onehot = hf['Y'][:]
-        Z_snr = hf['Z'][:].flatten()
+        Z_snr = hf['Z'][:].flatten().astype(np.int32)  # SNR stored as float, convert to int
     
     labels = np.argmax(Y_onehot, axis=1)
     class_idx = classes.index(target_class)
     
     matching_indices = np.where((labels == class_idx) & (Z_snr == target_snr))[0]
     return matching_indices.tolist()
+
+
+def verify_sample(h5_path, index, classes):
+    """Verify what class and SNR a sample index actually corresponds to."""
+    with h5py.File(h5_path, 'r') as hf:
+        Y_onehot = hf['Y'][index]
+        Z_snr = int(hf['Z'][index].flatten()[0])
+    label = np.argmax(Y_onehot)
+    class_name = classes[label]
+    return class_name, Z_snr
 
 
 def load_iq_sample(h5_path, index):
@@ -97,7 +107,7 @@ def generate_figure_1(h5_path, mod_class, snr, frame_idx, classes, output_dir):
     - The combined 3-channel RGB representation
     """
     print(f"\n--- Generating Figure 1 ---")
-    print(f"Class: {mod_class}, SNR: {snr} dB, Frame: {frame_idx}")
+    print(f"Requested: Class={mod_class}, SNR={snr} dB, Frame={frame_idx}")
     
     # Get sample indices for this class/SNR
     indices = get_sample_indices(h5_path, mod_class, snr, classes)
@@ -107,7 +117,12 @@ def generate_figure_1(h5_path, mod_class, snr, frame_idx, classes, output_dir):
         raise ValueError(f"Frame index {frame_idx} out of range (max: {len(indices)-1})")
     
     sample_index = indices[frame_idx]
-    print(f"Using dataset index: {sample_index}")
+    
+    # Verify the sample is correct
+    actual_class, actual_snr = verify_sample(h5_path, sample_index, classes)
+    print(f"Dataset index {sample_index} -> Actual: Class={actual_class}, SNR={actual_snr} dB")
+    if actual_class != mod_class or actual_snr != snr:
+        print(f"  WARNING: Mismatch detected!")
     
     # Load IQ samples
     iq_samples = load_iq_sample(h5_path, sample_index)
@@ -152,7 +167,7 @@ def generate_figure_2(h5_path, mod_class, snrs, frame_idx, classes, output_dir):
     Shows how the constellation diagram changes with noise level.
     """
     print(f"\n--- Generating Figure 2 ---")
-    print(f"Class: {mod_class}, SNRs: {snrs}, Frame: {frame_idx}")
+    print(f"Requested: Class={mod_class}, SNRs={snrs}, Frame={frame_idx}")
     
     images = []
     used_indices = []
@@ -166,7 +181,12 @@ def generate_figure_2(h5_path, mod_class, snrs, frame_idx, classes, output_dir):
         
         sample_index = indices[frame_idx]
         used_indices.append(sample_index)
-        print(f"SNR {snr} dB: using dataset index {sample_index}")
+        
+        # Verify the sample is correct
+        actual_class, actual_snr = verify_sample(h5_path, sample_index, classes)
+        print(f"SNR {snr} dB: index {sample_index} -> Actual: Class={actual_class}, SNR={actual_snr} dB")
+        if actual_class != mod_class or actual_snr != snr:
+            print(f"  WARNING: Mismatch detected!")
         
         iq_samples = load_iq_sample(h5_path, sample_index)
         iq_tf = tf.constant(iq_samples, dtype=tf.float32)
