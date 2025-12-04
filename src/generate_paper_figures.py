@@ -50,7 +50,7 @@ FIG1_FRAME_INDEX = 0     # Which frame to use (0-4095 available per class/SNR)
 # RECOMMENDATION: 8PSK - clear 8-point ring, degrades gracefully with noise
 # Avoid 16QAM - becomes indistinct blob at low SNR
 FIG2_CLASS = 'QPSK'      # Modulation class (different from Fig 1)
-FIG2_SNRS = [0, 6, 10] # Three SNR values: low/medium/high contrast
+FIG2_SNRS = [0, 4, 10] # Three SNR values: low/medium/high contrast
 FIG2_FRAME_INDEX = 0     # Which frame to use
 
 # =============================================================================
