@@ -41,7 +41,7 @@ OUTPUT_DIR = 'results_local/paper_figures'
 # ============= FIGURE 1 CONFIGURATION =============
 # Single class, single SNR - showing alpha channel decomposition
 # RECOMMENDATION: QPSK at 10dB - clear 4-point constellation, shows alpha effects well
-FIG1_CLASS = 'QPSK'      # Modulation class to use
+FIG1_CLASS = '8PSK'      # Modulation class to use
 FIG1_SNR = 10            # SNR in dB (10 dB for clean constellation)
 FIG1_FRAME_INDEX = 0     # Which frame to use (0-4095 available per class/SNR)
 
@@ -49,7 +49,7 @@ FIG1_FRAME_INDEX = 0     # Which frame to use (0-4095 available per class/SNR)
 # Single class across multiple SNRs - showing noise effect
 # RECOMMENDATION: 8PSK - clear 8-point ring, degrades gracefully with noise
 # Avoid 16QAM - becomes indistinct blob at low SNR
-FIG2_CLASS = '8PSK'      # Modulation class (different from Fig 1)
+FIG2_CLASS = 'QPSK'      # Modulation class (different from Fig 1)
 FIG2_SNRS = [0, 6, 10] # Three SNR values: low/medium/high contrast
 FIG2_FRAME_INDEX = 0     # Which frame to use
 
