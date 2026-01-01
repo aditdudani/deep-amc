@@ -8,11 +8,31 @@ logs/
 # Ignore Python cache and environment files
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
 amc_env/
+venv/
+.venv/
+env/
+
+# Ignore IDE/editor files
 .vscode/
---sampler-backend
-.]
+.idea/
+*.swp
+*.swo
 
 # Ignore OS-specific files
 .DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Ignore credentials
+*.json
+!data/classes-fixed.json
+
+# Ignore misc
 models2/
