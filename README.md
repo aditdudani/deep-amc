@@ -1,12 +1,5 @@
 # Adaptive Sampling for Automatic Modulation Classification
 
-**EEE F266 Study-Oriented Project**  
-Adit Dudani (2022B5A30533P)  
-Under the guidance of Dr. Sandeep Joshi  
-BITS Pilani, Semester I 2025–26
-
----
-
 Deep learning-based automatic modulation classification using constellation diagram images. This project reproduces baselines from academic literature and introduces an **adaptive sampling method** that dynamically adjusts the training distribution to focus on difficult (class, SNR) regions.
 
 ## Overview
