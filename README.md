@@ -18,6 +18,9 @@ Raw I/Q samples are converted to 224×224 RGB images using exponential decay ker
 | G | 1.0 | Intra-cluster structure, medium-range density |
 | B | 0.1 | Global density and energy spread under noise |
 
+![Multi-scale Constellation Representation](results_local/paper_figures/fig1_8PSK_SNR10.png)
+*Figure 1: Multi-scale constellation representation (R, G, B channels and combined image).*
+
 This multi-scale representation provides complementary spatial views and is robust to noise at low SNR where raw constellations collapse.
 
 ## Dataset
@@ -26,6 +29,9 @@ Based on **RadioML 2018.01A** with 8 modulation classes:
 - BPSK, QPSK, OQPSK, 8PSK, 4ASK, 16QAM, 32QAM, 64QAM
 
 SNR levels: 0, 2, 4, 6, 8, 10 dB
+
+![QPSK Noise Degradation](results_local/paper_figures/fig2_QPSK_SNR_0_4_10.png)
+*Figure 2: QPSK constellation at varying SNR levels (0, 4, and 10 dB), demonstrating degradation of signal structure with increasing noise.*
 
 ~22,000 images per class (90% train / 10% validation split).
 
@@ -45,6 +51,9 @@ SNR levels: 0, 2, 4, 6, 8, 10 dB
 SqueezeNet trails InceptionV3 by ~5–7 points, as expected for a lightweight model.
 
 ### Adaptive SqueezeNet Performance
+
+![Baseline vs Adaptive Accuracy](results_local/compare/accuracy_vs_snr.png)
+*Figure 3: Adaptive SqueezeNet (green) catches up to the InceptionV3 baseline (orange) at low SNRs, significantly outperforming the standard SqueezeNet (blue).*
 
 | SNR (dB) | Baseline | Adaptive | Δ |
 |----------|----------|----------|---|
@@ -75,6 +84,8 @@ Training samples are organized into 48 buckets (8 classes × 6 SNRs). After each
 - **Replay fraction**: 10% uniform samples to avoid forgetting
 
 ### Why It Works
+![Lag-1 Correlation: Weight Change vs Accuracy Gain](results_local/adaptive_sampling/adaptive_v2/explain/explain_alignment_correlation_lag1.png)
+*Figure 4: Lag-1 Alignment Between ∆Weight and ∆Accuracy - shows increasing bucket weight at epoch t improves accuracy at t+1*
 
 Lag-1 correlation analysis shows increasing bucket weight at epoch t improves accuracy at t+1:
 - 2 dB: +0.742 correlation
