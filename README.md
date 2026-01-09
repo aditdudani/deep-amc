@@ -30,10 +30,10 @@ Based on **RadioML 2018.01A** with 8 modulation classes:
 
 SNR levels: 0, 2, 4, 6, 8, 10 dB
 
+~22,000 images per class (90% train / 10% validation split).
+
 ![QPSK Noise Degradation](results_local/paper_figures/fig2_QPSK_SNR_0_4_10.png)
 *Figure 2: QPSK constellation at varying SNR levels (0, 4, and 10 dB), demonstrating degradation of signal structure with increasing noise.*
-
-~22,000 images per class (90% train / 10% validation split).
 
 ## Results
 
