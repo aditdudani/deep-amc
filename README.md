@@ -53,6 +53,7 @@ SqueezeNet trails InceptionV3 by ~5–7 points, as expected for a lightweight mo
 ### Adaptive SqueezeNet Performance
 
 ![Baseline vs Adaptive Accuracy](results_local/compare/accuracy_vs_snr.png)
+
 *Figure 3: Adaptive SqueezeNet (green) catches up to the InceptionV3 baseline (orange) at low SNRs, significantly outperforming the standard SqueezeNet (blue).*
 
 | SNR (dB) | Baseline | Adaptive | Δ |
