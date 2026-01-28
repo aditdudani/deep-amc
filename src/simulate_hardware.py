@@ -156,7 +156,7 @@ def build_hardware_image(iq_samples):
     # The floor is proportional to the number of samples (more points = higher ambient).
     # Calibration target: Match training Mean (~40) for Ch3. Since clusters add ~40 on avg,
     # and background should be ~20-30, set FOG_FLOOR=30 to lift the black floor.
-    FOG_FLOOR = 30
+    FOG_FLOOR = 40
     ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
     
     # Stack to create (224, 224, 3)
@@ -174,7 +174,7 @@ def batch_process_hardware(iq_batch, shift_vals):
     # In training, every pixel receives tiny contributions from ALL 1024 IQ points
     # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
     # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
-    FOG_FLOOR = 30
+    FOG_FLOOR = 50
     
     for i in range(len(iq_batch)):
         ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
