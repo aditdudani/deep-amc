@@ -7,6 +7,14 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import numpy as np
 import tensorflow as tf
+
+# Configure GPU Memory Growth (Prevent 'DNN library not found' due to pre-allocation)
+gpus = tf.config.list_physical_devices('GPU')
+for gpu in gpus:
+    try:
+        tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(f"GPU Config Error: {e}")
 import matplotlib.pyplot as plt
 from datetime import datetime
 
@@ -35,8 +43,17 @@ KERNEL_MEDIUM = np.array([[1, 2, 1],
                           [2, 8, 2],
                           [1, 2, 1]], dtype=np.int16) * GAIN
 # 3. Blur (Corresponds to alpha=0.1)
-# INCREASED SIZE: 5x5 was too small. 11x11 better approximates the wide Gaussian.
-KERNEL_BLUR = np.ones((11, 11), dtype=np.int16) * GAIN
+# REVISION: 11x11 was too small to create the "Cloud" effect (Alpha=0.1 decays very slowly).
+# We need a much larger kernel to fill the black space.
+# We generated a Gaussian-like approximate integer kernel of size 61x61.
+def create_gaussian_kernel(size, sigma=10, gain=128):
+    """ Generates an integer kernel to simulate the wide decay """
+    ax = np.linspace(-(size - 1) / 2., (size - 1) / 2., size)
+    xx, yy = np.meshgrid(ax, ax)
+    kernel = np.exp(-0.1 * np.sqrt(xx**2 + yy**2)) # Match the Alpha=0.1 Physics
+    return (kernel * gain).astype(np.int16)
+
+KERNEL_BLUR = create_gaussian_kernel(61, gain=GAIN)
 
 # --- LABEL MAPPING ---
 # HDF5 is Fixed Order (24 Classes). Model is 8-Class Subset (Alphabetical).
