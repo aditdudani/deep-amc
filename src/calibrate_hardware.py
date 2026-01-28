@@ -23,16 +23,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 GRID_SIZE = 224
 GAIN = 32
 
-# Hand-crafted integer kernels (from hardware proposal)
-KERNEL_SHARP = (np.array([[0, 1, 0],
-                          [1, 4, 1],
-                          [0, 1, 0]], dtype=np.int16) * GAIN)
+def create_exp_kernel(size, alpha):
+    """Create exponential decay kernel: exp(-alpha * r) * GAIN"""
+    center = (size - 1) / 2.0
+    y, x = np.ogrid[-center:center+1, -center:center+1]
+    r = np.sqrt(x*x + y*y)
+    kernel = np.exp(-alpha * r)
+    kernel = (kernel / kernel.max() * GAIN).astype(np.int16)
+    return kernel
 
-KERNEL_MEDIUM = (np.array([[1, 2, 1],
-                           [2, 8, 2],
-                           [1, 2, 1]], dtype=np.int16) * GAIN)
-
-KERNEL_BLUR = (np.ones((5, 5), dtype=np.int16) * GAIN)
+# Config that produced "beautiful patterns":
+# Sharp: 11x11, alpha=10 (tight dots)
+# Medium: 11x11, alpha=1.0 (medium spread)
+# Blur: 31x31, alpha=0.3 (wide but not fog)
+KERNEL_SHARP = create_exp_kernel(11, alpha=10.0)
+KERNEL_MEDIUM = create_exp_kernel(11, alpha=1.0)
+KERNEL_BLUR = create_exp_kernel(31, alpha=0.3)
 
 # Define kernels for each configuration
 KERNELS = {
