@@ -13,17 +13,22 @@ from common.data_loader import load_data_sample
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
+
+# SCALE FACTOR: We scale up the kernels to utilize the 16-bit accumulator (0-65535)
+# This acts as our "Fixed Point Gain"
+GAIN = 32 
+
 # Kernel definitions (The "Stamp")
 # 1. Sharp (Corresponds to alpha=10)
 KERNEL_SHARP = np.array([[0, 1, 0],
                          [1, 4, 1],
-                         [0, 1, 0]], dtype=np.int16)
+                         [0, 1, 0]], dtype=np.int16) * GAIN
 # 2. Medium (Corresponds to alpha=1.0)
 KERNEL_MEDIUM = np.array([[1, 2, 1],
                           [2, 8, 2],
-                          [1, 2, 1]], dtype=np.int16)
-# 3. Blur (Corresponds to alpha=0.1) - Needs wider spread, using 5x5 for demo
-KERNEL_BLUR = np.ones((5, 5), dtype=np.int16)
+                          [1, 2, 1]], dtype=np.int16) * GAIN
+# 3. Blur (Corresponds to alpha=0.1)
+KERNEL_BLUR = np.ones((5, 5), dtype=np.int16) * GAIN
 
 def hardware_gen_layer(iq_samples, kernel, shift_val=4):
     """
@@ -85,22 +90,45 @@ def build_hardware_image(iq_samples):
     # Stack to create (224, 224, 3)
     return np.stack([ch1, ch2, ch3], axis=-1)
 
+def batch_process_hardware(iq_batch, shift_vals):
+    """
+    Helps process a whole batch of samples (looping sequentially like hardware pipeline).
+    shift_vals: tuple of 3 ints (shift_ch1, shift_ch2, shift_ch3)
+    """
+    batch_out = []
+    s1, s2, s3 = shift_vals
+    
+    for i in range(len(iq_batch)):
+        ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
+        ch2 = hardware_gen_layer(iq_batch[i], KERNEL_MEDIUM, shift_val=s2)
+        ch3 = hardware_gen_layer(iq_batch[i], KERNEL_BLUR, shift_val=s3)
+        img = np.stack([ch1, ch2, ch3], axis=-1)
+        batch_out.append(img)
+        
+    return np.array(batch_out)
+
 def main():
     print("--- Digital Twin Hardware Simulation ---")
     
     # 1. Load Data (REAL CLUSTER DATA)
     # Using the path found in 'evaluate.py'
     data_path = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'
-    model_path = 'models/strict_googlenet_proxy_incv3.h5'
+    # Use the SqueezeNet model as this is the target of the project (based on file listing)
+    model_path = 'models/squeezenet_v11_rmsprop.h5'
 
     # Try to load real data, fall back to synthetic if on local machine without data
     try:
         print(f"Attempting to load data from {data_path}...")
         X, Y, Z = load_data_sample(data_path)
         # Pick a high SNR sample (e.g., SNR > 10) to calibrate contrast clearly
-        # Assuming Z is SNR, let's just pick the first 100 samples for speed
-        samples_iq = X[0:100] 
-        print(f"Loaded {len(samples_iq)} real samples.")
+        # Ideally filter where Z (SNR) > 10
+        high_snr_indices = np.where(Z[:, 0] > 10)[0]
+        if len(high_snr_indices) > 0:
+            samples_iq = X[high_snr_indices[:100]]
+            print(f"Loaded {len(samples_iq)} real samples (SNR > 10).")
+        else:
+            samples_iq = X[0:100] 
+            print(f"Loaded {len(samples_iq)} real samples (Mixed SNR).")
     except Exception as e:
         print(f"Could not load real data ({e}). Using synthetic QPSK for test.")
         # Synthetic QPSK (4 clusters)
@@ -114,6 +142,8 @@ def main():
     # We need to find the shift that puts the Mean pixel value around 20-50
     # and the Max around 255 (without saturating the whole image).
     print("\n--- Running Shift Sweep (Calibration) ---")
+    print("NOTE: Kernels have been scaled by x32 (GAIN) to fix low contrast.")
+    
     kernels = [
         ('Sharp (Ch1, Alpha=10)', KERNEL_SHARP), 
         ('Medium (Ch2, Alpha=1)', KERNEL_MEDIUM), 
@@ -122,9 +152,8 @@ def main():
 
     for name, kernel in kernels:
         print(f"\nEvaluating {name}:")
-        for shift in range(8):
-            # Process a batch to get average stats
-            # Use just the first sample for quick stats
+        for shift in range(12): # Expanded range due to GAIN
+            # Process just the first sample for quick stats
             img = hardware_gen_layer(samples_iq[0], kernel, shift_val=shift)
             print(f"  Shift={shift}: Min={img.min():3d}, Max={img.max():3d}, Mean={img.mean():6.2f}")
 
@@ -134,16 +163,25 @@ def main():
         model = tf.keras.models.load_model(model_path)
         
         # NOTE: You must update these SHIFT values based on the sweep output above!
-        # Current guesses:
-        ch1 = hardware_gen_layer(samples_iq, KERNEL_SHARP, shift_val=2)
-        ch2 = hardware_gen_layer(samples_iq, KERNEL_MEDIUM, shift_val=4)
-        ch3 = hardware_gen_layer(samples_iq, KERNEL_BLUR, shift_val=5)
-        
-        hw_batch = np.stack([ch1, ch2, ch3], axis=-1)
+        # Initial Guess with GAIN=32:
+        # If Gain=32 (shift 5), and we needed shift 4 before, maybe shift 8-10 now?
+        # Let's try conservative shifts to avoid black images. 
+        # You will tune these after seeing the log output.
+        print("Running inference with estimated shifts (Check logs if images are bad)...")
+        hw_batch = batch_process_hardware(samples_iq, shift_vals=(5, 6, 8))
         
         print(f"Running inference on {len(hw_batch)} samples...")
         preds = model.predict(hw_batch)
         print("Inference successful. Check accuracy manually.")
+        
+        # Determine predicted classes vs Ground Truth if possible
+        # (Assuming Y contains one-hot labels)
+        if 'Y' in locals():
+            y_true = np.argmax(Y[high_snr_indices[:100]] if 'high_snr_indices' in locals() else Y[:100], axis=1)
+            y_pred = np.argmax(preds, axis=1)
+            acc = np.mean(y_true == y_pred)
+            print(f"Validation Accuracy on subset: {acc*100:.2f}%")
+            
     else:
         print(f"\nModel not found at {model_path}. Skipping inference.")
 
