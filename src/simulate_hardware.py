@@ -184,7 +184,7 @@ def batch_process_hardware(iq_batch, shift_vals):
     # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 255)
     # To get target_mean from raw_mean: floor ≈ target_mean - raw_mean
     FOG_FLOOR_CH2 = 60   # Lift mean from ~10 to ~67 (training mean)
-    FOG_FLOOR_CH3 = 168  # Match training Ch3 min (very bright base!)
+    FOG_FLOOR_CH3 = 185  # Match training Ch3 min (very bright base!)
     
     for i in range(len(iq_batch)):
         ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
