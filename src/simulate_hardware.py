@@ -39,32 +39,29 @@ KERNEL_MEDIUM = np.array([[1, 2, 1],
 KERNEL_BLUR = np.ones((11, 11), dtype=np.int16) * GAIN
 
 # --- LABEL MAPPING ---
-# Checks confirm: HDF5 is Fixed Order (OOK=0), Model is Alphabetical (128APSK=0)
+# HDF5 is Fixed Order (24 Classes). Model is 8-Class Subset (Alphabetical).
+# We must map valid HDF5 indices to Model Indices (0-7).
+#
+# Model Class Order (Alphabetical 'processed/train' subset):
+# 0: 16QAM
+# 1: 32QAM
+# 2: 4ASK
+# 3: 64QAM
+# 4: 8PSK
+# 5: BPSK
+# 6: OQPSK
+# 7: QPSK
+
 HDF5_TO_MODEL_MAP = {
-    0: 21,  # OOK -> OOK
-    1: 9,   # 4ASK -> 4ASK
-    2: 12,  # 8ASK -> 8ASK
-    3: 18,  # BPSK -> BPSK
-    4: 23,  # QPSK -> QPSK
-    5: 13,  # 8PSK -> 8PSK
-    6: 3,   # 16PSK -> 16PSK
-    7: 7,   # 32PSK -> 32PSK
-    8: 2,   # 16APSK -> 16APSK
-    9: 6,   # 32APSK -> 32APSK
-    10: 10, # 64APSK -> 64APSK
-    11: 0,  # 128APSK -> 128APSK
-    12: 4,  # 16QAM -> 16QAM
-    13: 8,  # 32QAM -> 32QAM
-    14: 11, # 64QAM -> 64QAM
-    15: 1,  # 128QAM -> 128QAM
-    16: 5,  # 256QAM -> 256QAM
-    17: 17, # AM-SSB-WC -> AM-SSB-WC
-    18: 16, # AM-SSB-SC -> AM-SSB-SC
-    19: 15, # AM-DSB-WC -> AM-DSB-WC
-    20: 14, # AM-DSB-SC -> AM-DSB-SC
-    21: 19, # FM -> FM
-    22: 20, # GMSK -> GMSK
-    23: 22  # OQPSK -> OQPSK
+    # HDF5 Index : Model Index
+    1: 2,   # 4ASK  -> 4ASK
+    3: 5,   # BPSK  -> BPSK
+    4: 7,   # QPSK  -> QPSK
+    5: 4,   # 8PSK  -> 8PSK
+    12: 0,  # 16QAM -> 16QAM
+    13: 1,  # 32QAM -> 32QAM
+    14: 3,  # 64QAM -> 64QAM
+    23: 6   # OQPSK -> OQPSK
 }
 
 def hardware_gen_layer(iq_samples, kernel, shift_val=4):
@@ -166,15 +163,46 @@ def main():
     try:
         print(f"Attempting to load data from {data_path}...")
         X, Y, Z = load_data_sample(data_path)
+        
+        # --- FILTERING LOGIC ---
+        # 1. Unknown Class Hypothesis: The model only supports 8 Digital Mods.
+        #    We must filter out OOK (0) and other analog/unsupported classes.
+        #    Valid indices from HDF5 (based on comments above):
+        #    4ASK(1), BPSK(3), QPSK(4), 8PSK(5), 16QAM(12), 32QAM(13), 64QAM(14), OQPSK(23)
+        KNOWN_CLASSES_INDICES = [1, 3, 4, 5, 12, 13, 14, 23]
+        
+        # Get integer labels
+        if Y.ndim > 1:
+            y_integers = np.argmax(Y, axis=1)
+        else:
+            y_integers = Y.flatten()
+            
+        # Create masks
+        class_mask = np.isin(y_integers, KNOWN_CLASSES_INDICES)
+        snr_mask = (Z[:, 0] > 10) # High SNR
+        
+        # Combined Filter
+        valid_indices = np.where(class_mask & snr_mask)[0]
+        
         # Pick a high SNR sample (e.g., SNR > 10) to calibrate contrast clearly
         # Ideally filter where Z (SNR) > 10
-        high_snr_indices = np.where(Z[:, 0] > 10)[0]
-        if len(high_snr_indices) > 0:
-            samples_iq = X[high_snr_indices[:100]]
-            print(f"Loaded {len(samples_iq)} real samples (SNR > 10).")
+        # high_snr_indices = np.where(Z[:, 0] > 10)[0] 
+        # REPLACED by valid_indices
+        
+        if len(valid_indices) > 0:
+            samples_iq = X[valid_indices[:100]]
+            high_snr_indices = valid_indices # Keep variable name for compatibility with validation block below
+            print(f"Loaded {len(samples_iq)} real samples (SNR > 10, Valid Class).")
         else:
-            samples_iq = X[0:100] 
-            print(f"Loaded {len(samples_iq)} real samples (Mixed SNR).")
+            # Fallback if no high SNR valid class found
+            print("WARNING: No High SNR + Valid Class samples found. Searching for ANY Valid Class samples...")
+            valid_any_snr = np.where(class_mask)[0]
+            if len(valid_any_snr) > 0:
+               samples_iq = X[valid_any_snr[:100]]
+               high_snr_indices = valid_any_snr
+               print(f"Loaded {len(samples_iq)} real samples (Valid Class, Any SNR).")
+            else:
+               raise ValueError("No samples found matching the 8 Target Modulations. Dataset might be incompatible.")
     except Exception as e:
         print(f"Could not load real data ({e}). Using synthetic QPSK for test.")
         # Synthetic QPSK (4 clusters)
