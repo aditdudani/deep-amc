@@ -1,785 +1,186 @@
---- Digital Twin Hardware Simulation ---
-Attempting to load data from data/GOLD_XYZ_OSC.0001_1024.hdf5...
-Loaded 100 real samples (SNR > 10, Valid Class).
 
---- Running Shift Sweep (Calibration) ---
-NOTE: Kernels have been scaled by x32 (GAIN) to fix low contrast.
+============================================================
+HARDWARE IMAGE GENERATION CALIBRATION
+============================================================
+Loading calibration samples from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+Traceback (most recent call last):
+  File "src/calibrate_hardware.py", line 426, in <module>
+    main()
+  File "src/calibrate_hardware.py", line 286, in main
+    samples = load_calibration_samples(data_path, n_per_class, snr_min)
+  File "src/calibrate_hardware.py", line 153, in load_calibration_samples
+    mask = (y_int == hdf5_idx) & (Z >= snr_min)
+numpy.core._exceptions.MemoryError: Unable to allocate 5.94 TiB for an array with shape (2555904, 2555904) and data type bool
+]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app#   4ASK: 20 samples
+  BPSK: 20 samples
+  QPSK: 20 samples
+  8PSK: 20 samples
+  16QAM: 20 samples
+  32QAM: 20 samples
+  64QAM: 20 samples
+  OQPSK: 20 samples
 
-Evaluating Sharp (Ch1, Alpha=10):
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-DEBUG: Grid Mapping - u range: [70.50, 152.14], v range: [74.61, 148.36]
-  Shift=0: Min=  0, Max=255, Mean=  2.39
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=1: Min=  0, Max=255, Mean=  2.18
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=2: Min=  0, Max=255, Mean=  1.87
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=3: Min=  0, Max=255, Mean=  1.50
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=4: Min=  0, Max=255, Mean=  1.05
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=5: Min=  0, Max=255, Mean=  0.61
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=6: Min=  0, Max=255, Mean=  0.32
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=7: Min=  0, Max=177, Mean=  0.16
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=8: Min=  0, Max= 88, Mean=  0.08
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=9: Min=  0, Max= 44, Mean=  0.04
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=10: Min=  0, Max= 22, Mean=  0.02
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=11: Min=  0, Max= 11, Mean=  0.01
+============================================================
+PHASE 1: MULTI-CHANNEL CALIBRATION
+============================================================
 
-Evaluating Medium (Ch2, Alpha=1):
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=0: Min=  0, Max=255, Mean=  3.04
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=1: Min=  0, Max=255, Mean=  2.84
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=2: Min=  0, Max=255, Mean=  2.57
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=3: Min=  0, Max=255, Mean=  2.20
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=4: Min=  0, Max=255, Mean=  1.75
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=5: Min=  0, Max=255, Mean=  1.24
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=6: Min=  0, Max=255, Mean=  0.75
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=7: Min=  0, Max=255, Mean=  0.40
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=8: Min=  0, Max=200, Mean=  0.20
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=9: Min=  0, Max=100, Mean=  0.10
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=10: Min=  0, Max= 50, Mean=  0.05
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=11: Min=  0, Max= 25, Mean=  0.02
+=== Calibrating ch1 (kernel size: (3, 3)) ===
 
-Evaluating Blur (Ch3, Alpha=0.1):
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=0: Min=  0, Max=255, Mean= 56.44
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=1: Min=  0, Max=255, Mean= 52.42
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=2: Min=  0, Max=255, Mean= 47.82
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=3: Min=  0, Max=255, Mean= 42.28
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=4: Min=  0, Max=255, Mean= 35.65
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=5: Min=  0, Max=255, Mean= 27.81
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=6: Min=  0, Max=255, Mean= 18.91
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=7: Min=  0, Max=255, Mean= 10.42
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=8: Min=  0, Max=164, Mean=  5.18
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=9: Min=  0, Max= 82, Mean=  2.54
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=10: Min=  0, Max= 41, Mean=  1.22
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-  Shift=11: Min=  0, Max= 20, Mean=  0.57
+=== Calibrating ch2 (kernel size: (7, 7)) ===
 
---- Reference Training Image Stats (Sample 0) ---
-  Ch1 (Sharp):  min=  0, max=255, mean=1.7
-  Ch2 (Medium): min=  3, max=255, mean=53.5
-  Ch3 (Blur):   min=167, max=255, mean=211.0
+=== Calibrating ch3 (kernel size: (15, 15)) ===
 
-Loading model from models/squeezenet_v11_rmsprop.h5...
-Running inference with estimated shifts (Check logs if images are bad)...
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
-DEBUG: u mapped range: [70.50, 152.14] (Target: 0-224)
-DEBUG: v mapped range: [74.61, 148.36] (Target: 0-224)
+--- CH1 Results (averaged across classes) ---
+ Shift   Min   Max    Mean     Std   %Sat  %Black
+--------------------------------------------------
+     0     0    64     0.0     0.4    0.0   100.0
+     1     0    32     0.0     0.2    0.0   100.0
+     2     0    16     0.0     0.1    0.0   100.0
+     3     0     8     0.0     0.1    0.0   100.0
+     4     0     4     0.0     0.0    0.0   100.0
+     5     0     2     0.0     0.0    0.0   100.0
+     6     0     1     0.0     0.0    0.0   100.0
+     7     0     0     0.0     0.0    0.0   100.0
+     8     0     0     0.0     0.0    0.0   100.0
+     9     0     0     0.0     0.0    0.0   100.0
+    10     0     0     0.0     0.0    0.0   100.0
+    11     0     0     0.0     0.0    0.0   100.0
 
---- Channel Stats BEFORE processing (Sample 0) ---
-  Ch1 (Sharp):  min=  0, max=255, mean=2.2
-  Ch2 (Medium): min=  0, max=255, mean=2.2
-  Ch3 (Blur):   min=  0, max=255, mean=35.6
+>>> OPTIMAL SHIFT for ch1: 0
 
---- Channel Stats AFTER processing (Sample 0) ---
-  Ch1 (Sharp):  min=  0, max=255, mean=2.2
-  Ch2 (Medium): min= 60, max=255, mean=61.7
-  Ch3 (Blur):   min=168, max=255, mean=180.1
+--- CH2 Results (averaged across classes) ---
+ Shift   Min   Max    Mean     Std   %Sat  %Black
+--------------------------------------------------
+     0     0    64     0.0     0.4    0.0   100.0
+     1     0    32     0.0     0.2    0.0   100.0
+     2     0    16     0.0     0.1    0.0   100.0
+     3     0     8     0.0     0.1    0.0   100.0
+     4     0     4     0.0     0.0    0.0   100.0
+     5     0     2     0.0     0.0    0.0   100.0
+     6     0     1     0.0     0.0    0.0   100.0
+     7     0     0     0.0     0.0    0.0   100.0
+     8     0     0     0.0     0.0    0.0   100.0
+     9     0     0     0.0     0.0    0.0   100.0
+    10     0     0     0.0     0.0    0.0   100.0
+    11     0     0     0.0     0.0    0.0   100.0
 
-  Target (Training): Ch1 mean=4.7, Ch2 mean=62.5, Ch3 mean=211.4
-DEBUG: u mapped range: [40.84, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [12.84, 130.20] (Target: 0-224)
-DEBUG: u mapped range: [40.84, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [12.84, 130.20] (Target: 0-224)
-DEBUG: u mapped range: [40.84, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [12.84, 130.20] (Target: 0-224)
-DEBUG: u mapped range: [66.01, 163.14] (Target: 0-224)
-DEBUG: v mapped range: [60.33, 156.53] (Target: 0-224)
-DEBUG: u mapped range: [66.01, 163.14] (Target: 0-224)
-DEBUG: v mapped range: [60.33, 156.53] (Target: 0-224)
-DEBUG: u mapped range: [66.01, 163.14] (Target: 0-224)
-DEBUG: v mapped range: [60.33, 156.53] (Target: 0-224)
-DEBUG: u mapped range: [55.27, 161.42] (Target: 0-224)
-DEBUG: v mapped range: [54.54, 161.07] (Target: 0-224)
-DEBUG: u mapped range: [55.27, 161.42] (Target: 0-224)
-DEBUG: v mapped range: [54.54, 161.07] (Target: 0-224)
-DEBUG: u mapped range: [55.27, 161.42] (Target: 0-224)
-DEBUG: v mapped range: [54.54, 161.07] (Target: 0-224)
-DEBUG: u mapped range: [58.81, 170.07] (Target: 0-224)
-DEBUG: v mapped range: [56.68, 159.88] (Target: 0-224)
-DEBUG: u mapped range: [58.81, 170.07] (Target: 0-224)
-DEBUG: v mapped range: [56.68, 159.88] (Target: 0-224)
-DEBUG: u mapped range: [58.81, 170.07] (Target: 0-224)
-DEBUG: v mapped range: [56.68, 159.88] (Target: 0-224)
-DEBUG: u mapped range: [57.46, 170.11] (Target: 0-224)
-DEBUG: v mapped range: [59.26, 161.44] (Target: 0-224)
-DEBUG: u mapped range: [57.46, 170.11] (Target: 0-224)
-DEBUG: v mapped range: [59.26, 161.44] (Target: 0-224)
-DEBUG: u mapped range: [57.46, 170.11] (Target: 0-224)
-DEBUG: v mapped range: [59.26, 161.44] (Target: 0-224)
-DEBUG: u mapped range: [52.18, 161.43] (Target: 0-224)
-DEBUG: v mapped range: [49.23, 165.08] (Target: 0-224)
-DEBUG: u mapped range: [52.18, 161.43] (Target: 0-224)
-DEBUG: v mapped range: [49.23, 165.08] (Target: 0-224)
-DEBUG: u mapped range: [52.18, 161.43] (Target: 0-224)
-DEBUG: v mapped range: [49.23, 165.08] (Target: 0-224)
-DEBUG: u mapped range: [58.18, 166.20] (Target: 0-224)
-DEBUG: v mapped range: [60.17, 181.67] (Target: 0-224)
-DEBUG: u mapped range: [58.18, 166.20] (Target: 0-224)
-DEBUG: v mapped range: [60.17, 181.67] (Target: 0-224)
-DEBUG: u mapped range: [58.18, 166.20] (Target: 0-224)
-DEBUG: v mapped range: [60.17, 181.67] (Target: 0-224)
-DEBUG: u mapped range: [62.37, 161.59] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 164.55] (Target: 0-224)
-DEBUG: u mapped range: [62.37, 161.59] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 164.55] (Target: 0-224)
-DEBUG: u mapped range: [62.37, 161.59] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 164.55] (Target: 0-224)
-DEBUG: u mapped range: [85.32, 220.22] (Target: 0-224)
-DEBUG: v mapped range: [104.60, 137.25] (Target: 0-224)
-DEBUG: u mapped range: [85.32, 220.22] (Target: 0-224)
-DEBUG: v mapped range: [104.60, 137.25] (Target: 0-224)
-DEBUG: u mapped range: [85.32, 220.22] (Target: 0-224)
-DEBUG: v mapped range: [104.60, 137.25] (Target: 0-224)
-DEBUG: u mapped range: [61.61, 164.44] (Target: 0-224)
-DEBUG: v mapped range: [58.90, 160.35] (Target: 0-224)
-DEBUG: u mapped range: [61.61, 164.44] (Target: 0-224)
-DEBUG: v mapped range: [58.90, 160.35] (Target: 0-224)
-DEBUG: u mapped range: [61.61, 164.44] (Target: 0-224)
-DEBUG: v mapped range: [58.90, 160.35] (Target: 0-224)
-DEBUG: u mapped range: [41.81, 161.64] (Target: 0-224)
-DEBUG: v mapped range: [60.96, 167.43] (Target: 0-224)
-DEBUG: u mapped range: [41.81, 161.64] (Target: 0-224)
-DEBUG: v mapped range: [60.96, 167.43] (Target: 0-224)
-DEBUG: u mapped range: [41.81, 161.64] (Target: 0-224)
-DEBUG: v mapped range: [60.96, 167.43] (Target: 0-224)
-DEBUG: u mapped range: [24.82, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [38.09, 122.34] (Target: 0-224)
-DEBUG: u mapped range: [24.82, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [38.09, 122.34] (Target: 0-224)
-DEBUG: u mapped range: [24.82, 123.25] (Target: 0-224)
-DEBUG: v mapped range: [38.09, 122.34] (Target: 0-224)
-DEBUG: u mapped range: [62.15, 162.19] (Target: 0-224)
-DEBUG: v mapped range: [62.37, 160.93] (Target: 0-224)
-DEBUG: u mapped range: [62.15, 162.19] (Target: 0-224)
-DEBUG: v mapped range: [62.37, 160.93] (Target: 0-224)
-DEBUG: u mapped range: [62.15, 162.19] (Target: 0-224)
-DEBUG: v mapped range: [62.37, 160.93] (Target: 0-224)
-DEBUG: u mapped range: [62.42, 164.13] (Target: 0-224)
-DEBUG: v mapped range: [59.43, 160.53] (Target: 0-224)
-DEBUG: u mapped range: [62.42, 164.13] (Target: 0-224)
-DEBUG: v mapped range: [59.43, 160.53] (Target: 0-224)
-DEBUG: u mapped range: [62.42, 164.13] (Target: 0-224)
-DEBUG: v mapped range: [59.43, 160.53] (Target: 0-224)
-DEBUG: u mapped range: [65.63, 159.07] (Target: 0-224)
-DEBUG: v mapped range: [66.41, 161.98] (Target: 0-224)
-DEBUG: u mapped range: [65.63, 159.07] (Target: 0-224)
-DEBUG: v mapped range: [66.41, 161.98] (Target: 0-224)
-DEBUG: u mapped range: [65.63, 159.07] (Target: 0-224)
-DEBUG: v mapped range: [66.41, 161.98] (Target: 0-224)
-DEBUG: u mapped range: [60.69, 161.47] (Target: 0-224)
-DEBUG: v mapped range: [61.36, 156.01] (Target: 0-224)
-DEBUG: u mapped range: [60.69, 161.47] (Target: 0-224)
-DEBUG: v mapped range: [61.36, 156.01] (Target: 0-224)
-DEBUG: u mapped range: [60.69, 161.47] (Target: 0-224)
-DEBUG: v mapped range: [61.36, 156.01] (Target: 0-224)
-DEBUG: u mapped range: [52.17, 168.76] (Target: 0-224)
-DEBUG: v mapped range: [105.79, 117.16] (Target: 0-224)
-DEBUG: u mapped range: [52.17, 168.76] (Target: 0-224)
-DEBUG: v mapped range: [105.79, 117.16] (Target: 0-224)
-DEBUG: u mapped range: [52.17, 168.76] (Target: 0-224)
-DEBUG: v mapped range: [105.79, 117.16] (Target: 0-224)
-DEBUG: u mapped range: [61.06, 169.10] (Target: 0-224)
-DEBUG: v mapped range: [48.00, 171.43] (Target: 0-224)
-DEBUG: u mapped range: [61.06, 169.10] (Target: 0-224)
-DEBUG: v mapped range: [48.00, 171.43] (Target: 0-224)
-DEBUG: u mapped range: [61.06, 169.10] (Target: 0-224)
-DEBUG: v mapped range: [48.00, 171.43] (Target: 0-224)
-DEBUG: u mapped range: [61.47, 162.74] (Target: 0-224)
-DEBUG: v mapped range: [84.89, 137.53] (Target: 0-224)
-DEBUG: u mapped range: [61.47, 162.74] (Target: 0-224)
-DEBUG: v mapped range: [84.89, 137.53] (Target: 0-224)
-DEBUG: u mapped range: [61.47, 162.74] (Target: 0-224)
-DEBUG: v mapped range: [84.89, 137.53] (Target: 0-224)
-DEBUG: u mapped range: [57.03, 185.50] (Target: 0-224)
-DEBUG: v mapped range: [62.82, 164.18] (Target: 0-224)
-DEBUG: u mapped range: [57.03, 185.50] (Target: 0-224)
-DEBUG: v mapped range: [62.82, 164.18] (Target: 0-224)
-DEBUG: u mapped range: [57.03, 185.50] (Target: 0-224)
-DEBUG: v mapped range: [62.82, 164.18] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 164.52] (Target: 0-224)
-DEBUG: v mapped range: [59.80, 160.38] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 164.52] (Target: 0-224)
-DEBUG: v mapped range: [59.80, 160.38] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 164.52] (Target: 0-224)
-DEBUG: v mapped range: [59.80, 160.38] (Target: 0-224)
-DEBUG: u mapped range: [66.19, 162.03] (Target: 0-224)
-DEBUG: v mapped range: [63.24, 160.88] (Target: 0-224)
-DEBUG: u mapped range: [66.19, 162.03] (Target: 0-224)
-DEBUG: v mapped range: [63.24, 160.88] (Target: 0-224)
-DEBUG: u mapped range: [66.19, 162.03] (Target: 0-224)
-DEBUG: v mapped range: [63.24, 160.88] (Target: 0-224)
-DEBUG: u mapped range: [65.62, 159.96] (Target: 0-224)
-DEBUG: v mapped range: [64.25, 159.20] (Target: 0-224)
-DEBUG: u mapped range: [65.62, 159.96] (Target: 0-224)
-DEBUG: v mapped range: [64.25, 159.20] (Target: 0-224)
-DEBUG: u mapped range: [65.62, 159.96] (Target: 0-224)
-DEBUG: v mapped range: [64.25, 159.20] (Target: 0-224)
-DEBUG: u mapped range: [57.75, 166.81] (Target: 0-224)
-DEBUG: v mapped range: [61.90, 162.51] (Target: 0-224)
-DEBUG: u mapped range: [57.75, 166.81] (Target: 0-224)
-DEBUG: v mapped range: [61.90, 162.51] (Target: 0-224)
-DEBUG: u mapped range: [57.75, 166.81] (Target: 0-224)
-DEBUG: v mapped range: [61.90, 162.51] (Target: 0-224)
-DEBUG: u mapped range: [66.71, 158.46] (Target: 0-224)
-DEBUG: v mapped range: [76.95, 147.09] (Target: 0-224)
-DEBUG: u mapped range: [66.71, 158.46] (Target: 0-224)
-DEBUG: v mapped range: [76.95, 147.09] (Target: 0-224)
-DEBUG: u mapped range: [66.71, 158.46] (Target: 0-224)
-DEBUG: v mapped range: [76.95, 147.09] (Target: 0-224)
-DEBUG: u mapped range: [68.61, 155.07] (Target: 0-224)
-DEBUG: v mapped range: [65.86, 157.22] (Target: 0-224)
-DEBUG: u mapped range: [68.61, 155.07] (Target: 0-224)
-DEBUG: v mapped range: [65.86, 157.22] (Target: 0-224)
-DEBUG: u mapped range: [68.61, 155.07] (Target: 0-224)
-DEBUG: v mapped range: [65.86, 157.22] (Target: 0-224)
-DEBUG: u mapped range: [101.27, 119.76] (Target: 0-224)
-DEBUG: v mapped range: [95.94, 223.52] (Target: 0-224)
-DEBUG: u mapped range: [101.27, 119.76] (Target: 0-224)
-DEBUG: v mapped range: [95.94, 223.52] (Target: 0-224)
-DEBUG: u mapped range: [101.27, 119.76] (Target: 0-224)
-DEBUG: v mapped range: [95.94, 223.52] (Target: 0-224)
-DEBUG: u mapped range: [66.87, 158.47] (Target: 0-224)
-DEBUG: v mapped range: [64.67, 154.51] (Target: 0-224)
-DEBUG: u mapped range: [66.87, 158.47] (Target: 0-224)
-DEBUG: v mapped range: [64.67, 154.51] (Target: 0-224)
-DEBUG: u mapped range: [66.87, 158.47] (Target: 0-224)
-DEBUG: v mapped range: [64.67, 154.51] (Target: 0-224)
-DEBUG: u mapped range: [104.83, 120.09] (Target: 0-224)
-DEBUG: v mapped range: [55.88, 168.38] (Target: 0-224)
-DEBUG: u mapped range: [104.83, 120.09] (Target: 0-224)
-DEBUG: v mapped range: [55.88, 168.38] (Target: 0-224)
-DEBUG: u mapped range: [104.83, 120.09] (Target: 0-224)
-DEBUG: v mapped range: [55.88, 168.38] (Target: 0-224)
-DEBUG: u mapped range: [37.92, 126.61] (Target: 0-224)
-DEBUG: v mapped range: [94.13, 200.57] (Target: 0-224)
-DEBUG: u mapped range: [37.92, 126.61] (Target: 0-224)
-DEBUG: v mapped range: [94.13, 200.57] (Target: 0-224)
-DEBUG: u mapped range: [37.92, 126.61] (Target: 0-224)
-DEBUG: v mapped range: [94.13, 200.57] (Target: 0-224)
-DEBUG: u mapped range: [93.53, 215.53] (Target: 0-224)
-DEBUG: v mapped range: [103.55, 160.03] (Target: 0-224)
-DEBUG: u mapped range: [93.53, 215.53] (Target: 0-224)
-DEBUG: v mapped range: [103.55, 160.03] (Target: 0-224)
-DEBUG: u mapped range: [93.53, 215.53] (Target: 0-224)
-DEBUG: v mapped range: [103.55, 160.03] (Target: 0-224)
-DEBUG: u mapped range: [64.36, 156.00] (Target: 0-224)
-DEBUG: v mapped range: [64.15, 160.83] (Target: 0-224)
-DEBUG: u mapped range: [64.36, 156.00] (Target: 0-224)
-DEBUG: v mapped range: [64.15, 160.83] (Target: 0-224)
-DEBUG: u mapped range: [64.36, 156.00] (Target: 0-224)
-DEBUG: v mapped range: [64.15, 160.83] (Target: 0-224)
-DEBUG: u mapped range: [68.81, 154.69] (Target: 0-224)
-DEBUG: v mapped range: [70.41, 154.36] (Target: 0-224)
-DEBUG: u mapped range: [68.81, 154.69] (Target: 0-224)
-DEBUG: v mapped range: [70.41, 154.36] (Target: 0-224)
-DEBUG: u mapped range: [68.81, 154.69] (Target: 0-224)
-DEBUG: v mapped range: [70.41, 154.36] (Target: 0-224)
-DEBUG: u mapped range: [54.50, 168.08] (Target: 0-224)
-DEBUG: v mapped range: [58.56, 159.51] (Target: 0-224)
-DEBUG: u mapped range: [54.50, 168.08] (Target: 0-224)
-DEBUG: v mapped range: [58.56, 159.51] (Target: 0-224)
-DEBUG: u mapped range: [54.50, 168.08] (Target: 0-224)
-DEBUG: v mapped range: [58.56, 159.51] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 163.67] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 175.52] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 163.67] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 175.52] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 163.67] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 175.52] (Target: 0-224)
-DEBUG: u mapped range: [59.90, 164.60] (Target: 0-224)
-DEBUG: v mapped range: [64.08, 159.05] (Target: 0-224)
-DEBUG: u mapped range: [59.90, 164.60] (Target: 0-224)
-DEBUG: v mapped range: [64.08, 159.05] (Target: 0-224)
-DEBUG: u mapped range: [59.90, 164.60] (Target: 0-224)
-DEBUG: v mapped range: [64.08, 159.05] (Target: 0-224)
-DEBUG: u mapped range: [58.77, 171.01] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 163.95] (Target: 0-224)
-DEBUG: u mapped range: [58.77, 171.01] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 163.95] (Target: 0-224)
-DEBUG: u mapped range: [58.77, 171.01] (Target: 0-224)
-DEBUG: v mapped range: [58.81, 163.95] (Target: 0-224)
-DEBUG: u mapped range: [64.85, 157.82] (Target: 0-224)
-DEBUG: v mapped range: [62.32, 161.74] (Target: 0-224)
-DEBUG: u mapped range: [64.85, 157.82] (Target: 0-224)
-DEBUG: v mapped range: [62.32, 161.74] (Target: 0-224)
-DEBUG: u mapped range: [64.85, 157.82] (Target: 0-224)
-DEBUG: v mapped range: [62.32, 161.74] (Target: 0-224)
-DEBUG: u mapped range: [101.55, 122.61] (Target: 0-224)
-DEBUG: v mapped range: [57.83, 165.51] (Target: 0-224)
-DEBUG: u mapped range: [101.55, 122.61] (Target: 0-224)
-DEBUG: v mapped range: [57.83, 165.51] (Target: 0-224)
-DEBUG: u mapped range: [101.55, 122.61] (Target: 0-224)
-DEBUG: v mapped range: [57.83, 165.51] (Target: 0-224)
-DEBUG: u mapped range: [53.90, 163.11] (Target: 0-224)
-DEBUG: v mapped range: [56.87, 165.82] (Target: 0-224)
-DEBUG: u mapped range: [53.90, 163.11] (Target: 0-224)
-DEBUG: v mapped range: [56.87, 165.82] (Target: 0-224)
-DEBUG: u mapped range: [53.90, 163.11] (Target: 0-224)
-DEBUG: v mapped range: [56.87, 165.82] (Target: 0-224)
-DEBUG: u mapped range: [80.30, 144.05] (Target: 0-224)
-DEBUG: v mapped range: [66.38, 158.77] (Target: 0-224)
-DEBUG: u mapped range: [80.30, 144.05] (Target: 0-224)
-DEBUG: v mapped range: [66.38, 158.77] (Target: 0-224)
-DEBUG: u mapped range: [80.30, 144.05] (Target: 0-224)
-DEBUG: v mapped range: [66.38, 158.77] (Target: 0-224)
-DEBUG: u mapped range: [57.31, 175.09] (Target: 0-224)
-DEBUG: v mapped range: [55.52, 162.37] (Target: 0-224)
-DEBUG: u mapped range: [57.31, 175.09] (Target: 0-224)
-DEBUG: v mapped range: [55.52, 162.37] (Target: 0-224)
-DEBUG: u mapped range: [57.31, 175.09] (Target: 0-224)
-DEBUG: v mapped range: [55.52, 162.37] (Target: 0-224)
-DEBUG: u mapped range: [60.95, 169.94] (Target: 0-224)
-DEBUG: v mapped range: [64.76, 157.44] (Target: 0-224)
-DEBUG: u mapped range: [60.95, 169.94] (Target: 0-224)
-DEBUG: v mapped range: [64.76, 157.44] (Target: 0-224)
-DEBUG: u mapped range: [60.95, 169.94] (Target: 0-224)
-DEBUG: v mapped range: [64.76, 157.44] (Target: 0-224)
-DEBUG: u mapped range: [60.71, 159.53] (Target: 0-224)
-DEBUG: v mapped range: [56.37, 167.16] (Target: 0-224)
-DEBUG: u mapped range: [60.71, 159.53] (Target: 0-224)
-DEBUG: v mapped range: [56.37, 167.16] (Target: 0-224)
-DEBUG: u mapped range: [60.71, 159.53] (Target: 0-224)
-DEBUG: v mapped range: [56.37, 167.16] (Target: 0-224)
-DEBUG: u mapped range: [71.90, 165.07] (Target: 0-224)
-DEBUG: v mapped range: [66.35, 155.15] (Target: 0-224)
-DEBUG: u mapped range: [71.90, 165.07] (Target: 0-224)
-DEBUG: v mapped range: [66.35, 155.15] (Target: 0-224)
-DEBUG: u mapped range: [71.90, 165.07] (Target: 0-224)
-DEBUG: v mapped range: [66.35, 155.15] (Target: 0-224)
-DEBUG: u mapped range: [62.24, 160.01] (Target: 0-224)
-DEBUG: v mapped range: [59.13, 161.29] (Target: 0-224)
-DEBUG: u mapped range: [62.24, 160.01] (Target: 0-224)
-DEBUG: v mapped range: [59.13, 161.29] (Target: 0-224)
-DEBUG: u mapped range: [62.24, 160.01] (Target: 0-224)
-DEBUG: v mapped range: [59.13, 161.29] (Target: 0-224)
-DEBUG: u mapped range: [56.60, 161.71] (Target: 0-224)
-DEBUG: v mapped range: [60.73, 160.79] (Target: 0-224)
-DEBUG: u mapped range: [56.60, 161.71] (Target: 0-224)
-DEBUG: v mapped range: [60.73, 160.79] (Target: 0-224)
-DEBUG: u mapped range: [56.60, 161.71] (Target: 0-224)
-DEBUG: v mapped range: [60.73, 160.79] (Target: 0-224)
-DEBUG: u mapped range: [2.62, 128.43] (Target: 0-224)
-DEBUG: v mapped range: [105.82, 156.49] (Target: 0-224)
-DEBUG: u mapped range: [2.62, 128.43] (Target: 0-224)
-DEBUG: v mapped range: [105.82, 156.49] (Target: 0-224)
-DEBUG: u mapped range: [2.62, 128.43] (Target: 0-224)
-DEBUG: v mapped range: [105.82, 156.49] (Target: 0-224)
-DEBUG: u mapped range: [58.10, 164.39] (Target: 0-224)
-DEBUG: v mapped range: [53.28, 176.78] (Target: 0-224)
-DEBUG: u mapped range: [58.10, 164.39] (Target: 0-224)
-DEBUG: v mapped range: [53.28, 176.78] (Target: 0-224)
-DEBUG: u mapped range: [58.10, 164.39] (Target: 0-224)
-DEBUG: v mapped range: [53.28, 176.78] (Target: 0-224)
-DEBUG: u mapped range: [68.07, 157.51] (Target: 0-224)
-DEBUG: v mapped range: [67.26, 154.27] (Target: 0-224)
-DEBUG: u mapped range: [68.07, 157.51] (Target: 0-224)
-DEBUG: v mapped range: [67.26, 154.27] (Target: 0-224)
-DEBUG: u mapped range: [68.07, 157.51] (Target: 0-224)
-DEBUG: v mapped range: [67.26, 154.27] (Target: 0-224)
-DEBUG: u mapped range: [58.61, 166.85] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.80] (Target: 0-224)
-DEBUG: u mapped range: [58.61, 166.85] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.80] (Target: 0-224)
-DEBUG: u mapped range: [58.61, 166.85] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.80] (Target: 0-224)
-DEBUG: u mapped range: [14.66, 123.99] (Target: 0-224)
-DEBUG: v mapped range: [55.70, 119.67] (Target: 0-224)
-DEBUG: u mapped range: [14.66, 123.99] (Target: 0-224)
-DEBUG: v mapped range: [55.70, 119.67] (Target: 0-224)
-DEBUG: u mapped range: [14.66, 123.99] (Target: 0-224)
-DEBUG: v mapped range: [55.70, 119.67] (Target: 0-224)
-DEBUG: u mapped range: [55.46, 165.53] (Target: 0-224)
-DEBUG: v mapped range: [63.31, 169.98] (Target: 0-224)
-DEBUG: u mapped range: [55.46, 165.53] (Target: 0-224)
-DEBUG: v mapped range: [63.31, 169.98] (Target: 0-224)
-DEBUG: u mapped range: [55.46, 165.53] (Target: 0-224)
-DEBUG: v mapped range: [63.31, 169.98] (Target: 0-224)
-DEBUG: u mapped range: [70.56, 154.45] (Target: 0-224)
-DEBUG: v mapped range: [70.26, 158.34] (Target: 0-224)
-DEBUG: u mapped range: [70.56, 154.45] (Target: 0-224)
-DEBUG: v mapped range: [70.26, 158.34] (Target: 0-224)
-DEBUG: u mapped range: [70.56, 154.45] (Target: 0-224)
-DEBUG: v mapped range: [70.26, 158.34] (Target: 0-224)
-DEBUG: u mapped range: [59.71, 161.16] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 156.85] (Target: 0-224)
-DEBUG: u mapped range: [59.71, 161.16] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 156.85] (Target: 0-224)
-DEBUG: u mapped range: [59.71, 161.16] (Target: 0-224)
-DEBUG: v mapped range: [62.96, 156.85] (Target: 0-224)
-DEBUG: u mapped range: [66.42, 160.51] (Target: 0-224)
-DEBUG: v mapped range: [62.68, 158.96] (Target: 0-224)
-DEBUG: u mapped range: [66.42, 160.51] (Target: 0-224)
-DEBUG: v mapped range: [62.68, 158.96] (Target: 0-224)
-DEBUG: u mapped range: [66.42, 160.51] (Target: 0-224)
-DEBUG: v mapped range: [62.68, 158.96] (Target: 0-224)
-DEBUG: u mapped range: [72.33, 151.79] (Target: 0-224)
-DEBUG: v mapped range: [69.54, 153.35] (Target: 0-224)
-DEBUG: u mapped range: [72.33, 151.79] (Target: 0-224)
-DEBUG: v mapped range: [69.54, 153.35] (Target: 0-224)
-DEBUG: u mapped range: [72.33, 151.79] (Target: 0-224)
-DEBUG: v mapped range: [69.54, 153.35] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 160.82] (Target: 0-224)
-DEBUG: v mapped range: [63.32, 156.29] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 160.82] (Target: 0-224)
-DEBUG: v mapped range: [63.32, 156.29] (Target: 0-224)
-DEBUG: u mapped range: [59.37, 160.82] (Target: 0-224)
-DEBUG: v mapped range: [63.32, 156.29] (Target: 0-224)
-DEBUG: u mapped range: [45.17, 126.58] (Target: 0-224)
-DEBUG: v mapped range: [14.90, 131.63] (Target: 0-224)
-DEBUG: u mapped range: [45.17, 126.58] (Target: 0-224)
-DEBUG: v mapped range: [14.90, 131.63] (Target: 0-224)
-DEBUG: u mapped range: [45.17, 126.58] (Target: 0-224)
-DEBUG: v mapped range: [14.90, 131.63] (Target: 0-224)
-DEBUG: u mapped range: [57.55, 164.73] (Target: 0-224)
-DEBUG: v mapped range: [59.62, 172.52] (Target: 0-224)
-DEBUG: u mapped range: [57.55, 164.73] (Target: 0-224)
-DEBUG: v mapped range: [59.62, 172.52] (Target: 0-224)
-DEBUG: u mapped range: [57.55, 164.73] (Target: 0-224)
-DEBUG: v mapped range: [59.62, 172.52] (Target: 0-224)
-DEBUG: u mapped range: [69.93, 164.37] (Target: 0-224)
-DEBUG: v mapped range: [66.00, 162.86] (Target: 0-224)
-DEBUG: u mapped range: [69.93, 164.37] (Target: 0-224)
-DEBUG: v mapped range: [66.00, 162.86] (Target: 0-224)
-DEBUG: u mapped range: [69.93, 164.37] (Target: 0-224)
-DEBUG: v mapped range: [66.00, 162.86] (Target: 0-224)
-DEBUG: u mapped range: [64.39, 160.60] (Target: 0-224)
-DEBUG: v mapped range: [65.20, 155.41] (Target: 0-224)
-DEBUG: u mapped range: [64.39, 160.60] (Target: 0-224)
-DEBUG: v mapped range: [65.20, 155.41] (Target: 0-224)
-DEBUG: u mapped range: [64.39, 160.60] (Target: 0-224)
-DEBUG: v mapped range: [65.20, 155.41] (Target: 0-224)
-DEBUG: u mapped range: [66.59, 157.77] (Target: 0-224)
-DEBUG: v mapped range: [66.05, 150.85] (Target: 0-224)
-DEBUG: u mapped range: [66.59, 157.77] (Target: 0-224)
-DEBUG: v mapped range: [66.05, 150.85] (Target: 0-224)
-DEBUG: u mapped range: [66.59, 157.77] (Target: 0-224)
-DEBUG: v mapped range: [66.05, 150.85] (Target: 0-224)
-DEBUG: u mapped range: [57.67, 185.13] (Target: 0-224)
-DEBUG: v mapped range: [53.08, 160.67] (Target: 0-224)
-DEBUG: u mapped range: [57.67, 185.13] (Target: 0-224)
-DEBUG: v mapped range: [53.08, 160.67] (Target: 0-224)
-DEBUG: u mapped range: [57.67, 185.13] (Target: 0-224)
-DEBUG: v mapped range: [53.08, 160.67] (Target: 0-224)
-DEBUG: u mapped range: [65.81, 158.14] (Target: 0-224)
-DEBUG: v mapped range: [63.82, 161.13] (Target: 0-224)
-DEBUG: u mapped range: [65.81, 158.14] (Target: 0-224)
-DEBUG: v mapped range: [63.82, 161.13] (Target: 0-224)
-DEBUG: u mapped range: [65.81, 158.14] (Target: 0-224)
-DEBUG: v mapped range: [63.82, 161.13] (Target: 0-224)
-DEBUG: u mapped range: [64.04, 162.05] (Target: 0-224)
-DEBUG: v mapped range: [60.75, 158.89] (Target: 0-224)
-DEBUG: u mapped range: [64.04, 162.05] (Target: 0-224)
-DEBUG: v mapped range: [60.75, 158.89] (Target: 0-224)
-DEBUG: u mapped range: [64.04, 162.05] (Target: 0-224)
-DEBUG: v mapped range: [60.75, 158.89] (Target: 0-224)
-DEBUG: u mapped range: [68.72, 159.24] (Target: 0-224)
-DEBUG: v mapped range: [63.63, 159.58] (Target: 0-224)
-DEBUG: u mapped range: [68.72, 159.24] (Target: 0-224)
-DEBUG: v mapped range: [63.63, 159.58] (Target: 0-224)
-DEBUG: u mapped range: [68.72, 159.24] (Target: 0-224)
-DEBUG: v mapped range: [63.63, 159.58] (Target: 0-224)
-DEBUG: u mapped range: [108.77, 114.84] (Target: 0-224)
-DEBUG: v mapped range: [53.79, 171.86] (Target: 0-224)
-DEBUG: u mapped range: [108.77, 114.84] (Target: 0-224)
-DEBUG: v mapped range: [53.79, 171.86] (Target: 0-224)
-DEBUG: u mapped range: [108.77, 114.84] (Target: 0-224)
-DEBUG: v mapped range: [53.79, 171.86] (Target: 0-224)
-DEBUG: u mapped range: [38.63, 127.68] (Target: 0-224)
-DEBUG: v mapped range: [28.80, 130.95] (Target: 0-224)
-DEBUG: u mapped range: [38.63, 127.68] (Target: 0-224)
-DEBUG: v mapped range: [28.80, 130.95] (Target: 0-224)
-DEBUG: u mapped range: [38.63, 127.68] (Target: 0-224)
-DEBUG: v mapped range: [28.80, 130.95] (Target: 0-224)
-DEBUG: u mapped range: [62.57, 162.81] (Target: 0-224)
-DEBUG: v mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: u mapped range: [62.57, 162.81] (Target: 0-224)
-DEBUG: v mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: u mapped range: [62.57, 162.81] (Target: 0-224)
-DEBUG: v mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: u mapped range: [65.13, 158.91] (Target: 0-224)
-DEBUG: v mapped range: [61.08, 162.90] (Target: 0-224)
-DEBUG: u mapped range: [65.13, 158.91] (Target: 0-224)
-DEBUG: v mapped range: [61.08, 162.90] (Target: 0-224)
-DEBUG: u mapped range: [65.13, 158.91] (Target: 0-224)
-DEBUG: v mapped range: [61.08, 162.90] (Target: 0-224)
-DEBUG: u mapped range: [61.74, 160.33] (Target: 0-224)
-DEBUG: v mapped range: [64.32, 162.55] (Target: 0-224)
-DEBUG: u mapped range: [61.74, 160.33] (Target: 0-224)
-DEBUG: v mapped range: [64.32, 162.55] (Target: 0-224)
-DEBUG: u mapped range: [61.74, 160.33] (Target: 0-224)
-DEBUG: v mapped range: [64.32, 162.55] (Target: 0-224)
-DEBUG: u mapped range: [65.22, 157.81] (Target: 0-224)
-DEBUG: v mapped range: [61.06, 162.92] (Target: 0-224)
-DEBUG: u mapped range: [65.22, 157.81] (Target: 0-224)
-DEBUG: v mapped range: [61.06, 162.92] (Target: 0-224)
-DEBUG: u mapped range: [65.22, 157.81] (Target: 0-224)
-DEBUG: v mapped range: [61.06, 162.92] (Target: 0-224)
-DEBUG: u mapped range: [53.94, 161.60] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.22] (Target: 0-224)
-DEBUG: u mapped range: [53.94, 161.60] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.22] (Target: 0-224)
-DEBUG: u mapped range: [53.94, 161.60] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.22] (Target: 0-224)
-DEBUG: u mapped range: [61.75, 162.89] (Target: 0-224)
-DEBUG: v mapped range: [63.79, 163.41] (Target: 0-224)
-DEBUG: u mapped range: [61.75, 162.89] (Target: 0-224)
-DEBUG: v mapped range: [63.79, 163.41] (Target: 0-224)
-DEBUG: u mapped range: [61.75, 162.89] (Target: 0-224)
-DEBUG: v mapped range: [63.79, 163.41] (Target: 0-224)
-DEBUG: u mapped range: [86.90, 138.06] (Target: 0-224)
-DEBUG: v mapped range: [55.04, 165.84] (Target: 0-224)
-DEBUG: u mapped range: [86.90, 138.06] (Target: 0-224)
-DEBUG: v mapped range: [55.04, 165.84] (Target: 0-224)
-DEBUG: u mapped range: [86.90, 138.06] (Target: 0-224)
-DEBUG: v mapped range: [55.04, 165.84] (Target: 0-224)
-DEBUG: u mapped range: [62.98, 161.97] (Target: 0-224)
-DEBUG: v mapped range: [64.20, 161.80] (Target: 0-224)
-DEBUG: u mapped range: [62.98, 161.97] (Target: 0-224)
-DEBUG: v mapped range: [64.20, 161.80] (Target: 0-224)
-DEBUG: u mapped range: [62.98, 161.97] (Target: 0-224)
-DEBUG: v mapped range: [64.20, 161.80] (Target: 0-224)
-DEBUG: u mapped range: [64.09, 173.77] (Target: 0-224)
-DEBUG: v mapped range: [60.97, 163.93] (Target: 0-224)
-DEBUG: u mapped range: [64.09, 173.77] (Target: 0-224)
-DEBUG: v mapped range: [60.97, 163.93] (Target: 0-224)
-DEBUG: u mapped range: [64.09, 173.77] (Target: 0-224)
-DEBUG: v mapped range: [60.97, 163.93] (Target: 0-224)
-DEBUG: u mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: v mapped range: [67.90, 169.51] (Target: 0-224)
-DEBUG: u mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: v mapped range: [67.90, 169.51] (Target: 0-224)
-DEBUG: u mapped range: [56.32, 165.38] (Target: 0-224)
-DEBUG: v mapped range: [67.90, 169.51] (Target: 0-224)
-DEBUG: u mapped range: [64.91, 158.80] (Target: 0-224)
-DEBUG: v mapped range: [65.26, 158.44] (Target: 0-224)
-DEBUG: u mapped range: [64.91, 158.80] (Target: 0-224)
-DEBUG: v mapped range: [65.26, 158.44] (Target: 0-224)
-DEBUG: u mapped range: [64.91, 158.80] (Target: 0-224)
-DEBUG: v mapped range: [65.26, 158.44] (Target: 0-224)
-DEBUG: u mapped range: [60.84, 162.84] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 158.28] (Target: 0-224)
-DEBUG: u mapped range: [60.84, 162.84] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 158.28] (Target: 0-224)
-DEBUG: u mapped range: [60.84, 162.84] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 158.28] (Target: 0-224)
-DEBUG: u mapped range: [59.38, 161.29] (Target: 0-224)
-DEBUG: v mapped range: [61.74, 164.34] (Target: 0-224)
-DEBUG: u mapped range: [59.38, 161.29] (Target: 0-224)
-DEBUG: v mapped range: [61.74, 164.34] (Target: 0-224)
-DEBUG: u mapped range: [59.38, 161.29] (Target: 0-224)
-DEBUG: v mapped range: [61.74, 164.34] (Target: 0-224)
-DEBUG: u mapped range: [69.31, 162.88] (Target: 0-224)
-DEBUG: v mapped range: [65.95, 160.96] (Target: 0-224)
-DEBUG: u mapped range: [69.31, 162.88] (Target: 0-224)
-DEBUG: v mapped range: [65.95, 160.96] (Target: 0-224)
-DEBUG: u mapped range: [69.31, 162.88] (Target: 0-224)
-DEBUG: v mapped range: [65.95, 160.96] (Target: 0-224)
-DEBUG: u mapped range: [59.25, 164.06] (Target: 0-224)
-DEBUG: v mapped range: [67.85, 159.93] (Target: 0-224)
-DEBUG: u mapped range: [59.25, 164.06] (Target: 0-224)
-DEBUG: v mapped range: [67.85, 159.93] (Target: 0-224)
-DEBUG: u mapped range: [59.25, 164.06] (Target: 0-224)
-DEBUG: v mapped range: [67.85, 159.93] (Target: 0-224)
-DEBUG: u mapped range: [109.77, 114.01] (Target: 0-224)
-DEBUG: v mapped range: [55.71, 168.54] (Target: 0-224)
-DEBUG: u mapped range: [109.77, 114.01] (Target: 0-224)
-DEBUG: v mapped range: [55.71, 168.54] (Target: 0-224)
-DEBUG: u mapped range: [109.77, 114.01] (Target: 0-224)
-DEBUG: v mapped range: [55.71, 168.54] (Target: 0-224)
-DEBUG: u mapped range: [65.47, 159.36] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.42] (Target: 0-224)
-DEBUG: u mapped range: [65.47, 159.36] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.42] (Target: 0-224)
-DEBUG: u mapped range: [65.47, 159.36] (Target: 0-224)
-DEBUG: v mapped range: [66.46, 160.42] (Target: 0-224)
-DEBUG: u mapped range: [65.15, 162.56] (Target: 0-224)
-DEBUG: v mapped range: [69.17, 160.86] (Target: 0-224)
-DEBUG: u mapped range: [65.15, 162.56] (Target: 0-224)
-DEBUG: v mapped range: [69.17, 160.86] (Target: 0-224)
-DEBUG: u mapped range: [65.15, 162.56] (Target: 0-224)
-DEBUG: v mapped range: [69.17, 160.86] (Target: 0-224)
-DEBUG: u mapped range: [57.59, 158.51] (Target: 0-224)
-DEBUG: v mapped range: [63.01, 161.53] (Target: 0-224)
-DEBUG: u mapped range: [57.59, 158.51] (Target: 0-224)
-DEBUG: v mapped range: [63.01, 161.53] (Target: 0-224)
-DEBUG: u mapped range: [57.59, 158.51] (Target: 0-224)
-DEBUG: v mapped range: [63.01, 161.53] (Target: 0-224)
-DEBUG: u mapped range: [56.53, 161.68] (Target: 0-224)
-DEBUG: v mapped range: [62.67, 159.26] (Target: 0-224)
-DEBUG: u mapped range: [56.53, 161.68] (Target: 0-224)
-DEBUG: v mapped range: [62.67, 159.26] (Target: 0-224)
-DEBUG: u mapped range: [56.53, 161.68] (Target: 0-224)
-DEBUG: v mapped range: [62.67, 159.26] (Target: 0-224)
-DEBUG: u mapped range: [49.36, 164.61] (Target: 0-224)
-DEBUG: v mapped range: [57.80, 166.49] (Target: 0-224)
-DEBUG: u mapped range: [49.36, 164.61] (Target: 0-224)
-DEBUG: v mapped range: [57.80, 166.49] (Target: 0-224)
-DEBUG: u mapped range: [49.36, 164.61] (Target: 0-224)
-DEBUG: v mapped range: [57.80, 166.49] (Target: 0-224)
-DEBUG: u mapped range: [68.88, 156.06] (Target: 0-224)
-DEBUG: v mapped range: [72.32, 157.35] (Target: 0-224)
-DEBUG: u mapped range: [68.88, 156.06] (Target: 0-224)
-DEBUG: v mapped range: [72.32, 157.35] (Target: 0-224)
-DEBUG: u mapped range: [68.88, 156.06] (Target: 0-224)
-DEBUG: v mapped range: [72.32, 157.35] (Target: 0-224)
-DEBUG: u mapped range: [92.73, 215.49] (Target: 0-224)
-DEBUG: v mapped range: [91.40, 128.74] (Target: 0-224)
-DEBUG: u mapped range: [92.73, 215.49] (Target: 0-224)
-DEBUG: v mapped range: [91.40, 128.74] (Target: 0-224)
-DEBUG: u mapped range: [92.73, 215.49] (Target: 0-224)
-DEBUG: v mapped range: [91.40, 128.74] (Target: 0-224)
-DEBUG: u mapped range: [62.08, 154.11] (Target: 0-224)
-DEBUG: v mapped range: [63.38, 157.72] (Target: 0-224)
-DEBUG: u mapped range: [62.08, 154.11] (Target: 0-224)
-DEBUG: v mapped range: [63.38, 157.72] (Target: 0-224)
-DEBUG: u mapped range: [62.08, 154.11] (Target: 0-224)
-DEBUG: v mapped range: [63.38, 157.72] (Target: 0-224)
-DEBUG: u mapped range: [61.28, 174.65] (Target: 0-224)
-DEBUG: v mapped range: [65.74, 166.78] (Target: 0-224)
-DEBUG: u mapped range: [61.28, 174.65] (Target: 0-224)
-DEBUG: v mapped range: [65.74, 166.78] (Target: 0-224)
-DEBUG: u mapped range: [61.28, 174.65] (Target: 0-224)
-DEBUG: v mapped range: [65.74, 166.78] (Target: 0-224)
-DEBUG: u mapped range: [48.76, 167.67] (Target: 0-224)
-DEBUG: v mapped range: [62.84, 172.38] (Target: 0-224)
-DEBUG: u mapped range: [48.76, 167.67] (Target: 0-224)
-DEBUG: v mapped range: [62.84, 172.38] (Target: 0-224)
-DEBUG: u mapped range: [48.76, 167.67] (Target: 0-224)
-DEBUG: v mapped range: [62.84, 172.38] (Target: 0-224)
-DEBUG: u mapped range: [56.56, 163.40] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 170.92] (Target: 0-224)
-DEBUG: u mapped range: [56.56, 163.40] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 170.92] (Target: 0-224)
-DEBUG: u mapped range: [56.56, 163.40] (Target: 0-224)
-DEBUG: v mapped range: [56.36, 170.92] (Target: 0-224)
-DEBUG: u mapped range: [67.00, 156.92] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.43] (Target: 0-224)
-DEBUG: u mapped range: [67.00, 156.92] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.43] (Target: 0-224)
-DEBUG: u mapped range: [67.00, 156.92] (Target: 0-224)
-DEBUG: v mapped range: [63.22, 160.43] (Target: 0-224)
-DEBUG: u mapped range: [55.23, 173.39] (Target: 0-224)
-DEBUG: v mapped range: [61.70, 159.03] (Target: 0-224)
-DEBUG: u mapped range: [55.23, 173.39] (Target: 0-224)
-DEBUG: v mapped range: [61.70, 159.03] (Target: 0-224)
-DEBUG: u mapped range: [55.23, 173.39] (Target: 0-224)
-DEBUG: v mapped range: [61.70, 159.03] (Target: 0-224)
-DEBUG: u mapped range: [60.04, 167.31] (Target: 0-224)
-DEBUG: v mapped range: [62.04, 158.48] (Target: 0-224)
-DEBUG: u mapped range: [60.04, 167.31] (Target: 0-224)
-DEBUG: v mapped range: [62.04, 158.48] (Target: 0-224)
-DEBUG: u mapped range: [60.04, 167.31] (Target: 0-224)
-DEBUG: v mapped range: [62.04, 158.48] (Target: 0-224)
-Running inference on 100 samples...
+>>> OPTIMAL SHIFT for ch2: 0
 
-Saving first 5 generated images to results_local/debug_hardware/20260128_211321...
-Saved results_local/debug_hardware/20260128_211321/hardware_sample_0.png
-Saved results_local/debug_hardware/20260128_211321/hardware_sample_1.png
-Saved results_local/debug_hardware/20260128_211321/hardware_sample_2.png
-Saved results_local/debug_hardware/20260128_211321/hardware_sample_3.png
-Saved results_local/debug_hardware/20260128_211321/hardware_sample_4.png
+--- CH3 Results (averaged across classes) ---
+ Shift   Min   Max    Mean     Std   %Sat  %Black
+--------------------------------------------------
+     0     0    64     0.0     0.6    0.0    99.8
+     1     0    32     0.0     0.3    0.0    99.9
+     2     0    16     0.0     0.1    0.0    99.9
+     3     0     8     0.0     0.1    0.0    99.9
+     4     0     4     0.0     0.0    0.0   100.0
+     5     0     2     0.0     0.0    0.0   100.0
+     6     0     1     0.0     0.0    0.0   100.0
+     7     0     0     0.0     0.0    0.0   100.0
+     8     0     0     0.0     0.0    0.0   100.0
+     9     0     0     0.0     0.0    0.0   100.0
+    10     0     0     0.0     0.0    0.0   100.0
+    11     0     0     0.0     0.0    0.0   100.0
 
-1/4 [======>.......................] - ETA: 4s
-2/4 [==============>...............] - ETA: 0s
-3/4 [=====================>........] - ETA: 0s
-4/4 [==============================] - ETA: 0s
-4/4 [==============================] - 3s 383ms/step
-Inference successful. Check accuracy manually.
+>>> OPTIMAL SHIFT for ch3: 0
 
-Sample Predictions (True vs Pred):
-  Sample 0: True=BPSK   (5) | Pred=4ASK   (2) | Conf=0.26 | FAIL
-  Sample 1: True=4ASK   (2) | Pred=4ASK   (2) | Conf=0.35 | MATCH
-  Sample 2: True=32QAM  (1) | Pred=16QAM  (0) | Conf=0.25 | FAIL
-  Sample 3: True=64QAM  (3) | Pred=16QAM  (0) | Conf=0.41 | FAIL
-  Sample 4: True=32QAM  (1) | Pred=32QAM  (1) | Conf=0.49 | MATCH
-  Sample 5: True=32QAM  (1) | Pred=32QAM  (1) | Conf=0.51 | MATCH
-  Sample 6: True=64QAM  (3) | Pred=64QAM  (3) | Conf=0.26 | MATCH
-  Sample 7: True=64QAM  (3) | Pred=16QAM  (0) | Conf=0.34 | FAIL
-  Sample 8: True=32QAM  (1) | Pred=32QAM  (1) | Conf=0.25 | MATCH
-  Sample 9: True=4ASK   (2) | Pred=4ASK   (2) | Conf=0.47 | MATCH
-  Sample 10: True=8PSK   (4) | Pred=32QAM  (1) | Conf=0.36 | FAIL
-  Sample 11: True=64QAM  (3) | Pred=32QAM  (1) | Conf=0.30 | FAIL
-  Sample 12: True=4ASK   (2) | Pred=4ASK   (2) | Conf=0.41 | MATCH
-  Sample 13: True=OQPSK  (6) | Pred=OQPSK  (6) | Conf=0.43 | MATCH
-  Sample 14: True=OQPSK  (6) | Pred=32QAM  (1) | Conf=0.40 | FAIL
-  Sample 15: True=OQPSK  (6) | Pred=OQPSK  (6) | Conf=0.28 | MATCH
-  Sample 16: True=OQPSK  (6) | Pred=32QAM  (1) | Conf=0.40 | FAIL
-  Sample 17: True=BPSK   (5) | Pred=4ASK   (2) | Conf=0.33 | FAIL
-  Sample 18: True=64QAM  (3) | Pred=64QAM  (3) | Conf=0.26 | MATCH
-  Sample 19: True=BPSK   (5) | Pred=BPSK   (5) | Conf=0.40 | MATCH
-  Sample 20: True=64QAM  (3) | Pred=64QAM  (3) | Conf=0.20 | MATCH
-  Sample 21: True=QPSK   (7) | Pred=16QAM  (0) | Conf=0.34 | FAIL
-  Sample 22: True=QPSK   (7) | Pred=16QAM  (0) | Conf=0.23 | FAIL
-  Sample 23: True=8PSK   (4) | Pred=32QAM  (1) | Conf=0.37 | FAIL
-  Sample 24: True=64QAM  (3) | Pred=64QAM  (3) | Conf=0.21 | MATCH
+============================================================
+PHASE 2: SINGLE-CHANNEL CALIBRATION
+============================================================
 
-Validation Accuracy on subset: 48.00%
+=== Calibrating ch1 (kernel size: (3, 3)) ===
+
+--- CH1 Results (averaged across classes) ---
+ Shift   Min   Max    Mean     Std   %Sat  %Black
+--------------------------------------------------
+     0     0    64     0.0     0.4    0.0   100.0
+     1     0    32     0.0     0.2    0.0   100.0
+     2     0    16     0.0     0.1    0.0   100.0
+     3     0     8     0.0     0.1    0.0   100.0
+     4     0     4     0.0     0.0    0.0   100.0
+     5     0     2     0.0     0.0    0.0   100.0
+     6     0     1     0.0     0.0    0.0   100.0
+     7     0     0     0.0     0.0    0.0   100.0
+     8     0     0     0.0     0.0    0.0   100.0
+     9     0     0     0.0     0.0    0.0   100.0
+    10     0     0     0.0     0.0    0.0   100.0
+    11     0     0     0.0     0.0    0.0   100.0
+
+>>> OPTIMAL SHIFT for ch1: 0
+
+============================================================
+PHASE 3: GENERATING SAMPLE IMAGES
+============================================================
+
+Generating multi-channel samples with shifts: {'ch1': 0, 'ch2': 0, 'ch3': 0}
+Saved: results_local/calibration/20260128_220813/multi/4ASK_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/4ASK_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/4ASK_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/BPSK_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/BPSK_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/BPSK_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/QPSK_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/QPSK_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/QPSK_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/8PSK_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/8PSK_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/8PSK_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/16QAM_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/16QAM_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/16QAM_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/32QAM_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/32QAM_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/32QAM_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/64QAM_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/64QAM_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/64QAM_2_multi.png
+Saved: results_local/calibration/20260128_220813/multi/OQPSK_0_multi.png
+Saved: results_local/calibration/20260128_220813/multi/OQPSK_1_multi.png
+Saved: results_local/calibration/20260128_220813/multi/OQPSK_2_multi.png
+
+Generating single-channel samples with shifts: {'ch1': 0}
+Saved: results_local/calibration/20260128_220813/single/4ASK_0_single.png
+Saved: results_local/calibration/20260128_220813/single/4ASK_1_single.png
+Saved: results_local/calibration/20260128_220813/single/4ASK_2_single.png
+Saved: results_local/calibration/20260128_220813/single/BPSK_0_single.png
+Saved: results_local/calibration/20260128_220813/single/BPSK_1_single.png
+Saved: results_local/calibration/20260128_220813/single/BPSK_2_single.png
+Saved: results_local/calibration/20260128_220813/single/QPSK_0_single.png
+Saved: results_local/calibration/20260128_220813/single/QPSK_1_single.png
+Saved: results_local/calibration/20260128_220813/single/QPSK_2_single.png
+Saved: results_local/calibration/20260128_220813/single/8PSK_0_single.png
+Saved: results_local/calibration/20260128_220813/single/8PSK_1_single.png
+Saved: results_local/calibration/20260128_220813/single/8PSK_2_single.png
+Saved: results_local/calibration/20260128_220813/single/16QAM_0_single.png
+Saved: results_local/calibration/20260128_220813/single/16QAM_1_single.png
+Saved: results_local/calibration/20260128_220813/single/16QAM_2_single.png
+Saved: results_local/calibration/20260128_220813/single/32QAM_0_single.png
+Saved: results_local/calibration/20260128_220813/single/32QAM_1_single.png
+Saved: results_local/calibration/20260128_220813/single/32QAM_2_single.png
+Saved: results_local/calibration/20260128_220813/single/64QAM_0_single.png
+Saved: results_local/calibration/20260128_220813/single/64QAM_1_single.png
+Saved: results_local/calibration/20260128_220813/single/64QAM_2_single.png
+Saved: results_local/calibration/20260128_220813/single/OQPSK_0_single.png
+Saved: results_local/calibration/20260128_220813/single/OQPSK_1_single.png
+Saved: results_local/calibration/20260128_220813/single/OQPSK_2_single.png
+
+============================================================
+CALIBRATION SUMMARY
+============================================================
+
+Multi-channel config:
+  Shifts: ch1=0, ch2=0, ch3=0
+  Kernels: 3x3, 7x7, 15x15
+  Gain: 64
+
+Single-channel config:
+  Shift: 0
+  Kernel: 3x3
+  Gain: 64
+
+Summary saved to: results_local/calibration/20260128_220813/calibration_summary.json
+
+Sample images saved to: results_local/calibration/20260128_220813/
+
+>>> NEXT STEP: Visually inspect images and run dataset generation <<<
+]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# 
