@@ -7,6 +7,8 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 # Ensure src is in python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -176,6 +178,19 @@ def main():
         hw_batch = batch_process_hardware(samples_iq, shift_vals=(5, 6, 8))
         
         print(f"Running inference on {len(hw_batch)} samples...")
+        
+        # --- SAVE DEBUG IMAGES ---
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        save_dir = os.path.join('results_local', 'debug_hardware', timestamp)
+        os.makedirs(save_dir, exist_ok=True)
+        
+        print(f"\nSaving first 5 generated images to {save_dir}...")
+        for i in range(min(5, len(hw_batch))):
+             filename = os.path.join(save_dir, f"hardware_sample_{i}.png")
+             plt.imsave(filename, hw_batch[i])
+             print(f"Saved {filename}")
+        # -------------------------
+        
         preds = model.predict(hw_batch)
         print("Inference successful. Check accuracy manually.")
         
