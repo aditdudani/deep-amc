@@ -21,7 +21,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
-GAIN = 32
+GAIN = 255  # Max value for center pixel - ensures good contrast
 
 def create_exp_kernel(size, alpha):
     """Create exponential decay kernel: exp(-alpha * r) * GAIN"""

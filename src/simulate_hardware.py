@@ -28,7 +28,7 @@ from common.image_generator import tf_generate_three_channel_image
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
-GAIN = 32
+GAIN = 255  # Max value for center pixel - ensures good contrast
 
 def create_exp_kernel(size, alpha):
     """Create exponential decay kernel: exp(-alpha * r) * GAIN"""
