@@ -23,7 +23,7 @@ GRID_SIZE = 224
 
 # SCALE FACTOR: We scale up the kernels to utilize the 16-bit accumulator (0-65535)
 # This acts as our "Fixed Point Gain"
-GAIN = 32 
+GAIN = 128
 
 # Kernel definitions (The "Stamp")
 # 1. Sharp (Corresponds to alpha=10)
@@ -35,7 +35,8 @@ KERNEL_MEDIUM = np.array([[1, 2, 1],
                           [2, 8, 2],
                           [1, 2, 1]], dtype=np.int16) * GAIN
 # 3. Blur (Corresponds to alpha=0.1)
-KERNEL_BLUR = np.ones((5, 5), dtype=np.int16) * GAIN
+# INCREASED SIZE: 5x5 was too small. 11x11 better approximates the wide Gaussian.
+KERNEL_BLUR = np.ones((11, 11), dtype=np.int16) * GAIN
 
 def hardware_gen_layer(iq_samples, kernel, shift_val=4):
     """
@@ -175,7 +176,11 @@ def main():
         # Let's try conservative shifts to avoid black images. 
         # You will tune these after seeing the log output.
         print("Running inference with estimated shifts (Check logs if images are bad)...")
-        hw_batch = batch_process_hardware(samples_iq, shift_vals=(5, 6, 8))
+        # UPDATED SHIFTS based on previous runs:
+        # Previous run showed Ch1 Max=255 at Shift=0. 
+        # Ch3 needs much less shifting now that we have a larger kernel.
+        # Let's try conservative low shifts.
+        hw_batch = batch_process_hardware(samples_iq, shift_vals=(1, 3, 4))
         
         print(f"Running inference on {len(hw_batch)} samples...")
         
