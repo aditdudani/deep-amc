@@ -28,21 +28,19 @@ from common.image_generator import tf_generate_three_channel_image
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
-GAIN = 64
+GAIN = 32
 
-def create_exp_kernel(size, alpha, gain):
-    """Generate exponential decay kernel: exp(-alpha * r)"""
-    center = (size - 1) / 2.0
-    y, x = np.ogrid[-center:center+1, -center:center+1]
-    r = np.sqrt(x*x + y*y)
-    kernel = np.exp(-alpha * r)
-    kernel = kernel / kernel.max() * gain
-    return kernel.astype(np.int16)
+# Hand-crafted integer kernels (from hardware proposal)
+# These have meaningful spread, unlike exp(-alpha*r) with high alpha
+KERNEL_CH1 = (np.array([[0, 1, 0],
+                        [1, 4, 1],
+                        [0, 1, 0]], dtype=np.int16) * GAIN)  # Sharp
 
-# Kernels: Sharp (3x3), Medium (7x7), Coarse (15x15)
-KERNEL_CH1 = create_exp_kernel(3, 10.0, GAIN)
-KERNEL_CH2 = create_exp_kernel(7, 3.0, GAIN)
-KERNEL_CH3 = create_exp_kernel(15, 1.0, GAIN)
+KERNEL_CH2 = (np.array([[1, 2, 1],
+                        [2, 8, 2],
+                        [1, 2, 1]], dtype=np.int16) * GAIN)  # Medium
+
+KERNEL_CH3 = (np.ones((5, 5), dtype=np.int16) * GAIN)  # Blur/Wide
 
 # Label mapping: HDF5 index -> Model index
 HDF5_TO_MODEL_MAP = {

@@ -3,15 +3,7 @@
 HARDWARE IMAGE GENERATION CALIBRATION
 ============================================================
 Loading calibration samples from data/GOLD_XYZ_OSC.0001_1024.hdf5...
-Traceback (most recent call last):
-  File "src/calibrate_hardware.py", line 426, in <module>
-    main()
-  File "src/calibrate_hardware.py", line 286, in main
-    samples = load_calibration_samples(data_path, n_per_class, snr_min)
-  File "src/calibrate_hardware.py", line 153, in load_calibration_samples
-    mask = (y_int == hdf5_idx) & (Z >= snr_min)
-numpy.core._exceptions.MemoryError: Unable to allocate 5.94 TiB for an array with shape (2555904, 2555904) and data type bool
-]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app#   4ASK: 20 samples
+  4ASK: 20 samples
   BPSK: 20 samples
   QPSK: 20 samples
   8PSK: 20 samples

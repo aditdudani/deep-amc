@@ -21,28 +21,28 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
-GAIN = 64  # Fixed-point gain for integer arithmetic
+GAIN = 32
 
-# --- KERNEL DEFINITIONS ---
-def create_exp_kernel(size, alpha, gain):
-    """Generate exponential decay kernel: exp(-alpha * r)"""
-    center = (size - 1) / 2.0
-    y, x = np.ogrid[-center:center+1, -center:center+1]
-    r = np.sqrt(x*x + y*y)
-    kernel = np.exp(-alpha * r)
-    # Normalize so center = gain, then scale
-    kernel = kernel / kernel.max() * gain
-    return kernel.astype(np.int16)
+# Hand-crafted integer kernels (from hardware proposal)
+KERNEL_SHARP = (np.array([[0, 1, 0],
+                          [1, 4, 1],
+                          [0, 1, 0]], dtype=np.int16) * GAIN)
+
+KERNEL_MEDIUM = (np.array([[1, 2, 1],
+                           [2, 8, 2],
+                           [1, 2, 1]], dtype=np.int16) * GAIN)
+
+KERNEL_BLUR = (np.ones((5, 5), dtype=np.int16) * GAIN)
 
 # Define kernels for each configuration
 KERNELS = {
     'single': {
-        'ch1': create_exp_kernel(3, 10.0, GAIN),  # Sharp only
+        'ch1': KERNEL_SHARP,
     },
     'multi': {
-        'ch1': create_exp_kernel(3, 10.0, GAIN),   # Sharp (α=10)
-        'ch2': create_exp_kernel(7, 3.0, GAIN),    # Medium (α=3)
-        'ch3': create_exp_kernel(15, 1.0, GAIN),   # Coarse (α=1)
+        'ch1': KERNEL_SHARP,
+        'ch2': KERNEL_MEDIUM,
+        'ch3': KERNEL_BLUR,
     }
 }
 
@@ -116,7 +116,7 @@ def compute_channel_stats(img):
     }
 
 
-def calibration_sweep(iq_samples, kernel, shift_range=range(0, 12)):
+def calibration_sweep(iq_samples, kernel, shift_range=range(0, 16)):
     """
     Sweep shift values to find optimal dynamic range.
     
