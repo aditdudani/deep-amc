@@ -176,13 +176,14 @@ def batch_process_hardware(iq_batch, shift_vals):
     # Our local kernel stamps leave distant pixels at 0.
     # 
     # Training stats (after norm to [0,255]):
-    #   Ch1: min=0, mean=4.7   (Sharp - only bright near IQ points, OK)
-    #   Ch2: min=4, mean=62.5  (Medium - significant ambient fog)
-    #   Ch3: min=168, mean=211 (Blur - very bright fog everywhere)
+    #   Ch1: min=0, mean=~16   (Sharp - only bright near IQ points, OK)
+    #   Ch2: min=4, mean=~67   (Medium - significant ambient fog)
+    #   Ch3: min=168, mean=~212 (Blur - very bright fog everywhere)
     #
-    # We need fog floors to lift our baseline to match training.
-    # Since normalization scales by max (which is 255), we add floors AFTER normalizing.
-    FOG_FLOOR_CH2 = 4    # Match training Ch2 min
+    # We need fog floors to lift our baseline to match training MEAN (not just min).
+    # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 255)
+    # To get target_mean from raw_mean: floor ≈ target_mean - raw_mean
+    FOG_FLOOR_CH2 = 60   # Lift mean from ~10 to ~67 (training mean)
     FOG_FLOOR_CH3 = 168  # Match training Ch3 min (very bright base!)
     
     for i in range(len(iq_batch)):
