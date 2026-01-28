@@ -50,9 +50,18 @@ def hardware_gen_layer(iq_samples, kernel, shift_val=4):
     u = (iq_samples[:, 0] + 3.5) * scale
     v = (iq_samples[:, 1] + 3.5) * scale
     
+    # DEBUG: Check for clipping
+    print(f"DEBUG: u mapped range: [{u.min():.2f}, {u.max():.2f}] (Target: 0-{GRID_SIZE})")
+    print(f"DEBUG: v mapped range: [{v.min():.2f}, {v.max():.2f}] (Target: 0-{GRID_SIZE})")
+
     # Quantize to integer indices
     u_idx = np.clip(np.round(u), 0, GRID_SIZE-1).astype(np.int16)
     v_idx = np.clip(np.round(v), 0, GRID_SIZE-1).astype(np.int16)
+    
+    # DEBUG: Check for clipping - Print only for first valid sample processed
+    if not hasattr(hardware_gen_layer, "debug_printed"):
+        print(f"DEBUG: Grid Mapping - u range: [{u.min():.2f}, {u.max():.2f}], v range: [{v.min():.2f}, {v.max():.2f}]")
+        hardware_gen_layer.debug_printed = True
 
     # 2. ACCUMULATOR (The Bucket)
     # 16-bit memory initialized to 0
