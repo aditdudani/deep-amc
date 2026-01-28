@@ -190,6 +190,9 @@ def main():
         # REPLACED by valid_indices
         
         if len(valid_indices) > 0:
+            # SHUFFLE to ensure we test a mix of classes, not just the first one (4ASK)
+            np.random.shuffle(valid_indices)
+            
             samples_iq = X[valid_indices[:100]]
             high_snr_indices = valid_indices # Keep variable name for compatibility with validation block below
             print(f"Loaded {len(samples_iq)} real samples (SNR > 10, Valid Class).")
@@ -283,11 +286,18 @@ def main():
             y_true_subset = np.array([HDF5_TO_MODEL_MAP[y] for y in y_raw_subset])
             
             y_pred = np.argmax(preds, axis=1) # Model outputs are already in Model Space
+            y_conf = np.max(preds, axis=1)
+            
+            # Map back to Names for readability
+            MODEL_CLASS_NAMES = ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
             
             # Print sample comparisions
             print("\nSample Predictions (True vs Pred):")
-            for i in range(10):
-                print(f"  Sample {i}: \tRaw={y_raw_subset[i]} \tMapped={y_true_subset[i]} \tPred={y_pred[i]}")
+            for i in range(25): # Print more samples to catch variety
+                true_name = MODEL_CLASS_NAMES[y_true_subset[i]]
+                pred_name = MODEL_CLASS_NAMES[y_pred[i]]
+                match = "MATCH" if y_true_subset[i] == y_pred[i] else "FAIL"
+                print(f"  Sample {i}: True={true_name:<6} ({y_true_subset[i]}) | Pred={pred_name:<6} ({y_pred[i]}) | Conf={y_conf[i]:.2f} | {match}")
 
             acc = np.mean(y_true_subset == y_pred)
             print(f"\nValidation Accuracy on subset: {acc*100:.2f}%")
