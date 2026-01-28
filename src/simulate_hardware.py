@@ -39,13 +39,13 @@ def create_exp_kernel(size, alpha):
     kernel = (kernel / kernel.max() * GAIN).astype(np.int16)
     return kernel
 
-# Config that produced "beautiful patterns":
-# Sharp: 11x11, alpha=10 (tight dots)
-# Medium: 11x11, alpha=1.0 (medium spread)
-# Blur: 31x31, alpha=0.3 (wide but not fog)
-KERNEL_CH1 = create_exp_kernel(11, alpha=10.0)
-KERNEL_CH2 = create_exp_kernel(11, alpha=1.0)
-KERNEL_CH3 = create_exp_kernel(31, alpha=0.3)
+# Kernels with proper alphas (alpha=10 was too aggressive - single pixel!)
+# Sharp: 11x11, alpha=1.0 (tight but has spread)
+# Medium: 21x21, alpha=0.3 (medium spread)
+# Blur: 31x31, alpha=0.1 (wide spread)
+KERNEL_CH1 = create_exp_kernel(11, alpha=1.0)
+KERNEL_CH2 = create_exp_kernel(21, alpha=0.3)
+KERNEL_CH3 = create_exp_kernel(31, alpha=0.1)
 
 # Label mapping: HDF5 index -> Model index
 HDF5_TO_MODEL_MAP = {

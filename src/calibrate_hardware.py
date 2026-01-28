@@ -32,13 +32,13 @@ def create_exp_kernel(size, alpha):
     kernel = (kernel / kernel.max() * GAIN).astype(np.int16)
     return kernel
 
-# Config that produced "beautiful patterns":
-# Sharp: 11x11, alpha=10 (tight dots)
-# Medium: 11x11, alpha=1.0 (medium spread)
-# Blur: 31x31, alpha=0.3 (wide but not fog)
-KERNEL_SHARP = create_exp_kernel(11, alpha=10.0)
-KERNEL_MEDIUM = create_exp_kernel(11, alpha=1.0)
-KERNEL_BLUR = create_exp_kernel(31, alpha=0.3)
+# Kernels with proper alphas (alpha=10 was too aggressive - single pixel!)
+# Sharp: 11x11, alpha=1.0 (tight but has spread)
+# Medium: 21x21, alpha=0.3 (medium spread)
+# Blur: 31x31, alpha=0.1 (wide spread)
+KERNEL_SHARP = create_exp_kernel(11, alpha=1.0)
+KERNEL_MEDIUM = create_exp_kernel(21, alpha=0.3)
+KERNEL_BLUR = create_exp_kernel(31, alpha=0.1)
 
 # Define kernels for each configuration
 KERNELS = {
@@ -390,16 +390,16 @@ def main():
         'multi_channel': {
             'shifts': multi_shifts,
             'kernels': {
-                'ch1': '3x3 (α=10)',
-                'ch2': '7x7 (α=3)',
-                'ch3': '15x15 (α=1)',
+                'ch1': f'{KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]} (α=1.0)',
+                'ch2': f'{KERNEL_MEDIUM.shape[0]}x{KERNEL_MEDIUM.shape[0]} (α=0.3)',
+                'ch3': f'{KERNEL_BLUR.shape[0]}x{KERNEL_BLUR.shape[0]} (α=0.1)',
             },
             'gain': GAIN,
         },
         'single_channel': {
             'shifts': single_shifts,
             'kernels': {
-                'ch1': '3x3 (α=10)',
+                'ch1': f'{KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]} (α=1.0)',
             },
             'gain': GAIN,
         },
@@ -409,12 +409,12 @@ def main():
     
     print(f"\nMulti-channel config:")
     print(f"  Shifts: ch1={multi_shifts['ch1']}, ch2={multi_shifts['ch2']}, ch3={multi_shifts['ch3']}")
-    print(f"  Kernels: 3x3, 7x7, 15x15")
+    print(f"  Kernels: {KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]}, {KERNEL_MEDIUM.shape[0]}x{KERNEL_MEDIUM.shape[0]}, {KERNEL_BLUR.shape[0]}x{KERNEL_BLUR.shape[0]}")
     print(f"  Gain: {GAIN}")
     
     print(f"\nSingle-channel config:")
     print(f"  Shift: {single_shifts['ch1']}")
-    print(f"  Kernel: 3x3")
+    print(f"  Kernel: {KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]}")
     print(f"  Gain: {GAIN}")
     
     # Save summary
