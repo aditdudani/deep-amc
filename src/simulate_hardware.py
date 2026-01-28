@@ -1,7 +1,12 @@
-import numpy as np
-import tensorflow as tf
 import os
 import sys
+
+# Suppress verbose TensorFlow/CUDA logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import numpy as np
+import tensorflow as tf
 
 # Ensure src is in python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -48,7 +53,7 @@ def hardware_gen_layer(iq_samples, kernel, shift_val=4):
 
     # 2. ACCUMULATOR (The Bucket)
     # 16-bit memory initialized to 0
-    accumulator = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.int16)
+    accumulator = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.int32) # Increased to int32 to avoid overflow with GAIN
     
     # 3. STAMPING (The Scatter)
     k_h, k_w = kernel.shape
@@ -177,10 +182,26 @@ def main():
         # Determine predicted classes vs Ground Truth if possible
         # (Assuming Y contains one-hot labels)
         if 'Y' in locals():
-            y_true = np.argmax(Y[high_snr_indices[:100]] if 'high_snr_indices' in locals() else Y[:100], axis=1)
+            # Handle One-Hot vs Sparse Integers
+            if Y.ndim > 1 and Y.shape[1] > 1:
+                # One-Hot Encoded
+                full_y_true = np.argmax(Y, axis=1)
+            else:
+                # Likely Integers already
+                full_y_true = Y.flatten()
+            
+            # Subset the labels
+            y_true_subset = full_y_true[high_snr_indices[:100]] if 'high_snr_indices' in locals() else full_y_true[:100]
+            
             y_pred = np.argmax(preds, axis=1)
-            acc = np.mean(y_true == y_pred)
-            print(f"Validation Accuracy on subset: {acc*100:.2f}%")
+            
+            # Print sample comparisions
+            print("\nSample Predictions (True vs Pred):")
+            for i in range(10):
+                print(f"  Sample {i}: \tTrue={y_true_subset[i]} \tPred={y_pred[i]}")
+
+            acc = np.mean(y_true_subset == y_pred)
+            print(f"\nValidation Accuracy on subset: {acc*100:.2f}%")
             
     else:
         print(f"\nModel not found at {model_path}. Skipping inference.")
