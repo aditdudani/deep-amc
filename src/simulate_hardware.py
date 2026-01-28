@@ -154,8 +154,9 @@ def build_hardware_image(iq_samples):
     # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
     # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
     # The floor is proportional to the number of samples (more points = higher ambient).
-    # Tunable parameter: FOG_FLOOR (0-255). Start with ~15 which is ~6% of max.
-    FOG_FLOOR = 15
+    # Calibration target: Match training Mean (~40) for Ch3. Since clusters add ~40 on avg,
+    # and background should be ~20-30, set FOG_FLOOR=30 to lift the black floor.
+    FOG_FLOOR = 30
     ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
     
     # Stack to create (224, 224, 3)
