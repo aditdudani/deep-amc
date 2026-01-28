@@ -1,4 +1,4 @@
-
+python sd[Krc/simulate_hardware.py 
 --- Digital Twin Hardware Simulation ---
 Attempting to load data from data/GOLD_XYZ_OSC.0001_1024.hdf5...
 Loaded 100 real samples (SNR > 10).
@@ -7,69 +7,69 @@ Loaded 100 real samples (SNR > 10).
 NOTE: Kernels have been scaled by x32 (GAIN) to fix low contrast.
 
 Evaluating Sharp (Ch1, Alpha=10):
-  Shift=0: Min=  0, Max=255, Mean=  2.83
-  Shift=1: Min=  0, Max=255, Mean=  1.99
-  Shift=2: Min=  0, Max=255, Mean=  1.19
-  Shift=3: Min=  0, Max=255, Mean=  0.64
-  Shift=4: Min=  0, Max=222, Mean=  0.33
-  Shift=5: Min=  0, Max=111, Mean=  0.16
-  Shift=6: Min=  0, Max= 55, Mean=  0.08
-  Shift=7: Min=  0, Max= 27, Mean=  0.03
-  Shift=8: Min=  0, Max= 13, Mean=  0.01
-  Shift=9: Min=  0, Max=  6, Mean=  0.00
-  Shift=10: Min=  0, Max=  3, Mean=  0.00
-  Shift=11: Min=  0, Max=  1, Mean=  0.00
+  Shift=0: Min=  0, Max=255, Mean=  3.94
+  Shift=1: Min=  0, Max=255, Mean=  3.47
+  Shift=2: Min=  0, Max=255, Mean=  2.83
+  Shift=3: Min=  0, Max=255, Mean=  1.99
+  Shift=4: Min=  0, Max=255, Mean=  1.19
+  Shift=5: Min=  0, Max=255, Mean=  0.64
+  Shift=6: Min=  0, Max=222, Mean=  0.33
+  Shift=7: Min=  0, Max=111, Mean=  0.16
+  Shift=8: Min=  0, Max= 55, Mean=  0.08
+  Shift=9: Min=  0, Max= 27, Mean=  0.03
+  Shift=10: Min=  0, Max= 13, Mean=  0.01
+  Shift=11: Min=  0, Max=  6, Mean=  0.00
 
 Evaluating Medium (Ch2, Alpha=1):
-  Shift=0: Min=  0, Max=255, Mean=  3.87
-  Shift=1: Min=  0, Max=255, Mean=  3.20
-  Shift=2: Min=  0, Max=255, Mean=  2.34
-  Shift=3: Min=  0, Max=255, Mean=  1.44
-  Shift=4: Min=  0, Max=255, Mean=  0.79
-  Shift=5: Min=  0, Max=255, Mean=  0.41
-  Shift=6: Min=  0, Max=128, Mean=  0.20
-  Shift=7: Min=  0, Max= 64, Mean=  0.09
-  Shift=8: Min=  0, Max= 32, Mean=  0.04
-  Shift=9: Min=  0, Max= 16, Mean=  0.02
-  Shift=10: Min=  0, Max=  8, Mean=  0.01
-  Shift=11: Min=  0, Max=  4, Mean=  0.00
+  Shift=0: Min=  0, Max=255, Mean=  4.88
+  Shift=1: Min=  0, Max=255, Mean=  4.40
+  Shift=2: Min=  0, Max=255, Mean=  3.87
+  Shift=3: Min=  0, Max=255, Mean=  3.20
+  Shift=4: Min=  0, Max=255, Mean=  2.34
+  Shift=5: Min=  0, Max=255, Mean=  1.44
+  Shift=6: Min=  0, Max=255, Mean=  0.79
+  Shift=7: Min=  0, Max=255, Mean=  0.41
+  Shift=8: Min=  0, Max=128, Mean=  0.20
+  Shift=9: Min=  0, Max= 64, Mean=  0.09
+  Shift=10: Min=  0, Max= 32, Mean=  0.04
+  Shift=11: Min=  0, Max= 16, Mean=  0.02
 
 Evaluating Blur (Ch3, Alpha=0.1):
-  Shift=0: Min=  0, Max=255, Mean=  5.10
-  Shift=1: Min=  0, Max=255, Mean=  4.26
-  Shift=2: Min=  0, Max=255, Mean=  3.08
-  Shift=3: Min=  0, Max=255, Mean=  1.83
-  Shift=4: Min=  0, Max=255, Mean=  1.01
-  Shift=5: Min=  0, Max=169, Mean=  0.51
-  Shift=6: Min=  0, Max= 84, Mean=  0.25
-  Shift=7: Min=  0, Max= 42, Mean=  0.12
-  Shift=8: Min=  0, Max= 21, Mean=  0.05
-  Shift=9: Min=  0, Max= 10, Mean=  0.02
-  Shift=10: Min=  0, Max=  5, Mean=  0.01
-  Shift=11: Min=  0, Max=  2, Mean=  0.00
+  Shift=0: Min=  0, Max=255, Mean= 11.18
+  Shift=1: Min=  0, Max=255, Mean= 10.51
+  Shift=2: Min=  0, Max=255, Mean=  9.80
+  Shift=3: Min=  0, Max=255, Mean=  8.97
+  Shift=4: Min=  0, Max=255, Mean=  7.98
+  Shift=5: Min=  0, Max=255, Mean=  6.65
+  Shift=6: Min=  0, Max=255, Mean=  4.19
+  Shift=7: Min=  0, Max=255, Mean=  2.42
+  Shift=8: Min=  0, Max=160, Mean=  1.22
+  Shift=9: Min=  0, Max= 80, Mean=  0.60
+  Shift=10: Min=  0, Max= 40, Mean=  0.29
+  Shift=11: Min=  0, Max= 20, Mean=  0.14
 
 Loading model from models/squeezenet_v11_rmsprop.h5...
 Running inference with estimated shifts (Check logs if images are bad)...
 Running inference on 100 samples...
 
-Saving first 5 generated images to results_local/debug_hardware/20260128_171528...
-Saved results_local/debug_hardware/20260128_171528/hardware_sample_0.png
-Saved results_local/debug_hardware/20260128_171528/hardware_sample_1.png
-Saved results_local/debug_hardware/20260128_171528/hardware_sample_2.png
-Saved results_local/debug_hardware/20260128_171528/hardware_sample_3.png
-Saved results_local/debug_hardware/20260128_171528/hardware_sample_4.png
-1/4 [======>.......................] - ETA: 28s2/4 [==============>...............] - ETA: 0s 3/4 [=====================>........] - ETA: 0s4/4 [==============================] - ETA: 0s4/4 [==============================] - 11s 411ms/step
+Saving first 5 generated images to results_local/debug_hardware/20260128_172915...
+Saved results_local/debug_hardware/20260128_172915/hardware_sample_0.png
+Saved results_local/debug_hardware/20260128_172915/hardware_sample_1.png
+Saved results_local/debug_hardware/20260128_172915/hardware_sample_2.png
+Saved results_local/debug_hardware/20260128_172915/hardware_sample_3.png
+Saved results_local/debug_hardware/20260128_172915/hardware_sample_4.png
+1/4 [======>.......................] - ETA: 28s2/4 [==============>...............] - ETA: 0s 3/4 [=====================>........] - ETA: 0s4/4 [==============================] - ETA: 0s4/4 [==============================] - 10s 377ms/step
 Inference successful. Check accuracy manually.
 
 Sample Predictions (True vs Pred):
   Sample 0: 	True=0 	Pred=1
   Sample 1: 	True=0 	Pred=1
   Sample 2: 	True=0 	Pred=1
-  Sample 3: 	True=0 	Pred=1
+  Sample 3: 	True=0 	Pred=3
   Sample 4: 	True=0 	Pred=1
-  Sample 5: 	True=0 	Pred=1
+  Sample 5: 	True=0 	Pred=3
   Sample 6: 	True=0 	Pred=1
-  Sample 7: 	True=0 	Pred=1
+  Sample 7: 	True=0 	Pred=3
   Sample 8: 	True=0 	Pred=1
   Sample 9: 	True=0 	Pred=1
 
