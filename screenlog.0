@@ -18,21 +18,21 @@ PHASE 1: MULTI-CHANNEL CALIBRATION
 
 === Calibrating ch1 (kernel size: (3, 3)) ===
 
-=== Calibrating ch2 (kernel size: (7, 7)) ===
+=== Calibrating ch2 (kernel size: (3, 3)) ===
 
-=== Calibrating ch3 (kernel size: (15, 15)) ===
+=== Calibrating ch3 (kernel size: (5, 5)) ===
 
 --- CH1 Results (averaged across classes) ---
  Shift   Min   Max    Mean     Std   %Sat  %Black
 --------------------------------------------------
-     0     0    64     0.0     0.4    0.0   100.0
-     1     0    32     0.0     0.2    0.0   100.0
-     2     0    16     0.0     0.1    0.0   100.0
-     3     0     8     0.0     0.1    0.0   100.0
-     4     0     4     0.0     0.0    0.0   100.0
-     5     0     2     0.0     0.0    0.0   100.0
-     6     0     1     0.0     0.0    0.0   100.0
-     7     0     0     0.0     0.0    0.0   100.0
+     0     0   128     0.0     0.9    0.0   100.0
+     1     0    64     0.0     0.5    0.0   100.0
+     2     0    32     0.0     0.2    0.0   100.0
+     3     0    16     0.0     0.1    0.0   100.0
+     4     0     8     0.0     0.1    0.0   100.0
+     5     0     4     0.0     0.0    0.0   100.0
+     6     0     2     0.0     0.0    0.0   100.0
+     7     0     1     0.0     0.0    0.0   100.0
      8     0     0     0.0     0.0    0.0   100.0
      9     0     0     0.0     0.0    0.0   100.0
     10     0     0     0.0     0.0    0.0   100.0
@@ -43,15 +43,15 @@ PHASE 1: MULTI-CHANNEL CALIBRATION
 --- CH2 Results (averaged across classes) ---
  Shift   Min   Max    Mean     Std   %Sat  %Black
 --------------------------------------------------
-     0     0    64     0.0     0.4    0.0   100.0
-     1     0    32     0.0     0.2    0.0   100.0
-     2     0    16     0.0     0.1    0.0   100.0
-     3     0     8     0.0     0.1    0.0   100.0
-     4     0     4     0.0     0.0    0.0   100.0
-     5     0     2     0.0     0.0    0.0   100.0
-     6     0     1     0.0     0.0    0.0   100.0
-     7     0     0     0.0     0.0    0.0   100.0
-     8     0     0     0.0     0.0    0.0   100.0
+     0     0   255     0.0     1.8    0.0   100.0
+     1     0   128     0.0     0.9    0.0   100.0
+     2     0    64     0.0     0.5    0.0   100.0
+     3     0    32     0.0     0.2    0.0   100.0
+     4     0    16     0.0     0.1    0.0   100.0
+     5     0     8     0.0     0.1    0.0   100.0
+     6     0     4     0.0     0.0    0.0   100.0
+     7     0     2     0.0     0.0    0.0   100.0
+     8     0     1     0.0     0.0    0.0   100.0
      9     0     0     0.0     0.0    0.0   100.0
     10     0     0     0.0     0.0    0.0   100.0
     11     0     0     0.0     0.0    0.0   100.0
@@ -61,13 +61,13 @@ PHASE 1: MULTI-CHANNEL CALIBRATION
 --- CH3 Results (averaged across classes) ---
  Shift   Min   Max    Mean     Std   %Sat  %Black
 --------------------------------------------------
-     0     0    64     0.0     0.6    0.0    99.8
-     1     0    32     0.0     0.3    0.0    99.9
-     2     0    16     0.0     0.1    0.0    99.9
-     3     0     8     0.0     0.1    0.0    99.9
-     4     0     4     0.0     0.0    0.0   100.0
-     5     0     2     0.0     0.0    0.0   100.0
-     6     0     1     0.0     0.0    0.0   100.0
+     0     0    33     0.0     1.0    0.0    99.9
+     1     0    16     0.0     0.5    0.0    99.9
+     2     0     8     0.0     0.3    0.0    99.9
+     3     0     4     0.0     0.1    0.0    99.9
+     4     0     2     0.0     0.1    0.0    99.9
+     5     0     1     0.0     0.0    0.0    99.9
+     6     0     0     0.0     0.0    0.0   100.0
      7     0     0     0.0     0.0    0.0   100.0
      8     0     0     0.0     0.0    0.0   100.0
      9     0     0     0.0     0.0    0.0   100.0
@@ -85,14 +85,14 @@ PHASE 2: SINGLE-CHANNEL CALIBRATION
 --- CH1 Results (averaged across classes) ---
  Shift   Min   Max    Mean     Std   %Sat  %Black
 --------------------------------------------------
-     0     0    64     0.0     0.4    0.0   100.0
-     1     0    32     0.0     0.2    0.0   100.0
-     2     0    16     0.0     0.1    0.0   100.0
-     3     0     8     0.0     0.1    0.0   100.0
-     4     0     4     0.0     0.0    0.0   100.0
-     5     0     2     0.0     0.0    0.0   100.0
-     6     0     1     0.0     0.0    0.0   100.0
-     7     0     0     0.0     0.0    0.0   100.0
+     0     0   128     0.0     0.9    0.0   100.0
+     1     0    64     0.0     0.5    0.0   100.0
+     2     0    32     0.0     0.2    0.0   100.0
+     3     0    16     0.0     0.1    0.0   100.0
+     4     0     8     0.0     0.1    0.0   100.0
+     5     0     4     0.0     0.0    0.0   100.0
+     6     0     2     0.0     0.0    0.0   100.0
+     7     0     1     0.0     0.0    0.0   100.0
      8     0     0     0.0     0.0    0.0   100.0
      9     0     0     0.0     0.0    0.0   100.0
     10     0     0     0.0     0.0    0.0   100.0
@@ -105,56 +105,56 @@ PHASE 3: GENERATING SAMPLE IMAGES
 ============================================================
 
 Generating multi-channel samples with shifts: {'ch1': 0, 'ch2': 0, 'ch3': 0}
-Saved: results_local/calibration/20260128_220813/multi/4ASK_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/4ASK_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/4ASK_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/BPSK_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/BPSK_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/BPSK_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/QPSK_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/QPSK_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/QPSK_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/8PSK_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/8PSK_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/8PSK_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/16QAM_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/16QAM_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/16QAM_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/32QAM_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/32QAM_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/32QAM_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/64QAM_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/64QAM_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/64QAM_2_multi.png
-Saved: results_local/calibration/20260128_220813/multi/OQPSK_0_multi.png
-Saved: results_local/calibration/20260128_220813/multi/OQPSK_1_multi.png
-Saved: results_local/calibration/20260128_220813/multi/OQPSK_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/4ASK_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/4ASK_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/4ASK_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/BPSK_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/BPSK_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/BPSK_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/QPSK_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/QPSK_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/QPSK_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/8PSK_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/8PSK_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/8PSK_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/16QAM_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/16QAM_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/16QAM_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/32QAM_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/32QAM_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/32QAM_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/64QAM_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/64QAM_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/64QAM_2_multi.png
+Saved: results_local/calibration/20260128_222613/multi/OQPSK_0_multi.png
+Saved: results_local/calibration/20260128_222613/multi/OQPSK_1_multi.png
+Saved: results_local/calibration/20260128_222613/multi/OQPSK_2_multi.png
 
 Generating single-channel samples with shifts: {'ch1': 0}
-Saved: results_local/calibration/20260128_220813/single/4ASK_0_single.png
-Saved: results_local/calibration/20260128_220813/single/4ASK_1_single.png
-Saved: results_local/calibration/20260128_220813/single/4ASK_2_single.png
-Saved: results_local/calibration/20260128_220813/single/BPSK_0_single.png
-Saved: results_local/calibration/20260128_220813/single/BPSK_1_single.png
-Saved: results_local/calibration/20260128_220813/single/BPSK_2_single.png
-Saved: results_local/calibration/20260128_220813/single/QPSK_0_single.png
-Saved: results_local/calibration/20260128_220813/single/QPSK_1_single.png
-Saved: results_local/calibration/20260128_220813/single/QPSK_2_single.png
-Saved: results_local/calibration/20260128_220813/single/8PSK_0_single.png
-Saved: results_local/calibration/20260128_220813/single/8PSK_1_single.png
-Saved: results_local/calibration/20260128_220813/single/8PSK_2_single.png
-Saved: results_local/calibration/20260128_220813/single/16QAM_0_single.png
-Saved: results_local/calibration/20260128_220813/single/16QAM_1_single.png
-Saved: results_local/calibration/20260128_220813/single/16QAM_2_single.png
-Saved: results_local/calibration/20260128_220813/single/32QAM_0_single.png
-Saved: results_local/calibration/20260128_220813/single/32QAM_1_single.png
-Saved: results_local/calibration/20260128_220813/single/32QAM_2_single.png
-Saved: results_local/calibration/20260128_220813/single/64QAM_0_single.png
-Saved: results_local/calibration/20260128_220813/single/64QAM_1_single.png
-Saved: results_local/calibration/20260128_220813/single/64QAM_2_single.png
-Saved: results_local/calibration/20260128_220813/single/OQPSK_0_single.png
-Saved: results_local/calibration/20260128_220813/single/OQPSK_1_single.png
-Saved: results_local/calibration/20260128_220813/single/OQPSK_2_single.png
+Saved: results_local/calibration/20260128_222613/single/4ASK_0_single.png
+Saved: results_local/calibration/20260128_222613/single/4ASK_1_single.png
+Saved: results_local/calibration/20260128_222613/single/4ASK_2_single.png
+Saved: results_local/calibration/20260128_222613/single/BPSK_0_single.png
+Saved: results_local/calibration/20260128_222613/single/BPSK_1_single.png
+Saved: results_local/calibration/20260128_222613/single/BPSK_2_single.png
+Saved: results_local/calibration/20260128_222613/single/QPSK_0_single.png
+Saved: results_local/calibration/20260128_222613/single/QPSK_1_single.png
+Saved: results_local/calibration/20260128_222613/single/QPSK_2_single.png
+Saved: results_local/calibration/20260128_222613/single/8PSK_0_single.png
+Saved: results_local/calibration/20260128_222613/single/8PSK_1_single.png
+Saved: results_local/calibration/20260128_222613/single/8PSK_2_single.png
+Saved: results_local/calibration/20260128_222613/single/16QAM_0_single.png
+Saved: results_local/calibration/20260128_222613/single/16QAM_1_single.png
+Saved: results_local/calibration/20260128_222613/single/16QAM_2_single.png
+Saved: results_local/calibration/20260128_222613/single/32QAM_0_single.png
+Saved: results_local/calibration/20260128_222613/single/32QAM_1_single.png
+Saved: results_local/calibration/20260128_222613/single/32QAM_2_single.png
+Saved: results_local/calibration/20260128_222613/single/64QAM_0_single.png
+Saved: results_local/calibration/20260128_222613/single/64QAM_1_single.png
+Saved: results_local/calibration/20260128_222613/single/64QAM_2_single.png
+Saved: results_local/calibration/20260128_222613/single/OQPSK_0_single.png
+Saved: results_local/calibration/20260128_222613/single/OQPSK_1_single.png
+Saved: results_local/calibration/20260128_222613/single/OQPSK_2_single.png
 
 ============================================================
 CALIBRATION SUMMARY
@@ -163,16 +163,16 @@ CALIBRATION SUMMARY
 Multi-channel config:
   Shifts: ch1=0, ch2=0, ch3=0
   Kernels: 3x3, 7x7, 15x15
-  Gain: 64
+  Gain: 32
 
 Single-channel config:
   Shift: 0
   Kernel: 3x3
-  Gain: 64
+  Gain: 32
 
-Summary saved to: results_local/calibration/20260128_220813/calibration_summary.json
+Summary saved to: results_local/calibration/20260128_222613/calibration_summary.json
 
-Sample images saved to: results_local/calibration/20260128_220813/
+Sample images saved to: results_local/calibration/20260128_222613/
 
 >>> NEXT STEP: Visually inspect images and run dataset generation <<<
-]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# 
+]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[K[K[K[K[K[K
