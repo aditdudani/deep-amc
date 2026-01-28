@@ -142,7 +142,7 @@ def load_calibration_samples(data_path, n_per_class=20, snr_min=10):
     with h5py.File(data_path, 'r') as f:
         X = f['X'][:]  # (N, 2, 1024)
         Y = f['Y'][:]  # (N, 24) one-hot
-        Z = f['Z'][:]  # (N,) SNR values
+        Z = f['Z'][:].flatten()  # (N,) SNR values - flatten in case 2D
     
     # Get integer labels
     y_int = np.argmax(Y, axis=1)
