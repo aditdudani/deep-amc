@@ -38,6 +38,35 @@ KERNEL_MEDIUM = np.array([[1, 2, 1],
 # INCREASED SIZE: 5x5 was too small. 11x11 better approximates the wide Gaussian.
 KERNEL_BLUR = np.ones((11, 11), dtype=np.int16) * GAIN
 
+# --- LABEL MAPPING ---
+# Checks confirm: HDF5 is Fixed Order (OOK=0), Model is Alphabetical (128APSK=0)
+HDF5_TO_MODEL_MAP = {
+    0: 21,  # OOK -> OOK
+    1: 9,   # 4ASK -> 4ASK
+    2: 12,  # 8ASK -> 8ASK
+    3: 18,  # BPSK -> BPSK
+    4: 23,  # QPSK -> QPSK
+    5: 13,  # 8PSK -> 8PSK
+    6: 3,   # 16PSK -> 16PSK
+    7: 7,   # 32PSK -> 32PSK
+    8: 2,   # 16APSK -> 16APSK
+    9: 6,   # 32APSK -> 32APSK
+    10: 10, # 64APSK -> 64APSK
+    11: 0,  # 128APSK -> 128APSK
+    12: 4,  # 16QAM -> 16QAM
+    13: 8,  # 32QAM -> 32QAM
+    14: 11, # 64QAM -> 64QAM
+    15: 1,  # 128QAM -> 128QAM
+    16: 5,  # 256QAM -> 256QAM
+    17: 17, # AM-SSB-WC -> AM-SSB-WC
+    18: 16, # AM-SSB-SC -> AM-SSB-SC
+    19: 15, # AM-DSB-WC -> AM-DSB-WC
+    20: 14, # AM-DSB-SC -> AM-DSB-SC
+    21: 19, # FM -> FM
+    22: 20, # GMSK -> GMSK
+    23: 22  # OQPSK -> OQPSK
+}
+
 def hardware_gen_layer(iq_samples, kernel, shift_val=4):
     """
     The Digital Twin of the FPGA Pipeline.
@@ -220,14 +249,17 @@ def main():
                 full_y_true = Y.flatten()
             
             # Subset the labels
-            y_true_subset = full_y_true[high_snr_indices[:100]] if 'high_snr_indices' in locals() else full_y_true[:100]
+            y_raw_subset = full_y_true[high_snr_indices[:100]] if 'high_snr_indices' in locals() else full_y_true[:100]
             
-            y_pred = np.argmax(preds, axis=1)
+            # Apply Mapping (HDF5 -> Model)
+            y_true_subset = np.array([HDF5_TO_MODEL_MAP[y] for y in y_raw_subset])
+            
+            y_pred = np.argmax(preds, axis=1) # Model outputs are already in Model Space
             
             # Print sample comparisions
             print("\nSample Predictions (True vs Pred):")
             for i in range(10):
-                print(f"  Sample {i}: \tTrue={y_true_subset[i]} \tPred={y_pred[i]}")
+                print(f"  Sample {i}: \tRaw={y_raw_subset[i]} \tMapped={y_true_subset[i]} \tPred={y_pred[i]}")
 
             acc = np.mean(y_true_subset == y_pred)
             print(f"\nValidation Accuracy on subset: {acc*100:.2f}%")
