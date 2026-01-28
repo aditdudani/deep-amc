@@ -171,11 +171,19 @@ def batch_process_hardware(iq_batch, shift_vals):
     batch_out = []
     s1, s2, s3 = shift_vals
     
-    # --- FOG FLOOR FIX ---
-    # In training, every pixel receives tiny contributions from ALL 1024 IQ points
-    # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
-    # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
-    FOG_FLOOR = 40
+    # --- FOG FLOOR FIX (Calibrated to match Training Distribution) ---
+    # Training uses GLOBAL summation: every pixel gets contribution from ALL 1024 IQ points.
+    # Our local kernel stamps leave distant pixels at 0.
+    # 
+    # Training stats (after norm to [0,255]):
+    #   Ch1: min=0, mean=4.7   (Sharp - only bright near IQ points, OK)
+    #   Ch2: min=4, mean=62.5  (Medium - significant ambient fog)
+    #   Ch3: min=168, mean=211 (Blur - very bright fog everywhere)
+    #
+    # We need fog floors to lift our baseline to match training.
+    # Since normalization scales by max (which is 255), we add floors AFTER normalizing.
+    FOG_FLOOR_CH2 = 4    # Match training Ch2 min
+    FOG_FLOOR_CH3 = 168  # Match training Ch3 min (very bright base!)
     
     for i in range(len(iq_batch)):
         ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
@@ -184,33 +192,32 @@ def batch_process_hardware(iq_batch, shift_vals):
         
         # Debug: Print stats for first sample BEFORE normalization
         if i == 0:
-            print(f"\n--- Channel Stats BEFORE normalization (Sample 0) ---")
+            print(f"\n--- Channel Stats BEFORE processing (Sample 0) ---")
             print(f"  Ch1 (Sharp):  min={ch1.min():3d}, max={ch1.max():3d}, mean={ch1.mean():.1f}")
             print(f"  Ch2 (Medium): min={ch2.min():3d}, max={ch2.max():3d}, mean={ch2.mean():.1f}")
             print(f"  Ch3 (Blur):   min={ch3.min():3d}, max={ch3.max():3d}, mean={ch3.mean():.1f}")
         
-        # Apply fog floor to Channel 3
-        ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
-        
-        if i == 0:
-            print(f"  Ch3 after FOG_FLOOR={FOG_FLOOR}: min={ch3.min():3d}, max={ch3.max():3d}, mean={ch3.mean():.1f}")
-        
-        # --- PER-CHANNEL NORMALIZATION (Critical!) ---
-        # Training normalizes each channel to [0,1] by dividing by max, then scales to [0,255].
-        # This ensures the brightest pixel in each channel is always 255.
-        # Without this, our images have unbalanced channel intensities.
+        # --- PER-CHANNEL NORMALIZATION (Match training: divide by max, scale to 255) ---
         ch1_norm = (ch1.astype(np.float32) / max(ch1.max(), 1) * 255).astype(np.uint8)
         ch2_norm = (ch2.astype(np.float32) / max(ch2.max(), 1) * 255).astype(np.uint8)
         ch3_norm = (ch3.astype(np.float32) / max(ch3.max(), 1) * 255).astype(np.uint8)
         
-        # Debug: Print stats AFTER normalization
-        if i == 0:
-            print(f"\n--- Channel Stats AFTER normalization (Sample 0) ---")
-            print(f"  Ch1 (Sharp):  min={ch1_norm.min():3d}, max={ch1_norm.max():3d}, mean={ch1_norm.mean():.1f}")
-            print(f"  Ch2 (Medium): min={ch2_norm.min():3d}, max={ch2_norm.max():3d}, mean={ch2_norm.mean():.1f}")
-            print(f"  Ch3 (Blur):   min={ch3_norm.min():3d}, max={ch3_norm.max():3d}, mean={ch3_norm.mean():.1f}")
+        # --- APPLY FOG FLOORS (After normalization to match training distribution) ---
+        # This lifts the black baseline to match training's ambient light level
+        # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 255)
+        # This compresses the range [0,255] into [floor, 255] while preserving relative contrast
+        ch2_final = (FOG_FLOOR_CH2 + (255 - FOG_FLOOR_CH2) * ch2_norm.astype(np.float32) / 255).astype(np.uint8)
+        ch3_final = (FOG_FLOOR_CH3 + (255 - FOG_FLOOR_CH3) * ch3_norm.astype(np.float32) / 255).astype(np.uint8)
         
-        img = np.stack([ch1_norm, ch2_norm, ch3_norm], axis=-1)
+        # Debug: Print stats AFTER processing
+        if i == 0:
+            print(f"\n--- Channel Stats AFTER processing (Sample 0) ---")
+            print(f"  Ch1 (Sharp):  min={ch1_norm.min():3d}, max={ch1_norm.max():3d}, mean={ch1_norm.mean():.1f}")
+            print(f"  Ch2 (Medium): min={ch2_final.min():3d}, max={ch2_final.max():3d}, mean={ch2_final.mean():.1f}")
+            print(f"  Ch3 (Blur):   min={ch3_final.min():3d}, max={ch3_final.max():3d}, mean={ch3_final.mean():.1f}")
+            print(f"\n  Target (Training): Ch1 mean=4.7, Ch2 mean=62.5, Ch3 mean=211.4")
+        
+        img = np.stack([ch1_norm, ch2_final, ch3_final], axis=-1)
         batch_out.append(img)
         
     return np.array(batch_out)
