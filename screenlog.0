@@ -747,7 +747,12 @@ Saved results_local/debug_hardware/20260128_211321/hardware_sample_1.png
 Saved results_local/debug_hardware/20260128_211321/hardware_sample_2.png
 Saved results_local/debug_hardware/20260128_211321/hardware_sample_3.png
 Saved results_local/debug_hardware/20260128_211321/hardware_sample_4.png
-1/4 [======>.......................] - ETA: 4s2/4 [==============>...............] - ETA: 0s3/4 [=====================>........] - ETA: 0s4/4 [==============================] - ETA: 0s4/4 [==============================] - 3s 383ms/step
+
+1/4 [======>.......................] - ETA: 4s
+2/4 [==============>...............] - ETA: 0s
+3/4 [=====================>........] - ETA: 0s
+4/4 [==============================] - ETA: 0s
+4/4 [==============================] - 3s 383ms/step
 Inference successful. Check accuracy manually.
 
 Sample Predictions (True vs Pred):
@@ -778,193 +783,3 @@ Sample Predictions (True vs Pred):
   Sample 24: True=64QAM  (3) | Pred=64QAM  (3) | Conf=0.21 | MATCH
 
 Validation Accuracy on subset: 48.00%
-]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# python src/simulate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Krm screenlog.0nano src/simulate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[2@python[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[2Pnano[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
-[?2004h[?1049h[22;0;0t[1;37r(B[m[4l[?7h[39;49m[?1h=[?1h=[?25l[39;49m(B[m[H[2J[35;29H(B[0;7m[ Reading... ](B[m[35;27H(B[0;7m[ Read 391 lines ](B[m[H(B[0;7m  GNU nano 4.8           src/simulate_hardware.py                     [1;69H(B[m[36d(B[0;7m^G(B[m Get Help   (B[0;7m^O(B[m Write Out  (B[0;7m^W(B[m Where Is   (B[0;7m^K(B[m Cut Text   (B[0;7m^J(B[m Justify[37d(B[0;7m^X(B[m Exit[15G(B[0;7m^R(B[m Read File  (B[0;7m^\(B[m Replace    (B[0;7m^U(B[m Paste Text (B[0;7m^T(B[m To Spell[35d[2d(B[0;1m[36mimport[39m(B[m os[3d(B[0;1m[36mimport[39m(B[m sys[5d(B[0;1m[31m# Suppress verbose TensorFlow/CUDA logging[6d[39m(B[mos.environ[(B[0;1m[32m'TF_CPP_MIN_LOG_LEVEL'[39m(B[m] = (B[0;1m[32m'3'(B[0m[42m [7d[49m(B[mos.environ[(B[0;1m[32m'TF_ENABLE_ONEDNN_OPTS'[39m(B[m] = (B[0;1m[32m'0'[9d[36mimport[39m(B[m numpy (B[0;1m[36mas[39m(B[m np[10d(B[0;1m[36mimport[39m(B[m tensorflow (B[0;1m[36mas[39m(B[m tf[12d(B[0;1m[31m# Configure GPU Memory Growth (Prevent 'DNN library not found' due to[39m(B[0;7m>[13;1H(B[mgpus = tf.config.list_physical_devices((B[0;1m[32m'GPU'[39m(B[m)[14d(B[0;1m[36mfor[39m(B[m gpu (B[0;1m[36min[39m(B[m gpus:[15;5H(B[0;1m[36mtry[39m(B[m:[16dtf.config.experimental.set_memory_growth(gpu, (B[0;1m[35mTrue[39m(B[m)[17;5H(B[0;1m[36mexcept[39m(B[m RuntimeError (B[0;1m[36mas[39m(B[m e:[18;9Hprint(f(B[0;1m[32m"GPU Config Error: {e}"[39m(B[m)[19d(B[0;1m[36mimport[39m(B[m matplotlib.pyplot (B[0;1m[36mas[39m(B[m plt[20d(B[0;1m[36mfrom[39m(B[m datetime (B[0;1m[36mimport[39m(B[m datetime[22d(B[0;1m[31m# Ensure src is in python path[23d[39m(B[msys.path.append(os.path.dirname(os.path.abspath(__file__)))[25d(B[0;1m[31m# Import existing tools to load data and model[26d# Adjust paths if your model/data are elsewhere[27d[36mfrom[39m(B[m common.squeezenet (B[0;1m[36mimport[39m(B[m build_squeezenet_v11[28d(B[0;1m[36mfrom[39m(B[m common.data_loader (B[0;1m[36mimport[39m(B[m load_data_sample[29d(B[0;1m[36mfrom[39m(B[m common.image_generator (B[0;1m[36mimport[39m(B[m tf_generate_three_channel_image[31d(B[0;1m[31m# --- HARDWARE PARAMETERS ---[32d[39m(B[mGRID_SIZE = 224[34d(B[0;1m[31m# SCALE FACTOR: We scale up the kernels to utilize the 16-bit accumul[39m(B[0;7m>[2;1H(B[m[?12l[?25h[?25l[3d[?12l[?25h[?25l[4d[?12l[?25h[?25l[5d[?12l[?25h[?25l[6d[?12l[?25h[?25l[7d[?12l[?25h[?25l[8d[?12l[?25h[?25l[9d[?12l[?25h[?25l[10d[?12l[?25h[?25l[11d[?12l[?25h[?25l[12d[?12l[?25h[?25l[13d[?12l[?25h[?25l[14d[?12l[?25h[?25l[15d[?12l[?25h[?25l[16d[?12l[?25h[?25l[17d[?12l[?25h[?25l[18d[?12l[?25h[?25l[19d[?12l[?25h[?25l[20d[?12l[?25h[?25l[21d[?12l[?25h[?25l[22d[?12l[?25h[?25l[23d[?12l[?25h[?25l[24d[?12l[?25h[?25l[25d[?12l[?25h[?25l[26d[?12l[?25h[?25l[27d[?12l[?25h[?25l[35d[K[28d[?12l[?25h[?25l[29d[?12l[?25h[?25l[30d[?12l[?25h[?25l[32d[?12l[?25h[?25l[33d[?12l[?25h[?25l[34d[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# This acts as our "Fixed Point Gain"[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1HGAIN = 128[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# Kernel definitions (The "Stamp")[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 1. Sharp (Corresponds to alpha=10)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1HKERNEL_SHARP = np.array([[0, 1, 0],[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;26H[1, 4, 1],[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;26H[0, 1, 0]], dtype=np.int16) * GAIN[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 2. Medium (Corresponds to alpha=1.0)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1HKERNEL_MEDIUM = np.array([[1, 2, 1],[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;27H[2, 8, 2],[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;27H[1, 2, 1]], dtype=np.int16) * GAIN[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 3. Blur (Corresponds to alpha=0.1)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# Matches training: alpha=0.1 creates a "fog" effect that the model l[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# Larger kernel (61x61) needed because alpha=0.1 decays very slowly.[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[36mdef[34m create_exponential_kernel[39m(B[m(size, alpha=0.1, gain=128):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[32m""" Generates an integer kernel with exponential decay: exp(-alph[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hax = np.linspace(-(size - 1) / 2., (size - 1) / 2., size)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hxx, yy = np.meshgrid(ax, ax)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hr = np.sqrt(xx**2 + yy**2)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hkernel = np.exp(-alpha * r)[42m [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mreturn[39m(B[m (kernel * gain).astype(np.int16)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# Uses Alpha=0.1 to match training (creates "fog" effect)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1HKERNEL_BLUR = create_exponential_kernel(61, alpha=0.1, gain=GAIN)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# --- LABEL MAPPING ---[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# HDF5 is Fixed Order (24 Classes). Model is 8-Class Subset (Alphabet[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# We must map valid HDF5 indices to Model Indices (0-7).[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m#[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# Model Class Order (Alphabetical 'processed/train' subset):[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 0: 16QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 1: 32QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 2: 4ASK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 3: 64QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 4: 8PSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 5: BPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 6: OQPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[31m# 7: QPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1HHDF5_TO_MODEL_MAP = {[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # HDF5 Index : Model Index[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H1: 2,  (B[0;1m[31m # 4ASK  -> 4ASK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H3: 5,  (B[0;1m[31m # BPSK  -> BPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H4: 7,  (B[0;1m[31m # QPSK  -> QPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H5: 4,  (B[0;1m[31m # 8PSK  -> 8PSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H12: 0, (B[0;1m[31m # 16QAM -> 16QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H13: 1, (B[0;1m[31m # 32QAM -> 32QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H14: 3, (B[0;1m[31m # 64QAM -> 64QAM[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H23: 6  (B[0;1m[31m # OQPSK -> OQPSK[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H}[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[36mdef[34m hardware_gen_layer[39m(B[m(iq_samples, kernel, shift_val=4):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[32m"""[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    The Digital Twin of the FPGA Pipeline.[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    Strictly integer logic. No floats allowed after coordinate mappin[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    """[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # 1. COORDINATE MAPPING (Float -> Int)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Map [-3.5, 3.5] to [0, 224].(B[0m[42m [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Logic: (val + 3.5) * (224 / 7) = (val + 3.5) * 32[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hscale = GRID_SIZE / 7.0[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hu = (iq_samples[:, 0] + 3.5) * scale[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hv = (iq_samples[:, 1] + 3.5) * scale[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # DEBUG: Check for clipping[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hprint(f(B[0;1m[32m"DEBUG: u mapped range: [{u.min():.2f}, {u.max():.2f}] (Ta[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hprint(f(B[0;1m[32m"DEBUG: v mapped range: [{v.min():.2f}, {v.max():.2f}] (Ta[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Quantize to integer indices[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hu_idx = np.clip(np.round(u), 0, GRID_SIZE-1).astype(np.int16)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hv_idx = np.clip(np.round(v), 0, GRID_SIZE-1).astype(np.int16)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # DEBUG: Check for clipping - Print only for first valid sample p[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mif[39m(B[m (B[0;1m[36mnot[39m(B[m hasattr(hardware_gen_layer, (B[0;1m[32m"debug_printed"[39m(B[m):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hprint(f(B[0;1m[32m"DEBUG: Grid Mapping - u range: [{u.min():.2f}, {u.max[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hhardware_gen_layer.debug_printed = (B[0;1m[35mTrue[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # 2. ACCUMULATOR (The Bucket)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # 16-bit memory initialized to 0[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Haccumulator = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.int32)(B[0;1m[31m # [39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # 3. STAMPING (The Scatter)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hk_h, k_w = kernel.shape[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hpad_h = k_h // 2[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hpad_w = k_w // 2[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mfor[39m(B[m x, y (B[0;1m[36min[39m(B[m zip(u_idx, v_idx):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # Calculate bounds to stay within grid[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hx_min = max(0, x - pad_h)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hx_max = min(GRID_SIZE, x + pad_h + 1)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hy_min = max(0, y - pad_w)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hy_max = min(GRID_SIZE, y + pad_w + 1)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # Calculate overlap slice on kernel[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hk_x_min = pad_h - (x - x_min)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hk_x_max = k_x_min + (x_max - x_min)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hk_y_min = pad_w - (y - y_min)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hk_y_max = k_y_min + (y_max - y_min)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # "Stamp" the kernel (Accumulate)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Haccumulator[x_min:x_max, y_min:y_max] += kernel[k_x_min:k_x_m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # 4. FUNNEL (Shift & Clip)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Bit-shift division[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Houtput = accumulator >> shift_val[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Saturate at 255 (UINT8 limit)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Houtput = np.clip(output, 0, 255).astype(np.uint8)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mreturn[39m(B[m output[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[36mdef[34m build_hardware_image[39m(B[m(iq_samples):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[32m"""Generates the full 3-channel image using hardware logic."""[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # We use different shift values because wider kernels accumulate [39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # These shift values must be tuned![39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Ch3 (Blur) uses shift=5 because 61x61 kernel accumulates huge e[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hch1 = hardware_gen_layer(iq_samples, KERNEL_SHARP, shift_val=2)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hch2 = hardware_gen_layer(iq_samples, KERNEL_MEDIUM, shift_val=4)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hch3 = hardware_gen_layer(iq_samples, KERNEL_BLUR, shift_val=5)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # --- FOG FLOOR FIX ---[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # In training, every pixel receives tiny contributions from ALL 1[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # (global summation). Our kernel stamps only reach ~30px, leaving[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Add a "fog floor" to Channel 3 to simulate the ambient contribu[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # The floor is proportional to the number of samples (more points[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Calibration target: Match training Mean (~40) for Ch3. Since cl[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # and background should be ~20-30, set FOG_FLOOR=30 to lift the b[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5HFOG_FLOOR = 40[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Stack to create (224, 224, 3)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mreturn[39m(B[m np.stack([ch1, ch2, ch3], axis=-1)[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[36mdef[34m batch_process_hardware[39m(B[m(iq_batch, shift_vals):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[32m"""[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    Helps process a whole batch of samples (looping sequentially like[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    shift_vals: tuple of 3 ints (shift_ch1, shift_ch2, shift_ch3)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H(B[0;1m[32m    """[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hbatch_out = [][?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5Hs1, s2, s3 = shift_vals[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # --- FOG FLOOR FIX (Calibrated to match Training Distribution) -[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Training uses GLOBAL summation: every pixel gets contribution f[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Our local kernel stamps leave distant pixels at 0.[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m #(B[0m[42m [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Training stats (after norm to [0,255]):[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m #   Ch1: min=0, mean=~16   (Sharp - only bright near IQ points, O[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m #   Ch2: min=4, mean=~67   (Medium - significant ambient fog)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m #   Ch3: min=168, mean=~212 (Blur - very bright fog everywhere)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m #[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # We need fog floors to lift our baseline to match training MEAN [39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 255)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;4H(B[0;1m[31m # To get target_mean from raw_mean: floor ≈ target_mean - raw_mean[34;1H[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5HFOG_FLOOR_CH2 = 60  (B[0;1m[31m # Lift mean from ~10 to ~67 (training mean)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5HFOG_FLOOR_CH3 = 168 (B[0;1m[31m # Match training Ch3 min (very bright base!)[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;5H(B[0;1m[36mfor[39m(B[m i (B[0;1m[36min[39m(B[m range(len(iq_batch)):[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch2 = hardware_gen_layer(iq_batch[i], KERNEL_MEDIUM, shift_va(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch3 = hardware_gen_layer(iq_batch[i], KERNEL_BLUR, shift_val=(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # Debug: Print stats for first sample BEFORE normalization[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9H(B[0;1m[36mif[39m(B[m i == 0:[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"\n--- Channel Stats BEFORE processing (Sample 0) [39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch1 (Sharp):  min={ch1.min():3d}, max={ch1.max([39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch2 (Medium): min={ch2.min():3d}, max={ch2.max([39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch3 (Blur):   min={ch3.min():3d}, max={ch3.max([39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # --- PER-CHANNEL NORMALIZATION (Match training: divide by ma[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch1_norm = (ch1.astype(np.float32) / max(ch1.max(), 1) * 255)(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch2_norm = (ch2.astype(np.float32) / max(ch2.max(), 1) * 255)(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch3_norm = (ch3.astype(np.float32) / max(ch3.max(), 1) * 255)(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # --- APPLY FOG FLOORS (After normalization to match training[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # This lifts the black baseline to match training's ambient l[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 2[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # This compresses the range [0,255] into [floor, 255] while p[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch2_final = (FOG_FLOOR_CH2 + (255 - FOG_FLOOR_CH2) * ch2_norm(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Hch3_final = (FOG_FLOOR_CH3 + (255 - FOG_FLOOR_CH3) * ch3_norm(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H(B[0;1m[31m # Debug: Print stats AFTER processing[39m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9H(B[0;1m[36mif[39m(B[m i == 0:[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"\n--- Channel Stats AFTER processing (Sample 0) -[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch1 (Sharp):  min={ch1_norm.min():3d}, max={ch1[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch2 (Medium): min={ch2_final.min():3d}, max={ch[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"  Ch3 (Blur):   min={ch3_final.min():3d}, max={ch[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;13Hprint(f(B[0;1m[32m"\n  Target (Training): Ch1 mean=4.7, Ch2 mean=62.[39m(B[0;7m>[34;1H(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;8H[42m[1K[49m(B[m[?12l[?25h[?25l7[2;35r8[35d
-[1;37r[34;9Himg = np.stack([ch1_norm, ch2_final, ch3_final], axis=-1)[?12l[?25h[?25l[A(B[0;7m        (B[m[?12l[?25h[?25l[8G[42m[1K[A[49m(B[m[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[11d[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l[A[?12l[?25h[?25l7[2;34r8M[1;37r[2;1H[42m    [49m(B[m[?12l[?25h[?25l7[2;35r8M[1;37r[2;5HFOG_FLOOR_CH3 = 168 (B[0;1m[31m # Match training Ch3 min (very bright base!)[35d[39m(B[m[K[2d[?12l[?25h[?25l7[2;34r8M[1;37r[2;5HFOG_FLOOR_CH2 = 60  (B[0;1m[31m # Lift mean from ~10 to ~67 (training mean)[39m(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m # To get target_mean from raw_mean: floor ≈ target_mean - raw_mean[2;1H[39m(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m # Formula: new_pixel = floor + (255 - floor) * (old_pixel / 255)[39m(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m # We need fog floors to lift our baseline to match training MEAN [39m(B[0;7m>[2;1H(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m #[39m(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m #   Ch3: min=168, mean=~212 (Blur - very bright fog everywhere)[39m(B[m[?12l[?25h[?25l7[2;34r8M[1;37r[2;4H(B[0;1m[31m #   Ch2: min=4, mean=~67   (Medium - significant ambient fog)[39m(B[m[?12l[?25h[?25l7[2;35r8M[1;37r[2;4H(B[0;1m[31m #   Ch1: min=0, mean=~16   (Sharp - only bright near IQ points, O[39m(B[0;7m>[35;1H(B[m[K[2d[?12l[?25h[?25l[36d[J[37d[?12l[?25h[37;1H[?1049l[23;0;0t[?1l>[?2004l]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# 
