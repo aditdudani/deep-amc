@@ -25,6 +25,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Adjust paths if your model/data are elsewhere
 from common.squeezenet import build_squeezenet_v11
 from common.data_loader import load_data_sample
+from common.image_generator import tf_generate_three_channel_image
 
 # --- HARDWARE PARAMETERS ---
 GRID_SIZE = 224
@@ -174,17 +175,42 @@ def batch_process_hardware(iq_batch, shift_vals):
     # In training, every pixel receives tiny contributions from ALL 1024 IQ points
     # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
     # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
-    FOG_FLOOR = 50
+    FOG_FLOOR = 40
     
     for i in range(len(iq_batch)):
         ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
         ch2 = hardware_gen_layer(iq_batch[i], KERNEL_MEDIUM, shift_val=s2)
         ch3 = hardware_gen_layer(iq_batch[i], KERNEL_BLUR, shift_val=s3)
         
+        # Debug: Print stats for first sample BEFORE normalization
+        if i == 0:
+            print(f"\n--- Channel Stats BEFORE normalization (Sample 0) ---")
+            print(f"  Ch1 (Sharp):  min={ch1.min():3d}, max={ch1.max():3d}, mean={ch1.mean():.1f}")
+            print(f"  Ch2 (Medium): min={ch2.min():3d}, max={ch2.max():3d}, mean={ch2.mean():.1f}")
+            print(f"  Ch3 (Blur):   min={ch3.min():3d}, max={ch3.max():3d}, mean={ch3.mean():.1f}")
+        
         # Apply fog floor to Channel 3
         ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
         
-        img = np.stack([ch1, ch2, ch3], axis=-1)
+        if i == 0:
+            print(f"  Ch3 after FOG_FLOOR={FOG_FLOOR}: min={ch3.min():3d}, max={ch3.max():3d}, mean={ch3.mean():.1f}")
+        
+        # --- PER-CHANNEL NORMALIZATION (Critical!) ---
+        # Training normalizes each channel to [0,1] by dividing by max, then scales to [0,255].
+        # This ensures the brightest pixel in each channel is always 255.
+        # Without this, our images have unbalanced channel intensities.
+        ch1_norm = (ch1.astype(np.float32) / max(ch1.max(), 1) * 255).astype(np.uint8)
+        ch2_norm = (ch2.astype(np.float32) / max(ch2.max(), 1) * 255).astype(np.uint8)
+        ch3_norm = (ch3.astype(np.float32) / max(ch3.max(), 1) * 255).astype(np.uint8)
+        
+        # Debug: Print stats AFTER normalization
+        if i == 0:
+            print(f"\n--- Channel Stats AFTER normalization (Sample 0) ---")
+            print(f"  Ch1 (Sharp):  min={ch1_norm.min():3d}, max={ch1_norm.max():3d}, mean={ch1_norm.mean():.1f}")
+            print(f"  Ch2 (Medium): min={ch2_norm.min():3d}, max={ch2_norm.max():3d}, mean={ch2_norm.mean():.1f}")
+            print(f"  Ch3 (Blur):   min={ch3_norm.min():3d}, max={ch3_norm.max():3d}, mean={ch3_norm.mean():.1f}")
+        
+        img = np.stack([ch1_norm, ch2_norm, ch3_norm], axis=-1)
         batch_out.append(img)
         
     return np.array(batch_out)
@@ -272,6 +298,15 @@ def main():
             # Process just the first sample for quick stats
             img = hardware_gen_layer(samples_iq[0], kernel, shift_val=shift)
             print(f"  Shift={shift}: Min={img.min():3d}, Max={img.max():3d}, Mean={img.mean():6.2f}")
+
+    # --- COMPARISON: Generate reference TRAINING image ---
+    print("\n--- Reference Training Image Stats (Sample 0) ---")
+    iq_tf = tf.constant(samples_iq[0], dtype=tf.float32)
+    train_img = tf_generate_three_channel_image(iq_tf, grid_size=GRID_SIZE, alphas=(10.0, 1.0, 0.1))
+    train_img_np = (train_img.numpy() * 255).astype(np.uint8)
+    print(f"  Ch1 (Sharp):  min={train_img_np[:,:,0].min():3d}, max={train_img_np[:,:,0].max():3d}, mean={train_img_np[:,:,0].mean():.1f}")
+    print(f"  Ch2 (Medium): min={train_img_np[:,:,1].min():3d}, max={train_img_np[:,:,1].max():3d}, mean={train_img_np[:,:,1].mean():.1f}")
+    print(f"  Ch3 (Blur):   min={train_img_np[:,:,2].min():3d}, max={train_img_np[:,:,2].max():3d}, mean={train_img_np[:,:,2].mean():.1f}")
 
     # 3. Model Verification
     if os.path.exists(model_path):
