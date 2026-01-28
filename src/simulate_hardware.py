@@ -170,10 +170,20 @@ def batch_process_hardware(iq_batch, shift_vals):
     batch_out = []
     s1, s2, s3 = shift_vals
     
+    # --- FOG FLOOR FIX ---
+    # In training, every pixel receives tiny contributions from ALL 1024 IQ points
+    # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
+    # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
+    FOG_FLOOR = 30
+    
     for i in range(len(iq_batch)):
         ch1 = hardware_gen_layer(iq_batch[i], KERNEL_SHARP, shift_val=s1)
         ch2 = hardware_gen_layer(iq_batch[i], KERNEL_MEDIUM, shift_val=s2)
         ch3 = hardware_gen_layer(iq_batch[i], KERNEL_BLUR, shift_val=s3)
+        
+        # Apply fog floor to Channel 3
+        ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
+        
         img = np.stack([ch1, ch2, ch3], axis=-1)
         batch_out.append(img)
         
