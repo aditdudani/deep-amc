@@ -36,3 +36,5 @@ Thumbs.db
 
 # Ignore misc
 models2/
+--sampler-backend
+        .]
