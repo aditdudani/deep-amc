@@ -43,17 +43,19 @@ KERNEL_MEDIUM = np.array([[1, 2, 1],
                           [2, 8, 2],
                           [1, 2, 1]], dtype=np.int16) * GAIN
 # 3. Blur (Corresponds to alpha=0.1)
-# REVISION: 11x11 was too small to create the "Cloud" effect (Alpha=0.1 decays very slowly).
-# We need a much larger kernel to fill the black space.
-# We generated a Gaussian-like approximate integer kernel of size 61x61.
-def create_gaussian_kernel(size, sigma=10, gain=128):
-    """ Generates an integer kernel to simulate the wide decay """
+# REVISION: Match the "Clearer" look (Alpha=0.3, Size=31).
+# The "True" Alpha=0.1 creates a "Blue Fog" (Mean=38) that confuses the model (17% Acc).
+# A tighter kernel (Alpha=0.3) preserves the "Cluster" structure while still adding "History".
+def create_exponential_kernel(size, alpha=0.3, gain=128):
+    """ Generates an integer kernel with exponential decay: exp(-alpha * r) """
     ax = np.linspace(-(size - 1) / 2., (size - 1) / 2., size)
     xx, yy = np.meshgrid(ax, ax)
-    kernel = np.exp(-0.1 * np.sqrt(xx**2 + yy**2)) # Match the Alpha=0.1 Physics
+    r = np.sqrt(xx**2 + yy**2)
+    kernel = np.exp(-alpha * r) 
     return (kernel * gain).astype(np.int16)
 
-KERNEL_BLUR = create_gaussian_kernel(61, gain=GAIN)
+# Uses Alpha=0.3 for a "Large Dot" rather than "Fog"
+KERNEL_BLUR = create_exponential_kernel(31, alpha=0.3, gain=GAIN)
 
 # --- LABEL MAPPING ---
 # HDF5 is Fixed Order (24 Classes). Model is 8-Class Subset (Alphabetical).
@@ -143,9 +145,10 @@ def build_hardware_image(iq_samples):
     """Generates the full 3-channel image using hardware logic."""
     # We use different shift values because wider kernels accumulate more mass
     # These shift values must be tuned!
+    # Ch3 (Blur) shift reduced from 5 to 3 because Alpha 0.1->0.3 reduced energy by ~9x.
     ch1 = hardware_gen_layer(iq_samples, KERNEL_SHARP, shift_val=2)
     ch2 = hardware_gen_layer(iq_samples, KERNEL_MEDIUM, shift_val=4)
-    ch3 = hardware_gen_layer(iq_samples, KERNEL_BLUR, shift_val=5)
+    ch3 = hardware_gen_layer(iq_samples, KERNEL_BLUR, shift_val=3)
     
     # Stack to create (224, 224, 3)
     return np.stack([ch1, ch2, ch3], axis=-1)
