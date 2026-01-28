@@ -149,6 +149,15 @@ def build_hardware_image(iq_samples):
     ch2 = hardware_gen_layer(iq_samples, KERNEL_MEDIUM, shift_val=4)
     ch3 = hardware_gen_layer(iq_samples, KERNEL_BLUR, shift_val=5)
     
+    # --- FOG FLOOR FIX ---
+    # In training, every pixel receives tiny contributions from ALL 1024 IQ points
+    # (global summation). Our kernel stamps only reach ~30px, leaving distant pixels black.
+    # Add a "fog floor" to Channel 3 to simulate the ambient contribution.
+    # The floor is proportional to the number of samples (more points = higher ambient).
+    # Tunable parameter: FOG_FLOOR (0-255). Start with ~15 which is ~6% of max.
+    FOG_FLOOR = 15
+    ch3 = np.clip(ch3.astype(np.int16) + FOG_FLOOR, 0, 255).astype(np.uint8)
+    
     # Stack to create (224, 224, 3)
     return np.stack([ch1, ch2, ch3], axis=-1)
 
