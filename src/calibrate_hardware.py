@@ -1,102 +1,92 @@
 """
-Hardware Image Generation Calibration Script
+Phase 1: Rigorous Parameter Calibration for Hardware Image Generation
 
-This script finds optimal parameters for hardware-native image generation:
-1. Runs shift sweeps to find values that give good dynamic range
-2. Tests single vs multi-channel approaches
-3. Generates sample images for visual inspection
+This script runs a systematic sweep to find optimal shift values that:
+1. Target Mean: 30-80 (good mid-range brightness)
+2. Target Max: 200-255 (uses full dynamic range)
+3. % Saturated: < 5% (not clipping signal info)
+4. % Black: 60-90% (background should be dark - constellation is sparse)
 
-Run this BEFORE generating the full training dataset.
+Run this BEFORE generating the full dataset to lock in the shift parameters.
 """
 
 import os
 import sys
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 import numpy as np
-import h5py
-from datetime import datetime
 import json
+import matplotlib.pyplot as plt
+from datetime import datetime
+from collections import defaultdict
 
-# Ensure src is in python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from common.data_loader import load_data_sample
 
-# --- HARDWARE PARAMETERS ---
+# =============================================================================
+# HARDWARE PARAMETERS (MUST MATCH simulate_hardware.py)
+# =============================================================================
 GRID_SIZE = 224
-GAIN = 255  # Max value for center pixel - ensures good contrast
+GAIN = 128
 
-def create_exp_kernel(size, alpha):
-    """Create exponential decay kernel: exp(-alpha * r) * GAIN"""
-    center = (size - 1) / 2.0
-    y, x = np.ogrid[-center:center+1, -center:center+1]
-    r = np.sqrt(x*x + y*y)
-    kernel = np.exp(-alpha * r)
-    kernel = (kernel / kernel.max() * GAIN).astype(np.int16)
-    return kernel
+# Kernels - same as simulate_hardware.py
+KERNEL_SHARP = np.array([[0, 1, 0],
+                         [1, 4, 1],
+                         [0, 1, 0]], dtype=np.int16) * GAIN
 
-# Kernels with proper alphas (alpha=10 was too aggressive - single pixel!)
-# Sharp: 11x11, alpha=1.0 (tight but has spread)
-# Medium: 21x21, alpha=0.3 (medium spread)
-# Blur: 31x31, alpha=0.1 (wide spread)
-KERNEL_SHARP = create_exp_kernel(11, alpha=1.0)
-KERNEL_MEDIUM = create_exp_kernel(21, alpha=0.3)
-KERNEL_BLUR = create_exp_kernel(31, alpha=0.1)
+KERNEL_MEDIUM = np.array([[1, 2, 1],
+                          [2, 8, 2],
+                          [1, 2, 1]], dtype=np.int16) * GAIN
 
-# Define kernels for each configuration
+KERNEL_BLUR = np.ones((11, 11), dtype=np.int16) * GAIN
+
+# All kernels for sweep
 KERNELS = {
-    'single': {
-        'ch1': KERNEL_SHARP,
-    },
-    'multi': {
-        'ch1': KERNEL_SHARP,
-        'ch2': KERNEL_MEDIUM,
-        'ch3': KERNEL_BLUR,
-    }
+    'ch1_sharp': {'kernel': KERNEL_SHARP, 'size': '3x3'},
+    'ch2_medium': {'kernel': KERNEL_MEDIUM, 'size': '3x3'},
+    'ch3_blur': {'kernel': KERNEL_BLUR, 'size': '11x11'},
 }
 
-# --- LABEL MAPPING (HDF5 -> Model) ---
-HDF5_TO_MODEL_MAP = {
-    1: 2,   # 4ASK
-    3: 5,   # BPSK
-    4: 7,   # QPSK
-    5: 4,   # 8PSK
-    12: 0,  # 16QAM
-    13: 1,  # 32QAM
-    14: 3,  # 64QAM
-    23: 6   # OQPSK
-}
-
-MODEL_CLASS_NAMES = ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+# Label info
+VALID_HDF5_CLASSES = [1, 3, 4, 5, 12, 13, 14, 23]
 HDF5_CLASS_NAMES = {
     1: '4ASK', 3: 'BPSK', 4: 'QPSK', 5: '8PSK',
     12: '16QAM', 13: '32QAM', 14: '64QAM', 23: 'OQPSK'
 }
 
+# =============================================================================
+# TARGET CRITERIA
+# =============================================================================
+TARGET_MEAN_MIN = 30
+TARGET_MEAN_MAX = 80
+TARGET_MAX_MIN = 200
+TARGET_MAX_MAX = 255
+TARGET_SATURATED_MAX = 5.0  # percent
+TARGET_BLACK_MIN = 60.0     # percent
+TARGET_BLACK_MAX = 90.0     # percent
 
-def hardware_gen_layer(iq_samples, kernel, shift_val, grid_size=224):
-    """
-    Hardware-accurate image generation layer.
-    Uses FIXED bit-shift scaling (no dynamic max).
-    """
-    # 1. Coordinate mapping: [-3.5, 3.5] -> [0, 224]
-    scale = grid_size / 7.0
+# =============================================================================
+# CORE FUNCTIONS
+# =============================================================================
+
+def hardware_gen_layer(iq_samples, kernel, shift_val):
+    """Hardware-accurate image generation layer with fixed bit-shift scaling."""
+    scale = GRID_SIZE / 7.0
     u = (iq_samples[:, 0] + 3.5) * scale
     v = (iq_samples[:, 1] + 3.5) * scale
     
-    # Quantize to integer indices
-    u_idx = np.clip(np.round(u), 0, grid_size-1).astype(np.int16)
-    v_idx = np.clip(np.round(v), 0, grid_size-1).astype(np.int16)
+    u_idx = np.clip(np.round(u), 0, GRID_SIZE-1).astype(np.int16)
+    v_idx = np.clip(np.round(v), 0, GRID_SIZE-1).astype(np.int16)
     
-    # 2. Accumulator (int32 to avoid overflow)
-    accumulator = np.zeros((grid_size, grid_size), dtype=np.int32)
+    accumulator = np.zeros((GRID_SIZE, GRID_SIZE), dtype=np.int32)
     
-    # 3. Kernel stamping
     k_h, k_w = kernel.shape
     pad_h, pad_w = k_h // 2, k_w // 2
     
     for x, y in zip(u_idx, v_idx):
-        x_min = max(0, x - pad_h)
-        x_max = min(grid_size, x + pad_h + 1)
-        y_min = max(0, y - pad_w)
-        y_max = min(grid_size, y + pad_w + 1)
+        x_min, x_max = max(0, x - pad_h), min(GRID_SIZE, x + pad_h + 1)
+        y_min, y_max = max(0, y - pad_w), min(GRID_SIZE, y + pad_w + 1)
         
         k_x_min = pad_h - (x - x_min)
         k_x_max = k_x_min + (x_max - x_min)
@@ -105,13 +95,12 @@ def hardware_gen_layer(iq_samples, kernel, shift_val, grid_size=224):
         
         accumulator[x_min:x_max, y_min:y_max] += kernel[k_x_min:k_x_max, k_y_min:k_y_max]
     
-    # 4. Fixed bit-shift scaling (NO dynamic max!)
     output = accumulator >> shift_val
     return np.clip(output, 0, 255).astype(np.uint8)
 
 
-def compute_channel_stats(img):
-    """Compute statistics for a single channel image."""
+def compute_stats(img):
+    """Compute all relevant statistics for a single-channel image."""
     return {
         'min': int(img.min()),
         'max': int(img.max()),
@@ -122,311 +111,324 @@ def compute_channel_stats(img):
     }
 
 
-def calibration_sweep(iq_samples, kernel, shift_range=range(0, 16)):
+def calibration_sweep(iq_samples, kernel, shift_range=range(0, 12)):
     """
-    Sweep shift values to find optimal dynamic range.
+    Run calibration sweep for a single kernel across multiple samples.
+    Returns aggregated statistics per shift value.
+    """
+    results = defaultdict(list)
     
-    Target:
-    - Mean: 30-80 (good mid-range brightness)
-    - Max: 200-255 (uses full dynamic range)
-    - % Saturated: < 5% (not clipping signal)
-    - % Black: 60-90% (background should be dark, constellation is sparse)
-    """
-    results = []
     for shift in shift_range:
-        img = hardware_gen_layer(iq_samples, kernel, shift)
-        stats = compute_channel_stats(img)
-        stats['shift'] = shift
-        results.append(stats)
-    return results
+        for iq in iq_samples:
+            img = hardware_gen_layer(iq, kernel, shift)
+            stats = compute_stats(img)
+            results[shift].append(stats)
+    
+    # Aggregate across samples
+    aggregated = {}
+    for shift, stats_list in results.items():
+        aggregated[shift] = {
+            'min': np.mean([s['min'] for s in stats_list]),
+            'max': np.mean([s['max'] for s in stats_list]),
+            'mean': np.mean([s['mean'] for s in stats_list]),
+            'std': np.mean([s['std'] for s in stats_list]),
+            'pct_saturated': np.mean([s['pct_saturated'] for s in stats_list]),
+            'pct_black': np.mean([s['pct_black'] for s in stats_list]),
+        }
+    return aggregated
 
 
-def load_calibration_samples(data_path, n_per_class=20, snr_min=10):
-    """Load samples for calibration - stratified by class."""
-    print(f"Loading calibration samples from {data_path}...")
+def score_shift(stats):
+    """
+    Score a shift configuration. Lower is better.
+    Returns score and whether it passes all criteria.
+    """
+    score = 0
+    passes = True
     
-    with h5py.File(data_path, 'r') as f:
-        X = f['X'][:]  # (N, 2, 1024)
-        Y = f['Y'][:]  # (N, 24) one-hot
-        Z = f['Z'][:].flatten()  # (N,) SNR values - flatten in case 2D
+    # Mean in target range
+    if stats['mean'] < TARGET_MEAN_MIN:
+        score += (TARGET_MEAN_MIN - stats['mean']) ** 2
+        passes = False
+    elif stats['mean'] > TARGET_MEAN_MAX:
+        score += (stats['mean'] - TARGET_MEAN_MAX) ** 2
+        passes = False
     
-    # Get integer labels
-    y_int = np.argmax(Y, axis=1)
+    # Max should be high (near 255)
+    if stats['max'] < TARGET_MAX_MIN:
+        score += (TARGET_MAX_MIN - stats['max']) ** 2
+        passes = False
     
-    samples = {}
-    for hdf5_idx, class_name in HDF5_CLASS_NAMES.items():
-        # Filter by class and SNR
-        mask = (y_int == hdf5_idx) & (Z >= snr_min)
-        indices = np.where(mask)[0]
+    # Saturation should be low
+    if stats['pct_saturated'] > TARGET_SATURATED_MAX:
+        score += (stats['pct_saturated'] - TARGET_SATURATED_MAX) ** 2
+        passes = False
+    
+    # Black percentage in range
+    if stats['pct_black'] < TARGET_BLACK_MIN:
+        score += (TARGET_BLACK_MIN - stats['pct_black']) ** 2
+        passes = False
+    elif stats['pct_black'] > TARGET_BLACK_MAX:
+        score += (stats['pct_black'] - TARGET_BLACK_MAX) ** 2
+        passes = False
+    
+    return score, passes
+
+
+def find_optimal_shift(sweep_results):
+    """Find the best shift value from sweep results."""
+    best_shift = None
+    best_score = float('inf')
+    any_passes = False
+    
+    for shift, stats in sweep_results.items():
+        score, passes = score_shift(stats)
+        if passes and not any_passes:
+            any_passes = True
+            best_shift = shift
+            best_score = score
+        elif passes and score < best_score:
+            best_shift = shift
+            best_score = score
+        elif not any_passes and score < best_score:
+            best_shift = shift
+            best_score = score
+    
+    return best_shift, any_passes
+
+
+def print_sweep_table(sweep_results, channel_name):
+    """Print formatted sweep results table."""
+    print(f"\n{'='*80}")
+    print(f"{channel_name} SWEEP RESULTS")
+    print(f"{'='*80}")
+    print(f"{'Shift':>6} {'Min':>6} {'Max':>6} {'Mean':>8} {'Std':>8} {'%Sat':>7} {'%Black':>8} {'Pass':>6}")
+    print("-" * 80)
+    
+    for shift in sorted(sweep_results.keys()):
+        s = sweep_results[shift]
+        _, passes = score_shift(s)
+        pass_str = "YES" if passes else "no"
+        print(f"{shift:>6} {s['min']:>6.1f} {s['max']:>6.1f} {s['mean']:>8.2f} {s['std']:>8.2f} "
+              f"{s['pct_saturated']:>7.2f} {s['pct_black']:>8.2f} {pass_str:>6}")
+
+
+def run_per_class_calibration(X, Y, Z, kernel, channel_name, n_per_class=20):
+    """Run calibration sweep separately for each modulation class."""
+    print(f"\n{'#'*80}")
+    print(f"PER-CLASS CALIBRATION: {channel_name}")
+    print(f"{'#'*80}")
+    
+    y_int = np.argmax(Y, axis=1) if Y.ndim > 1 else Y.flatten()
+    
+    class_results = {}
+    for class_idx in VALID_HDF5_CLASSES:
+        class_name = HDF5_CLASS_NAMES[class_idx]
         
-        if len(indices) >= n_per_class:
-            selected = np.random.choice(indices, n_per_class, replace=False)
-        else:
-            selected = indices
+        # Get samples for this class (high SNR only)
+        mask = (y_int == class_idx) & (Z[:, 0] > 10)
+        class_indices = np.where(mask)[0]
         
-        # Convert to (N, 1024, 2) format
-        iq_data = X[selected].transpose(0, 2, 1)  # (N, 1024, 2)
-        samples[class_name] = iq_data
-        print(f"  {class_name}: {len(selected)} samples")
-    
-    return samples
-
-
-def run_calibration_sweep(samples, kernel_config='multi'):
-    """Run calibration sweep across all classes."""
-    kernels = KERNELS[kernel_config]
-    
-    results = {}
-    for ch_name, kernel in kernels.items():
-        print(f"\n=== Calibrating {ch_name} (kernel size: {kernel.shape}) ===")
-        results[ch_name] = {}
+        if len(class_indices) < n_per_class:
+            print(f"  WARNING: {class_name} has only {len(class_indices)} samples")
+            continue
         
-        for class_name, iq_batch in samples.items():
-            class_results = []
-            for iq_samples in iq_batch:
-                sweep = calibration_sweep(iq_samples, kernel, shift_range=range(0, 12))
-                class_results.append(sweep)
+        np.random.shuffle(class_indices)
+        samples = X[class_indices[:n_per_class]]
+        
+        # Run sweep
+        sweep = calibration_sweep(samples, kernel, shift_range=range(0, 10))
+        optimal, passes = find_optimal_shift(sweep)
+        
+        class_results[class_name] = {
+            'optimal_shift': optimal,
+            'passes_criteria': passes,
+            'stats_at_optimal': sweep[optimal],
+        }
+        
+        print(f"\n  {class_name}: Optimal Shift = {optimal} (Passes: {passes})")
+        print(f"    Mean={sweep[optimal]['mean']:.1f}, Max={sweep[optimal]['max']:.1f}, "
+              f"%Sat={sweep[optimal]['pct_saturated']:.1f}, %Black={sweep[optimal]['pct_black']:.1f}")
+    
+    # Check consistency
+    shifts = [r['optimal_shift'] for r in class_results.values()]
+    if len(set(shifts)) == 1:
+        print(f"\n  ✓ All classes agree on shift = {shifts[0]}")
+    else:
+        print(f"\n  ⚠ Classes disagree on shift: {shifts}")
+        print(f"    Using median: {int(np.median(shifts))}")
+    
+    return class_results
+
+
+def generate_sample_images(X, y_int, shifts, save_dir, n_per_class=3):
+    """Generate and save sample images with the chosen shifts."""
+    os.makedirs(save_dir, exist_ok=True)
+    
+    for class_idx in VALID_HDF5_CLASSES:
+        class_name = HDF5_CLASS_NAMES[class_idx]
+        mask = (y_int == class_idx)
+        class_indices = np.where(mask)[0]
+        
+        if len(class_indices) == 0:
+            continue
+        
+        np.random.shuffle(class_indices)
+        
+        for i in range(min(n_per_class, len(class_indices))):
+            iq = X[class_indices[i]]
             
-            # Average across samples
-            avg_results = []
-            for shift_idx in range(12):
-                avg = {
-                    'shift': shift_idx,
-                    'mean': np.mean([r[shift_idx]['mean'] for r in class_results]),
-                    'max': np.mean([r[shift_idx]['max'] for r in class_results]),
-                    'std': np.mean([r[shift_idx]['std'] for r in class_results]),
-                    'pct_saturated': np.mean([r[shift_idx]['pct_saturated'] for r in class_results]),
-                    'pct_black': np.mean([r[shift_idx]['pct_black'] for r in class_results]),
-                }
-                avg_results.append(avg)
+            ch1 = hardware_gen_layer(iq, KERNEL_SHARP, shifts['ch1'])
+            ch2 = hardware_gen_layer(iq, KERNEL_MEDIUM, shifts['ch2'])
+            ch3 = hardware_gen_layer(iq, KERNEL_BLUR, shifts['ch3'])
+            img = np.stack([ch1, ch2, ch3], axis=-1)
             
-            results[ch_name][class_name] = avg_results
-    
-    return results
+            filename = f'{save_dir}/{class_name}_{i}.png'
+            plt.imsave(filename, img)
+            print(f"  Saved: {filename}")
 
 
-def find_optimal_shift(sweep_results, target_mean_range=(30, 80)):
-    """Find shift value that gives optimal dynamic range."""
-    for result in sweep_results:
-        mean = result['mean']
-        pct_sat = result['pct_saturated']
-        if target_mean_range[0] <= mean <= target_mean_range[1] and pct_sat < 5:
-            return result['shift']
-    
-    # Fallback: find closest to target mean
-    target = (target_mean_range[0] + target_mean_range[1]) / 2
-    best = min(sweep_results, key=lambda r: abs(r['mean'] - target))
-    return best['shift']
-
-
-def print_sweep_table(sweep_results):
-    """Print a formatted table of sweep results."""
-    print(f"{'Shift':>6} {'Min':>5} {'Max':>5} {'Mean':>7} {'Std':>7} {'%Sat':>6} {'%Black':>7}")
-    print("-" * 50)
-    for r in sweep_results:
-        print(f"{r['shift']:>6} {r.get('min', 0):>5} {int(r['max']):>5} {r['mean']:>7.1f} {r['std']:>7.1f} {r['pct_saturated']:>6.1f} {r['pct_black']:>7.1f}")
-
-
-def generate_sample_images(samples, shifts, kernel_config='multi', output_dir='results_local/calibration'):
-    """Generate sample images with chosen shifts for visual inspection."""
-    import matplotlib.pyplot as plt
-    
-    kernels = KERNELS[kernel_config]
-    os.makedirs(output_dir, exist_ok=True)
-    
-    for class_name, iq_batch in samples.items():
-        # Take first 3 samples
-        for idx, iq_samples in enumerate(iq_batch[:3]):
-            if kernel_config == 'single':
-                # Single channel - grayscale
-                img = hardware_gen_layer(iq_samples, kernels['ch1'], shifts['ch1'])
-                
-                fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-                ax.imshow(img, cmap='gray')
-                ax.set_title(f'{class_name} - Single Channel (shift={shifts["ch1"]})')
-                ax.axis('off')
-            else:
-                # Multi-channel - RGB
-                ch1 = hardware_gen_layer(iq_samples, kernels['ch1'], shifts['ch1'])
-                ch2 = hardware_gen_layer(iq_samples, kernels['ch2'], shifts['ch2'])
-                ch3 = hardware_gen_layer(iq_samples, kernels['ch3'], shifts['ch3'])
-                img = np.stack([ch1, ch2, ch3], axis=-1)
-                
-                fig, axes = plt.subplots(1, 4, figsize=(20, 5))
-                
-                # Individual channels
-                for i, (ch, name, shift) in enumerate(zip([ch1, ch2, ch3], ['Sharp', 'Medium', 'Coarse'], 
-                                                          [shifts['ch1'], shifts['ch2'], shifts['ch3']])):
-                    axes[i].imshow(ch, cmap='gray')
-                    axes[i].set_title(f'{name} (shift={shift})\nmean={ch.mean():.1f}')
-                    axes[i].axis('off')
-                
-                # Combined RGB
-                axes[3].imshow(img)
-                axes[3].set_title(f'{class_name} - Combined')
-                axes[3].axis('off')
-            
-            filepath = os.path.join(output_dir, f'{class_name}_{idx}_{kernel_config}.png')
-            plt.savefig(filepath, dpi=100, bbox_inches='tight')
-            plt.close()
-            print(f"Saved: {filepath}")
-
+# =============================================================================
+# MAIN CALIBRATION ROUTINE
+# =============================================================================
 
 def main():
-    print("=" * 60)
-    print("HARDWARE IMAGE GENERATION CALIBRATION")
-    print("=" * 60)
+    print("=" * 80)
+    print("HARDWARE IMAGE GENERATION - PHASE 1: PARAMETER CALIBRATION")
+    print("=" * 80)
+    print(f"\nConfiguration:")
+    print(f"  GRID_SIZE: {GRID_SIZE}")
+    print(f"  GAIN: {GAIN}")
+    print(f"  Kernels: Sharp(3x3), Medium(3x3), Blur(11x11)")
+    print(f"\nTarget Criteria:")
+    print(f"  Mean: {TARGET_MEAN_MIN}-{TARGET_MEAN_MAX}")
+    print(f"  Max: {TARGET_MAX_MIN}-{TARGET_MAX_MAX}")
+    print(f"  %Saturated: < {TARGET_SATURATED_MAX}%")
+    print(f"  %Black: {TARGET_BLACK_MIN}-{TARGET_BLACK_MAX}%")
     
-    # Configuration
     data_path = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'
-    n_per_class = 20  # Samples per class for calibration
-    snr_min = 10      # Minimum SNR for calibration samples
     
-    # Check if data exists
-    if not os.path.exists(data_path):
-        print(f"ERROR: Data file not found at {data_path}")
-        print("Please ensure the RadioML dataset is available.")
+    # Load data
+    print(f"\nLoading data from {data_path}...")
+    try:
+        X, Y, Z = load_data_sample(data_path)
+        y_int = np.argmax(Y, axis=1) if Y.ndim > 1 else Y.flatten()
+        print(f"  Loaded {len(X)} samples")
+    except Exception as e:
+        print(f"ERROR loading data: {e}")
         return
     
-    # Load calibration samples
-    samples = load_calibration_samples(data_path, n_per_class, snr_min)
+    # Get diverse calibration samples (all classes, high SNR)
+    mask = np.isin(y_int, VALID_HDF5_CLASSES) & (Z[:, 0] > 10)
+    valid_idx = np.where(mask)[0]
+    np.random.shuffle(valid_idx)
     
-    # --- PHASE 1: Multi-channel calibration ---
-    print("\n" + "=" * 60)
-    print("PHASE 1: MULTI-CHANNEL CALIBRATION")
-    print("=" * 60)
+    n_cal = min(200, len(valid_idx))  # 200 samples for global sweep
+    cal_samples = X[valid_idx[:n_cal]]
+    print(f"  Using {n_cal} calibration samples (SNR > 10)")
     
-    multi_results = run_calibration_sweep(samples, kernel_config='multi')
+    # =========================================================================
+    # GLOBAL SWEEP (averaged across all modulations)
+    # =========================================================================
+    print("\n" + "=" * 80)
+    print("GLOBAL SWEEP (Averaged Across All Modulations)")
+    print("=" * 80)
     
-    # Find optimal shifts for each channel
-    multi_shifts = {}
-    for ch_name in ['ch1', 'ch2', 'ch3']:
-        print(f"\n--- {ch_name.upper()} Results (averaged across classes) ---")
+    optimal_shifts = {}
+    
+    for ch_name, ch_info in KERNELS.items():
+        print(f"\nProcessing {ch_name} ({ch_info['size']})...")
+        sweep = calibration_sweep(cal_samples, ch_info['kernel'], shift_range=range(0, 12))
+        print_sweep_table(sweep, ch_name.upper())
         
-        # Average across all classes
-        all_class_avgs = []
-        for class_name, sweep in multi_results[ch_name].items():
-            all_class_avgs.append(sweep)
+        optimal, passes = find_optimal_shift(sweep)
+        optimal_shifts[ch_name] = {
+            'shift': optimal,
+            'passes': passes,
+            'stats': sweep[optimal]
+        }
         
-        # Compute grand average
-        grand_avg = []
-        for shift_idx in range(12):
-            grand_avg.append({
-                'shift': shift_idx,
-                'mean': np.mean([c[shift_idx]['mean'] for c in all_class_avgs]),
-                'max': np.mean([c[shift_idx]['max'] for c in all_class_avgs]),
-                'std': np.mean([c[shift_idx]['std'] for c in all_class_avgs]),
-                'pct_saturated': np.mean([c[shift_idx]['pct_saturated'] for c in all_class_avgs]),
-                'pct_black': np.mean([c[shift_idx]['pct_black'] for c in all_class_avgs]),
-            })
-        
-        print_sweep_table(grand_avg)
-        
-        # Different target ranges for different channels
-        if ch_name == 'ch1':
-            target_range = (10, 50)  # Sharp should be sparser
-        elif ch_name == 'ch2':
-            target_range = (20, 60)  # Medium moderate
-        else:
-            target_range = (30, 80)  # Coarse can be brighter
-        
-        optimal_shift = find_optimal_shift(grand_avg, target_range)
-        multi_shifts[ch_name] = optimal_shift
-        print(f"\n>>> OPTIMAL SHIFT for {ch_name}: {optimal_shift}")
+        print(f"\n>>> OPTIMAL SHIFT for {ch_name}: {optimal} (Passes criteria: {passes})")
     
-    # --- PHASE 2: Single-channel calibration ---
-    print("\n" + "=" * 60)
-    print("PHASE 2: SINGLE-CHANNEL CALIBRATION")
-    print("=" * 60)
+    # =========================================================================
+    # PER-CLASS ANALYSIS (check consistency across modulations)
+    # =========================================================================
+    print("\n" + "=" * 80)
+    print("PER-CLASS ANALYSIS (Checking Consistency Across Modulations)")
+    print("=" * 80)
     
-    single_results = run_calibration_sweep(samples, kernel_config='single')
+    per_class = {}
+    for ch_name, ch_info in KERNELS.items():
+        per_class[ch_name] = run_per_class_calibration(
+            X, Y, Z, ch_info['kernel'], ch_name.upper(), n_per_class=20
+        )
     
-    single_shifts = {}
-    for ch_name in ['ch1']:
-        print(f"\n--- {ch_name.upper()} Results (averaged across classes) ---")
-        
-        all_class_avgs = []
-        for class_name, sweep in single_results[ch_name].items():
-            all_class_avgs.append(sweep)
-        
-        grand_avg = []
-        for shift_idx in range(12):
-            grand_avg.append({
-                'shift': shift_idx,
-                'mean': np.mean([c[shift_idx]['mean'] for c in all_class_avgs]),
-                'max': np.mean([c[shift_idx]['max'] for c in all_class_avgs]),
-                'std': np.mean([c[shift_idx]['std'] for c in all_class_avgs]),
-                'pct_saturated': np.mean([c[shift_idx]['pct_saturated'] for c in all_class_avgs]),
-                'pct_black': np.mean([c[shift_idx]['pct_black'] for c in all_class_avgs]),
-            })
-        
-        print_sweep_table(grand_avg)
-        
-        optimal_shift = find_optimal_shift(grand_avg, (10, 50))
-        single_shifts[ch_name] = optimal_shift
-        print(f"\n>>> OPTIMAL SHIFT for {ch_name}: {optimal_shift}")
+    # =========================================================================
+    # FINAL RECOMMENDATIONS
+    # =========================================================================
+    print("\n" + "=" * 80)
+    print("FINAL RECOMMENDED CONFIGURATION")
+    print("=" * 80)
     
-    # --- PHASE 3: Generate sample images ---
-    print("\n" + "=" * 60)
-    print("PHASE 3: GENERATING SAMPLE IMAGES")
-    print("=" * 60)
-    
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = f'results_local/calibration/{timestamp}'
-    
-    print(f"\nGenerating multi-channel samples with shifts: {multi_shifts}")
-    generate_sample_images(samples, multi_shifts, 'multi', f'{output_dir}/multi')
-    
-    print(f"\nGenerating single-channel samples with shifts: {single_shifts}")
-    generate_sample_images(samples, single_shifts, 'single', f'{output_dir}/single')
-    
-    # --- SUMMARY ---
-    print("\n" + "=" * 60)
-    print("CALIBRATION SUMMARY")
-    print("=" * 60)
-    
-    summary = {
-        'timestamp': timestamp,
-        'multi_channel': {
-            'shifts': multi_shifts,
-            'kernels': {
-                'ch1': f'{KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]} (α=1.0)',
-                'ch2': f'{KERNEL_MEDIUM.shape[0]}x{KERNEL_MEDIUM.shape[0]} (α=0.3)',
-                'ch3': f'{KERNEL_BLUR.shape[0]}x{KERNEL_BLUR.shape[0]} (α=0.1)',
-            },
-            'gain': GAIN,
-        },
-        'single_channel': {
-            'shifts': single_shifts,
-            'kernels': {
-                'ch1': f'{KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]} (α=1.0)',
-            },
-            'gain': GAIN,
-        },
-        'samples_per_class': n_per_class,
-        'snr_min': snr_min,
+    final_shifts = {
+        'ch1': optimal_shifts['ch1_sharp']['shift'],
+        'ch2': optimal_shifts['ch2_medium']['shift'],
+        'ch3': optimal_shifts['ch3_blur']['shift'],
     }
     
-    print(f"\nMulti-channel config:")
-    print(f"  Shifts: ch1={multi_shifts['ch1']}, ch2={multi_shifts['ch2']}, ch3={multi_shifts['ch3']}")
-    print(f"  Kernels: {KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]}, {KERNEL_MEDIUM.shape[0]}x{KERNEL_MEDIUM.shape[0]}, {KERNEL_BLUR.shape[0]}x{KERNEL_BLUR.shape[0]}")
-    print(f"  Gain: {GAIN}")
+    print(f"\n  GAIN = {GAIN}")
+    print(f"  Ch1 (Sharp 3x3):   shift = {final_shifts['ch1']}")
+    print(f"  Ch2 (Medium 3x3):  shift = {final_shifts['ch2']}")
+    print(f"  Ch3 (Blur 11x11):  shift = {final_shifts['ch3']}")
+    print(f"\n  DEFAULT_SHIFTS = ({final_shifts['ch1']}, {final_shifts['ch2']}, {final_shifts['ch3']})")
     
-    print(f"\nSingle-channel config:")
-    print(f"  Shift: {single_shifts['ch1']}")
-    print(f"  Kernel: {KERNEL_SHARP.shape[0]}x{KERNEL_SHARP.shape[0]}")
-    print(f"  Gain: {GAIN}")
+    # =========================================================================
+    # SAVE RESULTS & SAMPLE IMAGES
+    # =========================================================================
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_dir = f'results_local/calibration/{timestamp}'
+    os.makedirs(results_dir, exist_ok=True)
     
-    # Save summary
-    summary_path = f'{output_dir}/calibration_summary.json'
-    os.makedirs(os.path.dirname(summary_path), exist_ok=True)
-    with open(summary_path, 'w') as f:
-        json.dump(summary, f, indent=2)
-    print(f"\nSummary saved to: {summary_path}")
+    # Save config
+    config = {
+        'timestamp': timestamp,
+        'gain': GAIN,
+        'grid_size': GRID_SIZE,
+        'recommended_shifts': final_shifts,
+        'global_sweep': {k: {
+            'shift': v['shift'],
+            'passes': v['passes'],
+            'mean': v['stats']['mean'],
+            'max': v['stats']['max'],
+            'pct_saturated': v['stats']['pct_saturated'],
+            'pct_black': v['stats']['pct_black'],
+        } for k, v in optimal_shifts.items()},
+        'targets': {
+            'mean': [TARGET_MEAN_MIN, TARGET_MEAN_MAX],
+            'max': [TARGET_MAX_MIN, TARGET_MAX_MAX],
+            'pct_saturated_max': TARGET_SATURATED_MAX,
+            'pct_black': [TARGET_BLACK_MIN, TARGET_BLACK_MAX],
+        }
+    }
     
-    print(f"\nSample images saved to: {output_dir}/")
-    print("\n>>> NEXT STEP: Visually inspect images and run dataset generation <<<")
+    config_path = f'{results_dir}/calibration_config.json'
+    with open(config_path, 'w') as f:
+        json.dump(config, f, indent=2)
+    print(f"\n  Saved config to: {config_path}")
+    
+    # Generate sample images
+    print(f"\n  Generating sample images...")
+    generate_sample_images(X, y_int, final_shifts, f'{results_dir}/samples', n_per_class=3)
+    
+    print("\n" + "=" * 80)
+    print("CALIBRATION COMPLETE")
+    print("=" * 80)
+    print(f"\nNext steps:")
+    print(f"  1. Visually inspect images in: {results_dir}/samples/")
+    print(f"  2. If images look good, update DEFAULT_SHIFTS in simulate_hardware.py")
+    print(f"  3. Run Phase 2: Architecture decision (single vs multi-channel)")
+    print(f"  4. Generate full training dataset")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
