@@ -1,25 +1,234 @@
-clearmv screenlog.0 log1.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kgit pullrm screenlog.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kpython src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[19Prm screenlog.0[6Pgit pull[3Pclearpython src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[12Pmv screenlog.0 log1.0clear[K[Kclearmv screenlog.0 log1.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[12Pmv screenlog.0 log1.0clear[Kmv screenlog.0 log1.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kgit pullrm screenlog.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Krm screenlog.0 screenlog1.0 [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit pull[Kshcommit -m "hardware sim run again"[3P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cstatus[K[1Padd .mv screenlog.0 screenlog1.0[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[18Pgit add .python src/simulate_hardware.py 
-=== Hardware Image Generation Test ===
+python src/caliberate[K[K[K[K[K[Kbrate_hardware.py 
+================================================================================
+HARDWARE IMAGE GENERATION - PHASE 1: PARAMETER CALIBRATION
+================================================================================
+
+Configuration:
+  GRID_SIZE: 224
+  GAIN: 128
+  Kernels: Sharp(3x3), Medium(3x3), Blur(11x11)
+
+Target Criteria:
+  Mean: 30-80
+  Max: 200-255
+  %Saturated: < 5.0%
+  %Black: 60.0-90.0%
+
 Loading data from data/GOLD_XYZ_OSC.0001_1024.hdf5...
-Loaded 100 samples (SNR > 10)
+  Loaded 2555904 samples
+  Using 200 calibration samples (SNR > 10)
 
-Generating hardware images...
-Sample 0 stats - Ch1: mean=7.9, Ch2: mean=29.1, Ch3: mean=46.5
-Saved samples to results_local/hardware_test/20260128_233438/
+================================================================================
+GLOBAL SWEEP (Averaged Across All Modulations)
+================================================================================
 
-Loading model from models/squeezenet_v11_rmsprop.h5...
+Processing ch1_sharp (3x3)...
 
-Accuracy: 10.0%
+================================================================================
+CH1_SHARP SWEEP RESULTS
+================================================================================
+ Shift    Min    Max     Mean      Std    %Sat   %Black   Pass
+--------------------------------------------------------------------------------
+     0    0.0  255.0    10.67    45.77    2.83    94.47     no
+     1    0.0  255.0     7.73    37.28    1.76    94.47     no
+     2    0.0  255.0     4.64    24.84    0.34    94.47     no
+     3    0.0  246.6     2.50    14.45    0.07    94.47     no
+     4    0.0  176.6     1.29     7.90    0.01    94.47     no
+     5    0.0  111.9     0.65     4.10    0.00    94.47     no
+     6    0.0   62.7     0.33     2.07    0.00    94.47     no
+     7    0.0   32.9     0.16     1.04    0.00    94.47     no
+     8    0.0   16.2     0.06     0.49    0.00    97.17     no
+     9    0.0    7.8     0.02     0.22    0.00    98.24     no
+    10    0.0    3.6     0.00     0.08    0.00    99.66     no
+    11    0.0    1.6     0.00     0.02    0.00    99.93     no
 
-Sample predictions:
-  0: True=OQPSK  Pred=64QAM  ✗
-  1: True=64QAM  Pred=64QAM  ✓
-  2: True=64QAM  Pred=32QAM  ✗
-  3: True=QPSK   Pred=32QAM  ✗
-  4: True=QPSK   Pred=32QAM  ✗
-  5: True=64QAM  Pred=32QAM  ✗
-  6: True=64QAM  Pred=32QAM  ✗
-  7: True=OQPSK  Pred=32QAM  ✗
-  8: True=4ASK   Pred=32QAM  ✗
-  9: True=QPSK   Pred=64QAM  ✗
+>>> OPTIMAL SHIFT for ch1_sharp: 0 (Passes criteria: False)
+
+Processing ch2_medium (3x3)...
+
+================================================================================
+CH2_MEDIUM SWEEP RESULTS
+================================================================================
+ Shift    Min    Max     Mean      Std    %Sat   %Black   Pass
+--------------------------------------------------------------------------------
+     0    0.0  255.0    17.49    60.50    6.07    92.35     no
+     1    0.0  255.0    13.45    50.23    3.23    92.35     no
+     2    0.0  255.0     9.47    40.06    1.86    92.35     no
+     3    0.0  255.0     5.72    27.25    0.40    92.35     no
+     4    0.0  249.7     3.10    16.08    0.10    92.35     no
+     5    0.0  182.3     1.61     8.90    0.02    92.35     no
+     6    0.0  117.1     0.81     4.65    0.00    92.35     no
+     7    0.0   66.2     0.41     2.35    0.00    92.35     no
+     8    0.0   34.7     0.19     1.14    0.00    93.93     no
+     9    0.0   17.1     0.07     0.54    0.00    96.77     no
+    10    0.0    8.3     0.03     0.24    0.00    98.14     no
+    11    0.0    3.9     0.01     0.09    0.00    99.60     no
+
+>>> OPTIMAL SHIFT for ch2_medium: 0 (Passes criteria: False)
+
+Processing ch3_blur (11x11)...
+
+================================================================================
+CH3_BLUR SWEEP RESULTS
+================================================================================
+ Shift    Min    Max     Mean      Std    %Sat   %Black   Pass
+--------------------------------------------------------------------------------
+     0    0.0  255.0    35.72    85.19   13.59    85.58     no
+     1    0.0  255.0    33.72    82.20   12.11    85.58     no
+     2    0.0  255.0    30.52    77.47    9.97    85.58     no
+     3    0.0  255.0    25.29    68.70    6.20    85.58     no
+     4    0.0  255.0    16.77    50.32    1.50    85.58     no
+     5    0.0  221.2     9.31    30.45    0.42    85.58     no
+     6    0.0  148.3     4.90    17.02    0.06    85.58     no
+     7    0.0   86.0     2.47     8.70    0.00    85.58     no
+     8    0.0   43.2     1.20     4.29    0.00    86.41     no
+     9    0.0   21.3     0.56     2.08    0.00    87.89     no
+    10    0.0   10.4     0.25     0.98    0.00    90.03     no
+    11    0.0    4.9     0.09     0.44    0.00    93.80     no
+
+>>> OPTIMAL SHIFT for ch3_blur: 3 (Passes criteria: False)
+
+================================================================================
+PER-CLASS ANALYSIS (Checking Consistency Across Modulations)
+================================================================================
+
+################################################################################
+PER-CLASS CALIBRATION: CH1_SHARP
+################################################################################
+
+  4ASK: Optimal Shift = 0 (Passes: False)
+    Mean=4.7, Max=255.0, %Sat=1.7, %Black=97.9
+
+  BPSK: Optimal Shift = 0 (Passes: False)
+    Mean=3.2, Max=255.0, %Sat=1.2, %Black=98.6
+
+  QPSK: Optimal Shift = 0 (Passes: False)
+    Mean=10.9, Max=255.0, %Sat=3.0, %Black=94.5
+
+  8PSK: Optimal Shift = 0 (Passes: False)
+    Mean=12.4, Max=255.0, %Sat=3.2, %Black=93.5
+
+  16QAM: Optimal Shift = 0 (Passes: False)
+    Mean=12.9, Max=255.0, %Sat=3.2, %Black=93.1
+
+  32QAM: Optimal Shift = 0 (Passes: False)
+    Mean=13.2, Max=255.0, %Sat=3.2, %Black=92.9
+
+  64QAM: Optimal Shift = 0 (Passes: False)
+    Mean=13.2, Max=255.0, %Sat=3.2, %Black=92.9
+
+  OQPSK: Optimal Shift = 0 (Passes: False)
+    Mean=12.2, Max=255.0, %Sat=3.2, %Black=93.6
+
+  ✓ All classes agree on shift = 0
+
+################################################################################
+PER-CLASS CALIBRATION: CH2_MEDIUM
+################################################################################
+
+  4ASK: Optimal Shift = 0 (Passes: False)
+    Mean=6.5, Max=255.0, %Sat=2.4, %Black=97.3
+
+  BPSK: Optimal Shift = 0 (Passes: False)
+    Mean=4.4, Max=255.0, %Sat=1.7, %Black=98.2
+
+  QPSK: Optimal Shift = 0 (Passes: False)
+    Mean=17.3, Max=255.0, %Sat=6.1, %Black=92.5
+
+  8PSK: Optimal Shift = 0 (Passes: False)
+    Mean=20.5, Max=255.0, %Sat=7.1, %Black=91.0
+
+  16QAM: Optimal Shift = 0 (Passes: False)
+    Mean=22.3, Max=255.0, %Sat=7.6, %Black=90.2
+
+  32QAM: Optimal Shift = 0 (Passes: False)
+    Mean=22.8, Max=255.0, %Sat=7.8, %Black=89.9
+
+  64QAM: Optimal Shift = 0 (Passes: False)
+    Mean=22.9, Max=255.0, %Sat=7.8, %Black=89.9
+
+  OQPSK: Optimal Shift = 0 (Passes: False)
+    Mean=20.1, Max=255.0, %Sat=7.0, %Black=91.2
+
+  ✓ All classes agree on shift = 0
+
+################################################################################
+PER-CLASS CALIBRATION: CH3_BLUR
+################################################################################
+
+  4ASK: Optimal Shift = 0 (Passes: False)
+    Mean=14.8, Max=255.0, %Sat=5.6, %Black=94.0
+
+  BPSK: Optimal Shift = 0 (Passes: False)
+    Mean=12.5, Max=255.0, %Sat=4.8, %Black=95.0
+
+  QPSK: Optimal Shift = 3 (Passes: False)
+    Mean=25.6, Max=255.0, %Sat=6.1, %Black=85.7
+
+  8PSK: Optimal Shift = 3 (Passes: False)
+    Mean=28.8, Max=255.0, %Sat=7.1, %Black=84.2
+
+  16QAM: Optimal Shift = 3 (Passes: False)
+    Mean=31.1, Max=255.0, %Sat=7.5, %Black=82.0
+
+  32QAM: Optimal Shift = 3 (Passes: False)
+    Mean=31.8, Max=255.0, %Sat=7.3, %Black=81.3
+
+  64QAM: Optimal Shift = 3 (Passes: False)
+    Mean=31.5, Max=255.0, %Sat=7.2, %Black=80.9
+
+  OQPSK: Optimal Shift = 3 (Passes: False)
+    Mean=28.6, Max=255.0, %Sat=6.7, %Black=83.4
+
+  ⚠ Classes disagree on shift: [0, 0, 3, 3, 3, 3, 3, 3]
+    Using median: 3
+
+================================================================================
+FINAL RECOMMENDED CONFIGURATION
+================================================================================
+
+  GAIN = 128
+  Ch1 (Sharp 3x3):   shift = 0
+  Ch2 (Medium 3x3):  shift = 0
+  Ch3 (Blur 11x11):  shift = 3
+
+  DEFAULT_SHIFTS = (0, 0, 3)
+
+  Saved config to: results_local/calibration/20260129_001149/calibration_config.json
+
+  Generating sample images...
+  Saved: results_local/calibration/20260129_001149/samples/4ASK_0.png
+  Saved: results_local/calibration/20260129_001149/samples/4ASK_1.png
+  Saved: results_local/calibration/20260129_001149/samples/4ASK_2.png
+  Saved: results_local/calibration/20260129_001149/samples/BPSK_0.png
+  Saved: results_local/calibration/20260129_001149/samples/BPSK_1.png
+  Saved: results_local/calibration/20260129_001149/samples/BPSK_2.png
+  Saved: results_local/calibration/20260129_001149/samples/QPSK_0.png
+  Saved: results_local/calibration/20260129_001149/samples/QPSK_1.png
+  Saved: results_local/calibration/20260129_001149/samples/QPSK_2.png
+  Saved: results_local/calibration/20260129_001149/samples/8PSK_0.png
+  Saved: results_local/calibration/20260129_001149/samples/8PSK_1.png
+  Saved: results_local/calibration/20260129_001149/samples/8PSK_2.png
+  Saved: results_local/calibration/20260129_001149/samples/16QAM_0.png
+  Saved: results_local/calibration/20260129_001149/samples/16QAM_1.png
+  Saved: results_local/calibration/20260129_001149/samples/16QAM_2.png
+  Saved: results_local/calibration/20260129_001149/samples/32QAM_0.png
+  Saved: results_local/calibration/20260129_001149/samples/32QAM_1.png
+  Saved: results_local/calibration/20260129_001149/samples/32QAM_2.png
+  Saved: results_local/calibration/20260129_001149/samples/64QAM_0.png
+  Saved: results_local/calibration/20260129_001149/samples/64QAM_1.png
+  Saved: results_local/calibration/20260129_001149/samples/64QAM_2.png
+  Saved: results_local/calibration/20260129_001149/samples/OQPSK_0.png
+  Saved: results_local/calibration/20260129_001149/samples/OQPSK_1.png
+  Saved: results_local/calibration/20260129_001149/samples/OQPSK_2.png
+
+================================================================================
+CALIBRATION COMPLETE
+================================================================================
+
+Next steps:
+  1. Visually inspect images in: results_local/calibration/20260129_001149/samples/
+  2. If images look good, update DEFAULT_SHIFTS in simulate_hardware.py
+  3. Run Phase 2: Architecture decision (single vs multi-channel)
+  4. Generate full training dataset
 ]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# 

@@ -1,178 +1,26 @@
-cleargit pullrm screenlog.0python src/calibrate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kpython src/calibrate_hardware.py 
-============================================================
-HARDWARE IMAGE GENERATION CALIBRATION
-============================================================
-Loading calibration samples from data/GOLD_XYZ_OSC.0001_1024.hdf5...
-  4ASK: 20 samples
-  BPSK: 20 samples
-  QPSK: 20 samples
-  8PSK: 20 samples
-  16QAM: 20 samples
-  32QAM: 20 samples
-  64QAM: 20 samples
-  OQPSK: 20 samples
+clear[3Plsrm log1.0 log2.0ls[Kgit pull[3Pcleargit pushcommit -m "hw and cal runs"add .[Kmv screenlog.0 log2.0python src/simulate_hardware.py [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kpython src/simulate_hardware.py 
+=== Hardware Image Generation Test ===
+Config: GAIN=128, Kernels: 3x3, 3x3, 11x11, Shifts=(2, 4, 5)
+Loading data from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+Loaded 100 samples (SNR > 10)
 
-============================================================
-PHASE 1: MULTI-CHANNEL CALIBRATION
-============================================================
+Generating hardware images...
+Sample 0 stats - Ch1: mean=2.9, Ch2: mean=2.5, Ch3: mean=7.2
+Saved samples to results_local/hardware_test/20260129_000347/
 
-=== Calibrating ch1 (kernel size: (11, 11)) ===
+Loading model from models/squeezenet_v11_rmsprop.h5...
 
-=== Calibrating ch2 (kernel size: (21, 21)) ===
+Accuracy: 8.0%
 
-=== Calibrating ch3 (kernel size: (31, 31)) ===
-
---- CH1 Results (averaged across classes) ---
- Shift   Min   Max    Mean     Std   %Sat  %Black
---------------------------------------------------
-     0     0   255     0.1     2.3    0.0    99.6
-     1     0   127     0.0     1.1    0.0    99.7
-     2     0    63     0.0     0.6    0.0    99.8
-     3     0    31     0.0     0.3    0.0    99.9
-     4     0    15     0.0     0.1    0.0    99.9
-     5     0     7     0.0     0.1    0.0    99.9
-     6     0     3     0.0     0.0    0.0   100.0
-     7     0     1     0.0     0.0    0.0   100.0
-     8     0     0     0.0     0.0    0.0   100.0
-     9     0     0     0.0     0.0    0.0   100.0
-    10     0     0     0.0     0.0    0.0   100.0
-    11     0     0     0.0     0.0    0.0   100.0
-
->>> OPTIMAL SHIFT for ch1: 0
-
---- CH2 Results (averaged across classes) ---
- Shift   Min   Max    Mean     Std   %Sat  %Black
---------------------------------------------------
-     0     0   255     0.6     6.9    0.0    98.4
-     1     0   130     0.3     3.4    0.0    98.4
-     2     0    64     0.1     1.7    0.0    98.4
-     3     0    32     0.1     0.8    0.0    98.5
-     4     0    15     0.0     0.4    0.0    98.9
-     5     0     7     0.0     0.2    0.0    99.4
-     6     0     3     0.0     0.1    0.0    99.7
-     7     0     1     0.0     0.0    0.0    99.9
-     8     0     0     0.0     0.0    0.0   100.0
-     9     0     0     0.0     0.0    0.0   100.0
-    10     0     0     0.0     0.0    0.0   100.0
-    11     0     0     0.0     0.0    0.0   100.0
-
->>> OPTIMAL SHIFT for ch2: 0
-
---- CH3 Results (averaged across classes) ---
- Shift   Min   Max    Mean     Std   %Sat  %Black
---------------------------------------------------
-     0     0   255     3.3    19.6    0.1    96.6
-     1     0   140     1.6     9.9    0.0    96.6
-     2     0    70     0.8     4.9    0.0    96.6
-     3     0    34     0.4     2.4    0.0    96.6
-     4     0    16     0.2     1.2    0.0    96.6
-     5     0     8     0.1     0.5    0.0    96.6
-     6     0     3     0.0     0.2    0.0    97.8
-     7     0     1     0.0     0.1    0.0    99.3
-     8     0     0     0.0     0.0    0.0    99.9
-     9     0     0     0.0     0.0    0.0   100.0
-    10     0     0     0.0     0.0    0.0   100.0
-    11     0     0     0.0     0.0    0.0   100.0
-
->>> OPTIMAL SHIFT for ch3: 0
-
-============================================================
-PHASE 2: SINGLE-CHANNEL CALIBRATION
-============================================================
-
-=== Calibrating ch1 (kernel size: (11, 11)) ===
-
---- CH1 Results (averaged across classes) ---
- Shift   Min   Max    Mean     Std   %Sat  %Black
---------------------------------------------------
-     0     0   255     0.1     2.3    0.0    99.6
-     1     0   127     0.0     1.1    0.0    99.7
-     2     0    63     0.0     0.6    0.0    99.8
-     3     0    31     0.0     0.3    0.0    99.9
-     4     0    15     0.0     0.1    0.0    99.9
-     5     0     7     0.0     0.1    0.0    99.9
-     6     0     3     0.0     0.0    0.0   100.0
-     7     0     1     0.0     0.0    0.0   100.0
-     8     0     0     0.0     0.0    0.0   100.0
-     9     0     0     0.0     0.0    0.0   100.0
-    10     0     0     0.0     0.0    0.0   100.0
-    11     0     0     0.0     0.0    0.0   100.0
-
->>> OPTIMAL SHIFT for ch1: 0
-
-============================================================
-PHASE 3: GENERATING SAMPLE IMAGES
-============================================================
-
-Generating multi-channel samples with shifts: {'ch1': 0, 'ch2': 0, 'ch3': 0}
-Saved: results_local/calibration/20260128_233026/multi/4ASK_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/4ASK_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/4ASK_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/BPSK_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/BPSK_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/BPSK_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/QPSK_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/QPSK_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/QPSK_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/8PSK_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/8PSK_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/8PSK_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/16QAM_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/16QAM_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/16QAM_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/32QAM_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/32QAM_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/32QAM_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/64QAM_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/64QAM_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/64QAM_2_multi.png
-Saved: results_local/calibration/20260128_233026/multi/OQPSK_0_multi.png
-Saved: results_local/calibration/20260128_233026/multi/OQPSK_1_multi.png
-Saved: results_local/calibration/20260128_233026/multi/OQPSK_2_multi.png
-
-Generating single-channel samples with shifts: {'ch1': 0}
-Saved: results_local/calibration/20260128_233026/single/4ASK_0_single.png
-Saved: results_local/calibration/20260128_233026/single/4ASK_1_single.png
-Saved: results_local/calibration/20260128_233026/single/4ASK_2_single.png
-Saved: results_local/calibration/20260128_233026/single/BPSK_0_single.png
-Saved: results_local/calibration/20260128_233026/single/BPSK_1_single.png
-Saved: results_local/calibration/20260128_233026/single/BPSK_2_single.png
-Saved: results_local/calibration/20260128_233026/single/QPSK_0_single.png
-Saved: results_local/calibration/20260128_233026/single/QPSK_1_single.png
-Saved: results_local/calibration/20260128_233026/single/QPSK_2_single.png
-Saved: results_local/calibration/20260128_233026/single/8PSK_0_single.png
-Saved: results_local/calibration/20260128_233026/single/8PSK_1_single.png
-Saved: results_local/calibration/20260128_233026/single/8PSK_2_single.png
-Saved: results_local/calibration/20260128_233026/single/16QAM_0_single.png
-Saved: results_local/calibration/20260128_233026/single/16QAM_1_single.png
-Saved: results_local/calibration/20260128_233026/single/16QAM_2_single.png
-Saved: results_local/calibration/20260128_233026/single/32QAM_0_single.png
-Saved: results_local/calibration/20260128_233026/single/32QAM_1_single.png
-Saved: results_local/calibration/20260128_233026/single/32QAM_2_single.png
-Saved: results_local/calibration/20260128_233026/single/64QAM_0_single.png
-Saved: results_local/calibration/20260128_233026/single/64QAM_1_single.png
-Saved: results_local/calibration/20260128_233026/single/64QAM_2_single.png
-Saved: results_local/calibration/20260128_233026/single/OQPSK_0_single.png
-Saved: results_local/calibration/20260128_233026/single/OQPSK_1_single.png
-Saved: results_local/calibration/20260128_233026/single/OQPSK_2_single.png
-
-============================================================
-CALIBRATION SUMMARY
-============================================================
-
-Multi-channel config:
-  Shifts: ch1=0, ch2=0, ch3=0
-  Kernels: 11x11, 21x21, 31x31
-  Gain: 255
-
-Single-channel config:
-  Shift: 0
-  Kernel: 11x11
-  Gain: 255
-
-Summary saved to: results_local/calibration/20260128_233026/calibration_summary.json
-
-Sample images saved to: results_local/calibration/20260128_233026/
-
->>> NEXT STEP: Visually inspect images and run dataset generation <<<
+Sample predictions:
+  0: True=4ASK   Pred=32QAM  ✗
+  1: True=16QAM  Pred=32QAM  ✗
+  2: True=64QAM  Pred=32QAM  ✗
+  3: True=BPSK   Pred=32QAM  ✗
+  4: True=OQPSK  Pred=32QAM  ✗
+  5: True=BPSK   Pred=32QAM  ✗
+  6: True=QPSK   Pred=32QAM  ✗
+  7: True=8PSK   Pred=32QAM  ✗
+  8: True=OQPSK  Pred=32QAM  ✗
+  9: True=16QAM  Pred=32QAM  ✗
 ]0;root@6a8f4c1b0708: /approot@6a8f4c1b0708:/app# 
