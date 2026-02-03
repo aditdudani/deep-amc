@@ -577,9 +577,12 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
         shuffle=False,
     )
     
+    # Save class_names before prefetch (prefetch loses this attribute)
+    class_names = train_ds.class_names
+    
     train_ds = train_ds.prefetch(AUTOTUNE)
     val_ds = val_ds.prefetch(AUTOTUNE)
-    return train_ds, val_ds
+    return train_ds, val_ds, class_names
 
 
 def train_model(data_dir, results_dir, mode, seed, config):
@@ -605,10 +608,9 @@ def train_model(data_dir, results_dir, mode, seed, config):
     train_dir = os.path.join(data_dir, 'train')
     val_dir = os.path.join(data_dir, 'validation')
     
-    train_ds, val_ds = make_datasets(train_dir, val_dir, GRID_SIZE, config.BATCH_SIZE)
+    train_ds, val_ds, class_names = make_datasets(train_dir, val_dir, GRID_SIZE, config.BATCH_SIZE)
     
-    # Get class names and count steps
-    class_names = train_ds.class_names
+    # Get class count and steps
     num_classes = len(class_names)
     steps_per_epoch = len(train_ds)
     
