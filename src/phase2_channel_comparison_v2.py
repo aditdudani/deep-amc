@@ -41,6 +41,9 @@ for gpu in gpus:
         pass
 print(f"GPUs available: {len(gpus)}")
 
+# Progress bar control: set NOPROGRESS=1 for clean logs
+SHOW_PROGRESS = os.environ.get('NOPROGRESS', '0') != '1'
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # =============================================================================
@@ -322,7 +325,7 @@ def generate_dataset_to_disk(data_path, output_dir, mode='multi', subset_fractio
             
             # Generate training images
             train_dir = os.path.join(output_dir, 'train', class_name)
-            for i, idx in enumerate(tqdm(train_indices, desc=f"train/{class_name}", leave=False)):
+            for i, idx in enumerate(tqdm(train_indices, desc=f"train/{class_name}", leave=False, disable=not SHOW_PROGRESS)):
                 iq = np.asarray(X[idx], dtype=np.float32)
                 img = gen_func(iq)
                 snr_val = snrs[idx]
@@ -333,7 +336,7 @@ def generate_dataset_to_disk(data_path, output_dir, mode='multi', subset_fractio
             
             # Generate validation images
             val_dir = os.path.join(output_dir, 'validation', class_name)
-            for i, idx in enumerate(tqdm(val_indices, desc=f"val/{class_name}", leave=False)):
+            for i, idx in enumerate(tqdm(val_indices, desc=f"val/{class_name}", leave=False, disable=not SHOW_PROGRESS)):
                 iq = np.asarray(X[idx], dtype=np.float32)
                 img = gen_func(iq)
                 snr_val = snrs[idx]
