@@ -110,9 +110,8 @@ class ExperimentConfig:
     
     # Training settings
     EPOCHS = 40                 # Matching original train_squeezenet.py
-    WARMUP_EPOCHS = 5           # Linear LR warmup for first 5 epochs
     BATCH_SIZE = 64             # Matching original
-    BASE_LEARNING_RATE = 1e-2   # Peak LR after warmup
+    BASE_LEARNING_RATE = 1e-2   # Starting LR (ReduceLROnPlateau will adjust)
     MIN_LEARNING_RATE = 1e-6    # Minimum LR for scheduler
     
     # Early stopping
@@ -132,7 +131,6 @@ class ExperimentConfig:
         print(f"  Data subset:         {cls.SUBSET_FRACTION*100:.0f}%")
         print(f"  Train/Val split:     {cls.TRAIN_VAL_SPLIT*100:.0f}/{(1-cls.TRAIN_VAL_SPLIT)*100:.0f}")
         print(f"  Epochs:              {cls.EPOCHS}")
-        print(f"  Warmup epochs:       {cls.WARMUP_EPOCHS}")
         print(f"  Batch size:          {cls.BATCH_SIZE}")
         print(f"  Base learning rate:  {cls.BASE_LEARNING_RATE}")
         print(f"  Early stop patience: {cls.EARLY_STOPPING_PATIENCE}")
@@ -442,55 +440,15 @@ def build_squeezenet_v11(input_shape, num_classes, dropout_rate=0.0):
 
 
 # =============================================================================
-# LEARNING RATE SCHEDULE WITH WARMUP
+# LEARNING RATE PRINTER CALLBACK
 # =============================================================================
-
-class WarmupCosineDecay(tf.keras.optimizers.schedules.LearningRateSchedule):
-    """
-    Learning rate schedule with linear warmup followed by cosine decay.
-    
-    This prevents the model from making large updates early in training
-    when the weights are randomly initialized.
-    """
-    def __init__(self, base_lr, warmup_epochs, total_epochs, steps_per_epoch):
-        super().__init__()
-        self.base_lr = base_lr
-        self.warmup_steps = warmup_epochs * steps_per_epoch
-        self.total_steps = total_epochs * steps_per_epoch
-        
-    def __call__(self, step):
-        step = tf.cast(step, tf.float32)
-        
-        # Linear warmup
-        warmup_lr = self.base_lr * (step / self.warmup_steps)
-        
-        # Cosine decay after warmup
-        decay_steps = self.total_steps - self.warmup_steps
-        decay_step = step - self.warmup_steps
-        cosine_decay = 0.5 * (1 + tf.cos(np.pi * decay_step / decay_steps))
-        decayed_lr = self.base_lr * cosine_decay
-        
-        # Use warmup LR during warmup, then decayed LR
-        return tf.where(step < self.warmup_steps, warmup_lr, decayed_lr)
-    
-    def get_config(self):
-        return {
-            'base_lr': self.base_lr,
-            'warmup_steps': self.warmup_steps,
-            'total_steps': self.total_steps,
-        }
-
 
 class LearningRatePrinter(tf.keras.callbacks.Callback):
     """Print learning rate at the start of each epoch (minimal output)."""
     def on_epoch_begin(self, epoch, logs=None):
         if epoch % 10 == 0:  # Only print every 10 epochs
-            lr = self.model.optimizer.learning_rate
-            if callable(lr):
-                current_lr = float(lr(self.model.optimizer.iterations))
-            else:
-                current_lr = float(tf.keras.backend.get_value(lr))
-            print(f"[Epoch {epoch+1}] LR: {current_lr:.6g}")
+            lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
+            print(f"[Epoch {epoch+1}] LR: {lr:.6g}")
 
 
 # =============================================================================
@@ -623,15 +581,8 @@ def train_model(data_dir, results_dir, mode, seed, config):
         dropout_rate=0.0
     )
     
-    # Learning rate schedule with warmup
-    lr_schedule = WarmupCosineDecay(
-        base_lr=config.BASE_LEARNING_RATE,
-        warmup_epochs=config.WARMUP_EPOCHS,
-        total_epochs=config.EPOCHS,
-        steps_per_epoch=steps_per_epoch
-    )
-    
-    optimizer = optimizers.SGD(learning_rate=lr_schedule, momentum=0.9)
+    # Simple SGD with fixed LR (ReduceLROnPlateau callback will adjust)
+    optimizer = optimizers.SGD(learning_rate=config.BASE_LEARNING_RATE, momentum=0.9)
     
     model.compile(
         optimizer=optimizer,
@@ -781,7 +732,6 @@ def main():
         'subset_fraction': config.SUBSET_FRACTION,
         'train_val_split': config.TRAIN_VAL_SPLIT,
         'epochs': config.EPOCHS,
-        'warmup_epochs': config.WARMUP_EPOCHS,
         'batch_size': config.BATCH_SIZE,
         'base_learning_rate': config.BASE_LEARNING_RATE,
         'min_learning_rate': config.MIN_LEARNING_RATE,
