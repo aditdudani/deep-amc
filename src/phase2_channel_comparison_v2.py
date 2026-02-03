@@ -44,6 +44,9 @@ print(f"GPUs available: {len(gpus)}")
 # Progress bar control: set NOPROGRESS=1 for clean logs
 SHOW_PROGRESS = os.environ.get('NOPROGRESS', '0') != '1'
 
+# Skip image generation if already exists: set SKIP_GEN=1 to reuse existing images
+SKIP_GENERATION = os.environ.get('SKIP_GEN', '0') == '1'
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # =============================================================================
@@ -213,6 +216,17 @@ def generate_dataset_to_disk(data_path, output_dir, mode='multi', subset_fractio
                 16QAM/
                 ...
     """
+    # Check if we should skip generation (reuse existing images)
+    if SKIP_GENERATION and os.path.exists(output_dir):
+        train_dir = os.path.join(output_dir, 'train')
+        if os.path.exists(train_dir) and len(os.listdir(train_dir)) > 0:
+            print(f"\n{'='*60}")
+            print(f"SKIPPING {mode.upper()}-CHANNEL GENERATION (SKIP_GEN=1)")
+            print(f"Using existing images in: {output_dir}")
+            print(f"{'='*60}")
+            # Return dummy counts
+            return {'train': 0, 'validation': 0}, {snr: {'train': 0, 'val': 0} for snr in TARGET_SNRS}
+    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     print(f"\n{'='*60}")
@@ -553,7 +567,6 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
         image_size=(image_size, image_size),
         batch_size=batch_size,
         shuffle=True,
-        verbose=False,
     )
     val_ds = tf.keras.utils.image_dataset_from_directory(
         val_dir,
@@ -562,7 +575,6 @@ def make_datasets(train_dir, val_dir, image_size, batch_size):
         image_size=(image_size, image_size),
         batch_size=batch_size,
         shuffle=False,
-        verbose=False,
     )
     
     train_ds = train_ds.prefetch(AUTOTUNE)
@@ -723,13 +735,12 @@ class TeeLogger:
     
     def write(self, message):
         self.terminal.write(message)
-        # Only write to log if it's not a progress bar update (no carriage return)
-        if '\r' not in message or '\n' in message:
-            # Strip carriage returns for clean log
-            clean = message.replace('\r', '')
-            if clean.strip():  # Don't write empty lines
-                self.log.write(clean)
-                self.log.flush()
+        # Skip pure carriage return lines (progress bar updates)
+        if '\r' in message and '\n' not in message:
+            return  # Don't log progress bar updates
+        # Write everything else to log (including newlines)
+        self.log.write(message)
+        self.log.flush()
     
     def flush(self):
         self.terminal.flush()
