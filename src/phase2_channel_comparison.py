@@ -23,12 +23,13 @@ import json
 from datetime import datetime
 from tqdm import tqdm
 
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
     try:
         tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError:
-        pass
+    except RuntimeError as e:
+        print(e)
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from common.data_loader import load_data_sample
