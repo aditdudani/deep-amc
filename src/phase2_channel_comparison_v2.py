@@ -111,11 +111,11 @@ class ExperimentConfig:
     # Training settings
     EPOCHS = 40                 # Matching original train_squeezenet.py
     BATCH_SIZE = 64             # Matching original
-    BASE_LEARNING_RATE = 1e-2   # Starting LR (ReduceLROnPlateau will adjust)
+    BASE_LEARNING_RATE = 1e-3   # RMSprop works better with lower LR (was 1e-2)
     MIN_LEARNING_RATE = 1e-6    # Minimum LR for scheduler
     
-    # Early stopping
-    EARLY_STOPPING_PATIENCE = 10  # Stop if no improvement for 10 epochs
+    # No early stopping - let model train full epochs
+    # (original working script had no early stopping)
     
     # Single seed per mode (2 total runs)
     RANDOM_SEED = 42
@@ -133,7 +133,8 @@ class ExperimentConfig:
         print(f"  Epochs:              {cls.EPOCHS}")
         print(f"  Batch size:          {cls.BATCH_SIZE}")
         print(f"  Base learning rate:  {cls.BASE_LEARNING_RATE}")
-        print(f"  Early stop patience: {cls.EARLY_STOPPING_PATIENCE}")
+        print(f"  Optimizer:           RMSprop")
+        print(f"  Dropout:             0.5")
         print(f"  Random seed:         {cls.RANDOM_SEED}")
         print(f"  Decision threshold:  {cls.ACCURACY_THRESHOLD*100:.0f}%")
         print("=" * 60)
@@ -578,11 +579,11 @@ def train_model(data_dir, results_dir, mode, seed, config):
     model = build_squeezenet_v11(
         input_shape=(GRID_SIZE, GRID_SIZE, 3),
         num_classes=num_classes,
-        dropout_rate=0.0
+        dropout_rate=0.5  # Dropout helps regularization (was 0.0)
     )
     
-    # Simple SGD with fixed LR (ReduceLROnPlateau callback will adjust)
-    optimizer = optimizers.SGD(learning_rate=config.BASE_LEARNING_RATE, momentum=0.9)
+    # RMSprop works better than SGD for this task (original used RMSprop)
+    optimizer = optimizers.RMSprop(learning_rate=config.BASE_LEARNING_RATE)
     
     model.compile(
         optimizer=optimizer,
@@ -601,14 +602,6 @@ def train_model(data_dir, results_dir, mode, seed, config):
         verbose=1,
     )
     
-    early_stopping = callbacks.EarlyStopping(
-        monitor='val_accuracy',
-        patience=config.EARLY_STOPPING_PATIENCE,
-        mode='max',
-        verbose=1,
-        restore_best_weights=True,
-    )
-    
     csv_logger = callbacks.CSVLogger(
         os.path.join(run_dir, f'training_log_{timestamp}.csv')
     )
@@ -623,7 +616,6 @@ def train_model(data_dir, results_dir, mode, seed, config):
     
     callback_list = [
         checkpoint,
-        early_stopping,
         csv_logger,
         reduce_lr,
         LearningRatePrinter(),
@@ -735,7 +727,8 @@ def main():
         'batch_size': config.BATCH_SIZE,
         'base_learning_rate': config.BASE_LEARNING_RATE,
         'min_learning_rate': config.MIN_LEARNING_RATE,
-        'early_stopping_patience': config.EARLY_STOPPING_PATIENCE,
+        'optimizer': 'RMSprop',
+        'dropout': 0.5,
         'random_seed': config.RANDOM_SEED,
         'accuracy_threshold': config.ACCURACY_THRESHOLD,
         'target_snrs': TARGET_SNRS,
