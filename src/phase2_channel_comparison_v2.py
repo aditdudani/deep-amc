@@ -715,12 +715,44 @@ def train_model(data_dir, results_dir, mode, seed, config):
 # MAIN COMPARISON
 # =============================================================================
 
+class TeeLogger:
+    """Write to both stdout (with progress bars) and a clean log file."""
+    def __init__(self, log_path):
+        self.terminal = sys.stdout
+        self.log = open(log_path, 'w')
+    
+    def write(self, message):
+        self.terminal.write(message)
+        # Only write to log if it's not a progress bar update (no carriage return)
+        if '\r' not in message or '\n' in message:
+            # Strip carriage returns for clean log
+            clean = message.replace('\r', '')
+            if clean.strip():  # Don't write empty lines
+                self.log.write(clean)
+                self.log.flush()
+    
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+    
+    def close(self):
+        self.log.close()
+
+
 def main():
     master_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Set up clean log file
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = f'{log_dir}/phase2_{master_timestamp}.log'
+    logger = TeeLogger(log_path)
+    sys.stdout = logger
     
     print("=" * 80)
     print("PHASE 2: SINGLE vs MULTI-CHANNEL COMPARISON")
     print(f"Timestamp: {master_timestamp}")
+    print(f"Clean log: {log_path}")
     print("=" * 80)
     
     config = ExperimentConfig()
