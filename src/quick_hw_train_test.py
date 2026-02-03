@@ -110,39 +110,76 @@ def main():
     X_train = X_train[perm]
     y_train = y_train[perm]
     
+    # DIAGNOSTIC: Check image statistics
+    print("\n" + "="*60)
+    print("IMAGE STATISTICS")
+    print("="*60)
+    print(f"  Overall - mean: {X_train.mean():.4f}, std: {X_train.std():.4f}")
+    print(f"  Min: {X_train.min():.4f}, Max: {X_train.max():.4f}")
+    for i, cls in enumerate(class_names):
+        cls_mask = y_train == i
+        cls_mean = X_train[cls_mask].mean()
+        cls_std = X_train[cls_mask].std()
+        print(f"  {cls:8s} - mean: {cls_mean:.4f}, std: {cls_std:.4f}")
+    
     # Build model
     print(f"\nInput shape: {X_train.shape[1:]}")
-    model = build_squeezenet_simple(X_train.shape[1:], len(class_names))
     
-    # Compile with RMSprop like original
-    model.compile(
-        optimizer=keras.optimizers.RMSprop(learning_rate=0.001),
-        loss='sparse_categorical_crossentropy',
-        metrics=['accuracy']
-    )
+    print(f"Testing multiple optimizers to find one that works...")
     
-    print(f"Model params: {model.count_params():,}")
+    # TRY MULTIPLE OPTIMIZERS to find one that breaks out of saddle point
+    optimizers_to_try = [
+        ('Adam_lr0.001', lambda: keras.optimizers.Adam(learning_rate=0.001)),
+        ('Adam_lr0.01', lambda: keras.optimizers.Adam(learning_rate=0.01)),
+        ('SGD_lr0.01_mom0.9', lambda: keras.optimizers.SGD(learning_rate=0.01, momentum=0.9)),
+        ('SGD_lr0.1_mom0.9', lambda: keras.optimizers.SGD(learning_rate=0.1, momentum=0.9)),
+    ]
     
-    # Train for 10 epochs
+    for opt_name, opt_fn in optimizers_to_try:
+        print("\n" + "="*60)
+        print(f"TESTING: {opt_name}")
+        print("="*60)
+        
+        # Rebuild model fresh for each optimizer
+        tf.keras.backend.clear_session()
+        model = build_squeezenet_simple(X_train.shape[1:], len(class_names))
+        model.compile(
+            optimizer=opt_fn(),
+            loss='sparse_categorical_crossentropy',
+            metrics=['accuracy']
+        )
+        print(f"Model params: {model.count_params():,}")
+        
+        # Train for just 5 epochs to check if it breaks out
+        history = model.fit(
+            X_train, y_train,
+            validation_data=(X_val, y_val),
+            epochs=5,
+            batch_size=32,
+            verbose=1
+        )
+        
+        final_val_acc = history.history['val_accuracy'][-1]
+        print(f">>> {opt_name} Val Accuracy after 5 epochs: {final_val_acc*100:.2f}%")
+        
+        if final_val_acc > 0.15:
+            print(f"SUCCESS! {opt_name} broke out of saddle point!")
+            # Continue training with this optimizer
+            print("\nContinuing training for 15 more epochs...")
+            history2 = model.fit(
+                X_train, y_train,
+                validation_data=(X_val, y_val),
+                epochs=15,
+                batch_size=32,
+                verbose=1
+            )
+            final_val_acc = history2.history['val_accuracy'][-1]
+            print(f">>> After 20 total epochs: {final_val_acc*100:.2f}%")
+            break
+    
     print("\n" + "="*60)
-    print("TRAINING (10 epochs, batch_size=32)")
+    print("TEST COMPLETE")
     print("="*60)
-    
-    history = model.fit(
-        X_train, y_train,
-        validation_data=(X_val, y_val),
-        epochs=10,
-        batch_size=32,
-        verbose=1
-    )
-    
-    final_val_acc = history.history['val_accuracy'][-1]
-    print(f"\n>>> Final Val Accuracy: {final_val_acc*100:.2f}%")
-    
-    if final_val_acc > 0.20:
-        print("SUCCESS! Images are learnable. The issue was with disk loading pipeline.")
-    else:
-        print("STILL STUCK. Issue might be with the images themselves.")
 
 
 if __name__ == "__main__":
