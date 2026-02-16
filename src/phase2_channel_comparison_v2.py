@@ -433,7 +433,7 @@ def build_squeezenet_v11(input_shape, num_classes, dropout_rate=0.0):
     # Classifier
     if dropout_rate > 0:
         x = layers.Dropout(dropout_rate)(x)
-    x = layers.Conv2D(num_classes, (1, 1), activation='relu', padding='same')(x)
+    x = layers.Conv2D(num_classes, (1, 1), padding='same')(x)  # No activation before softmax
     x = layers.GlobalAveragePooling2D()(x)
     outputs = layers.Activation('softmax')(x)
     

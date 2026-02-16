@@ -45,7 +45,7 @@ def build_squeezenet_simple(input_shape, num_classes):
     x = fire_module(x, 64, 256)
     
     x = layers.Dropout(0.5)(x)
-    x = layers.Conv2D(num_classes, (1, 1), activation='relu', padding='same')(x)
+    x = layers.Conv2D(num_classes, (1, 1), padding='same')(x)  # NO activation before softmax!
     x = layers.GlobalAveragePooling2D()(x)
     outputs = layers.Activation('softmax')(x)
     

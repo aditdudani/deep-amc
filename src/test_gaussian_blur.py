@@ -102,7 +102,7 @@ def build_squeezenet_simple(input_shape, num_classes):
     x = fire_module(x, 64, 256)
     
     x = layers.Dropout(0.5)(x)
-    x = layers.Conv2D(num_classes, (1, 1), activation='relu', padding='same')(x)
+    x = layers.Conv2D(num_classes, (1, 1), padding='same')(x)  # NO activation before softmax!
     x = layers.GlobalAveragePooling2D()(x)
     outputs = layers.Activation('softmax')(x)
     
@@ -136,8 +136,8 @@ def main():
     
     print(f"  Filtered samples: {len(X_all)}")
     
-    # Take small subset for quick test
-    n_samples = 8000  # 1000 per class
+    # Take larger subset for proper test
+    n_samples = 24000  # 3000 per class
     indices = np.random.permutation(len(X_all))[:n_samples]
     X_subset = X_all[indices]
     y_subset = y_int[indices]
@@ -191,11 +191,17 @@ def main():
     )
     print(f"Model params: {model.count_params():,}")
     
+    # Add callbacks for better training
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(
+        monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6, verbose=1
+    )
+    
     history = model.fit(
         X_train, y_train,
         validation_data=(X_val, y_val),
-        epochs=15,
-        batch_size=32,
+        epochs=30,
+        batch_size=64,
+        callbacks=[reduce_lr],
         verbose=1
     )
     
