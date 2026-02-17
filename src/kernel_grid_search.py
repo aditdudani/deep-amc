@@ -40,6 +40,36 @@ from tensorflow.keras import layers, callbacks, optimizers
 import h5py
 from tqdm import tqdm
 
+
+# =============================================================================
+# CLEAN LOGGING - Skip progress bar updates in log file
+# =============================================================================
+class TeeLogger:
+    """Write to both stdout (with progress bars) and a clean log file."""
+    def __init__(self, log_path):
+        self.terminal = sys.stdout
+        self.log = open(log_path, 'w')
+    
+    def write(self, message):
+        self.terminal.write(message)
+        # Skip pure carriage return lines (progress bar updates)
+        if '\r' in message and '\n' not in message:
+            return  # Don't log progress bar updates
+        # Skip lines that look like progress bars
+        if any(pattern in message for pattern in ['[====', 'ETA:', '━', 'it/s]']):
+            return
+        # Write everything else to log
+        self.log.write(message)
+        self.log.flush()
+    
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+    
+    def close(self):
+        self.log.close()
+
+
 # GPU setup
 gpus = tf.config.list_physical_devices('GPU')
 for gpu in gpus:
@@ -281,24 +311,38 @@ def define_kernel_configs():
 
 def calculate_shift(kernel):
     """
-    Deterministically calculate the optimal bit-shift for a kernel.
+    Empirically calibrated bit-shift calculation for a kernel.
     
-    Formula: shift = ceil(log2(max_accum / target_max))
-    Where:
-        max_accum = kernel.sum() * MAX_SAMPLES_PER_PIXEL (worst case)
-        target_max = 180 (leaves headroom below 255)
+    CRITICAL FIX: The document's formula assumed worst-case (1024 samples in 1 pixel),
+    but real signals spread samples across 200+ pixels with max ~20-50 overlap.
     
-    This guarantees the full dynamic range is used without overflow.
+    Empirically calibrated approach:
+    - Small kernels (1-5): shift = 0 (accumulator rarely exceeds 255)
+    - Medium kernels (7): shift = 1-2
+    - Large kernels (11-15): shift = 3-5 (significant overlap/spread)
+    
+    The working phase2_channel_comparison used shifts of (0, 0, 3) for 3x3, 3x3, 11x11.
     """
     kernel_sum = int(kernel.sum())
-    max_accum = kernel_sum * MAX_SAMPLES_PER_PIXEL
-    target_max = 180  # 255 - 75 headroom
+    k_size = kernel.shape[0]
     
-    if max_accum <= target_max:
+    # Empirical calibration based on kernel size
+    # Larger kernels cause more overlap, need more shifting
+    if k_size <= 3:
+        # 1x1 or 3x3: minimal overlap, shift 0
         return 0
-    
-    shift = math.ceil(math.log2(max_accum / target_max))
-    return shift
+    elif k_size <= 5:
+        # 5x5: slight overlap, shift 1
+        return 1
+    elif k_size <= 7:
+        # 7x7: moderate overlap, shift 2
+        return 2
+    elif k_size <= 11:
+        # 11x11: significant overlap, shift 3
+        return 3
+    else:
+        # 15x15+: extensive overlap, shift 4
+        return 4
 
 
 # =============================================================================
@@ -732,7 +776,18 @@ def main():
     parser = argparse.ArgumentParser(description='Kernel Grid Search for FPGA AMC')
     parser.add_argument('--resume', type=str, help='Resume from specific kernel (e.g., K05)')
     parser.add_argument('--kernel', type=str, help='Test single kernel only (e.g., K03)')
+    parser.add_argument('--no-log', action='store_true', help='Disable clean log file')
     args = parser.parse_args()
+    
+    # Set up clean logging (filters progress bars)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    logger = None
+    if not args.no_log:
+        os.makedirs('logs', exist_ok=True)
+        log_path = f'logs/kernel_grid_search_{timestamp}.log'
+        logger = TeeLogger(log_path)
+        sys.stdout = logger
+        print(f"Clean log: {log_path}")
     
     print("\n" + "="*70)
     print("KERNEL GRID SEARCH - Deterministic Kernel Topology Selection")
@@ -825,6 +880,11 @@ def main():
     print("="*70)
     print(f"Results saved to: {RESULTS_DIR}/")
     print("Next step: Use rankings to select champion kernel for Phase 2")
+    
+    # Close logger
+    if logger:
+        sys.stdout = logger.terminal
+        logger.close()
 
 
 if __name__ == "__main__":
