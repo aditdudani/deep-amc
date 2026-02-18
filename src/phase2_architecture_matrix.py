@@ -292,18 +292,22 @@ def generate_dataset_to_disk(config, output_dir, seed=RANDOM_SEED):
     
     with h5py.File(DATA_PATH, 'r') as hf:
         X = hf['X']
-        Y = hf['Y']
-        Z = hf['Z']
-        
         n_total = X.shape[0]
-        snr_values = Z[:, 0] if len(Z.shape) > 1 else Z[:]
+        
+        # Preload labels and SNR to memory (avoid repeated disk reads)
+        print(f"  Loading labels...")
+        Y_onehot = hf['Y'][:]
+        y_int = np.argmax(Y_onehot, axis=1)
+        Z = hf['Z'][:]
+        snr_values = Z[:, 0] if len(Z.shape) > 1 else Z
+        del Y_onehot  # Free memory
         
         print(f"  Processing {n_total:,} total samples...")
         
         # Process by (class, SNR) combinations for stratification
         for hdf5_class in tqdm(VALID_HDF5_CLASSES, desc="  Classes"):
             class_name = HDF5_CLASS_NAMES[hdf5_class]
-            class_mask = (Y[:, hdf5_class] == 1)
+            class_mask = (y_int == hdf5_class)
             
             for snr in TARGET_SNRS:
                 # Find samples matching this class and SNR
