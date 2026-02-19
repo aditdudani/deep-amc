@@ -2,7 +2,9 @@
 Kernel Grid Search - Deterministic Kernel Topology Selection for FPGA AMC
 
 Implements the "Funnel Strategy" from the research plan:
-1. Test 15 kernel configurations individually (single-channel)
+1. Test 19 kernel configurations individually (single-channel)
+   - Original 15: Point, Cross, Box, Gaussian at various sizes
+   - 4 Binomial: Power-of-2 Gaussian approximation (0 DSPs)
 2. Evaluate using surrogate training (30% data, 20 epochs, ReduceLROnPlateau)
 3. Per-SNR accuracy breakdown to validate inverse correlation hypothesis
 4. Output Pareto analysis (Accuracy vs HW Cost)
@@ -147,11 +149,51 @@ def create_gaussian_kernel(size, sigma=None):
     return kernel_float.astype(np.int32)
 
 
+def create_binomial_kernel(size):
+    """
+    Hardware-perfect Gaussian approximation using ONLY powers of 2.
+    Forces strict power-of-2 decay from center to guarantee 0 DSP usage.
+    
+    1D pattern: [1, 2, 4, ..., peak, ..., 4, 2, 1] - doubles toward center
+    
+    Examples:
+      3x3: [1, 2, 1] -> peak=2
+      5x5: [1, 2, 4, 2, 1] -> peak=4
+      7x7: [1, 2, 4, 8, 4, 2, 1] -> peak=8
+      11x11: [1, 2, 4, 8, 16, 32, 16, 8, 4, 2, 1] -> peak=32
+    
+    Hardware brilliance: Gaussian-like bell curve at Box kernel cost (0 DSPs).
+    """
+    # 1. Create 1D array that doubles toward center
+    half_size = size // 2
+    coeffs = [2**i for i in range(half_size)]
+    coeffs_1d = np.array(coeffs + [2**half_size] + coeffs[::-1], dtype=np.int32)
+    
+    # 2. Create 2D kernel via outer product
+    kernel_2d = np.outer(coeffs_1d, coeffs_1d)
+    
+    # 3. Scale to GAIN (128) using integer operations only
+    center_val = kernel_2d[half_size, half_size]
+    
+    if center_val <= GAIN:
+        # Small kernels: multiply up (e.g., 5x5 center=16, scale by 8)
+        scale = GAIN // center_val
+        kernel_scaled = kernel_2d * scale
+    else:
+        # Large kernels: shift down (e.g., 11x11 center=1024, shift right 3)
+        shift_down = int(np.log2(center_val // GAIN))
+        kernel_scaled = kernel_2d >> shift_down
+    
+    return kernel_scaled.astype(np.int32)
+    
+
 def define_kernel_configs():
     """
-    Define all 15 kernel configurations for the grid search (per Table 1 in doc).
-    Order: Cross → Box → Gaussian for each size (except 15x15 has no Cross).
+    Define all 19 kernel configurations for the grid search.
+    Original 15 + 4 Binomial (power-of-2 Gaussian approximations).
+    Order: Cross → Box → Gaussian for each size, then Binomial variants.
     Gaussian cost_proxy = n² × 2 (DSP penalty factor).
+    Binomial cost_proxy = n² (0 DSPs - all bit-shifts).
     Returns dict: config_id -> {kernel, size, topology, cost_proxy, uses_dsp}
     """
     configs = {}
@@ -304,6 +346,50 @@ def define_kernel_configs():
         'topology': 'Gaussian',
         'cost_proxy': 450,  # 225 × 2 (DSP penalty)
         'uses_dsp': True,
+    }
+    
+    # =========================================================================
+    # BINOMIAL KERNELS - Power-of-2 Gaussian approximation (0 DSPs)
+    # =========================================================================
+    
+    # K16: 3x3 Binomial (exact: [[1,2,1],[2,4,2],[1,2,1]] × GAIN)
+    configs['K16'] = {
+        'name': '3x3_Binomial',
+        'kernel': create_binomial_kernel(3),
+        'size': 3,
+        'topology': 'Binomial',
+        'cost_proxy': 9,  # 9 writes, 0 DSPs (all bit-shifts)
+        'uses_dsp': False,
+    }
+    
+    # K17: 5x5 Binomial (power-of-2 approximation)
+    configs['K17'] = {
+        'name': '5x5_Binomial',
+        'kernel': create_binomial_kernel(5),
+        'size': 5,
+        'topology': 'Binomial',
+        'cost_proxy': 25,  # 25 writes, 0 DSPs
+        'uses_dsp': False,
+    }
+    
+    # K18: 7x7 Binomial (power-of-2 approximation)
+    configs['K18'] = {
+        'name': '7x7_Binomial',
+        'kernel': create_binomial_kernel(7),
+        'size': 7,
+        'topology': 'Binomial',
+        'cost_proxy': 49,  # 49 writes, 0 DSPs
+        'uses_dsp': False,
+    }
+    
+    # K19: 11x11 Binomial (power-of-2 approximation)
+    configs['K19'] = {
+        'name': '11x11_Binomial',
+        'kernel': create_binomial_kernel(11),
+        'size': 11,
+        'topology': 'Binomial',
+        'cost_proxy': 121,  # 121 writes, 0 DSPs
+        'uses_dsp': False,
     }
     
     return configs
@@ -772,10 +858,54 @@ def print_pareto_analysis(all_results):
 # MAIN
 # =============================================================================
 
+def load_existing_results(csv_path):
+    """Load existing results from CSV file."""
+    results = []
+    if not os.path.exists(csv_path):
+        return results
+    
+    with open(csv_path, 'r') as f:
+        lines = f.readlines()
+    
+    if len(lines) < 2:
+        return results
+    
+    # Parse header to get column indices
+    header = lines[0].strip().split(',')
+    
+    for line in lines[1:]:
+        parts = line.strip().split(',')
+        if len(parts) < 8:
+            continue
+        
+        result = {
+            'config_id': parts[0],
+            'name': parts[1],
+            'size': int(parts[2]),
+            'topology': parts[3],
+            'cost_proxy': int(parts[4]),
+            'uses_dsp': parts[5] == 'True',
+            'overall_val_acc': float(parts[6]) / 100,
+            'best_val_acc': float(parts[7]) / 100,
+            'per_snr_accuracy': {}
+        }
+        
+        # Parse per-SNR accuracies
+        for i, snr in enumerate(TARGET_SNRS):
+            if 8 + i < len(parts):
+                result['per_snr_accuracy'][str(snr)] = float(parts[8 + i]) / 100
+        
+        results.append(result)
+    
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description='Kernel Grid Search for FPGA AMC')
     parser.add_argument('--resume', type=str, help='Resume from specific kernel (e.g., K05)')
     parser.add_argument('--kernel', type=str, help='Test single kernel only (e.g., K03)')
+    parser.add_argument('--kernels', type=str, help='Test multiple kernels (comma-separated, e.g., K16,K17,K18,K19)')
+    parser.add_argument('--append', type=str, help='Append results to existing CSV file')
     parser.add_argument('--no-log', action='store_true', help='Disable clean log file')
     args = parser.parse_args()
     
@@ -821,6 +951,14 @@ def main():
             print(f"ERROR: Unknown kernel {args.kernel}")
             return
         configs = {args.kernel: configs[args.kernel]}
+    elif args.kernels:
+        kernel_list = [k.strip() for k in args.kernels.split(',')]
+        invalid = [k for k in kernel_list if k not in configs]
+        if invalid:
+            print(f"ERROR: Unknown kernels: {invalid}")
+            return
+        configs = {k: configs[k] for k in kernel_list}
+        print(f"\nTesting {len(configs)} selected kernels: {kernel_list}")
     
     # Resume handling
     start_idx = 0
@@ -830,8 +968,17 @@ def main():
             start_idx = kernel_ids.index(args.resume)
             print(f"\nResuming from {args.resume} (index {start_idx})")
     
-    # Run grid search
+    # Load existing results if appending
     all_results = []
+    if args.append:
+        if os.path.exists(args.append):
+            all_results = load_existing_results(args.append)
+            existing_ids = {r['config_id'] for r in all_results}
+            print(f"\nLoaded {len(all_results)} existing results from {args.append}")
+            print(f"  Existing kernels: {sorted(existing_ids)}")
+        else:
+            print(f"\nAppend file not found, will create: {args.append}")
+    
     kernel_ids = list(configs.keys())[start_idx:]
     
     for i, config_id in enumerate(kernel_ids):
@@ -860,7 +1007,8 @@ def main():
         
         # Step 3: Save intermediate results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_results(all_results, os.path.join(RESULTS_DIR, 'kernel_rankings.csv'))
+        intermediate_path = args.append if args.append else os.path.join(RESULTS_DIR, 'kernel_rankings.csv')
+        save_results(all_results, intermediate_path)
         
         # Step 4: Clean up temp directory
         if os.path.exists(TEMP_DATA_DIR):
@@ -872,8 +1020,15 @@ def main():
     
     # Save final results with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    final_path = os.path.join(RESULTS_DIR, f'kernel_rankings_{timestamp}.csv')
-    save_results(all_results, final_path)
+    if args.append:
+        # Also save a timestamped copy
+        base_path = args.append.replace('.csv', f'_{timestamp}.csv')
+        save_results(all_results, base_path)
+        # Update the original append file
+        save_results(all_results, args.append)
+    else:
+        final_path = os.path.join(RESULTS_DIR, f'kernel_rankings_{timestamp}.csv')
+        save_results(all_results, final_path)
     
     print("\n" + "="*70)
     print("GRID SEARCH COMPLETE")
