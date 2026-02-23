@@ -950,7 +950,11 @@ def main():
     parser = argparse.ArgumentParser(description='Kernel Grid Search for FPGA AMC')
     parser.add_argument('--resume', type=str, help='Resume from specific kernel (e.g., K05)')
     parser.add_argument('--kernel', type=str, help='Test single kernel only (e.g., K03)')
-    parser.add_argument('--kernels', type=str, help='Test multiple kernels (comma-separated, e.g., K16,K17,K18,K19)')
+    parser.add_argument(
+        '--kernels',
+        nargs='+',
+        help='Test multiple kernels (supports "K16,K17" or "K16 K17" or mixed comma+space)'
+    )
     parser.add_argument('--append', type=str, help='Append results to existing CSV file')
     parser.add_argument('--no-log', action='store_true', help='Disable clean log file')
     args = parser.parse_args()
@@ -998,7 +1002,9 @@ def main():
             return
         configs = {args.kernel: configs[args.kernel]}
     elif args.kernels:
-        kernel_list = [k.strip() for k in args.kernels.split(',')]
+        kernel_list = []
+        for token in args.kernels:
+            kernel_list.extend([k.strip() for k in token.split(',') if k.strip()])
         invalid = [k for k in kernel_list if k not in configs]
         if invalid:
             print(f"ERROR: Unknown kernels: {invalid}")
