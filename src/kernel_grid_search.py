@@ -115,7 +115,7 @@ RESULTS_DIR = 'results_local/kernel_search'
 
 
 # =============================================================================
-# KERNEL DEFINITIONS - The 15-Kernel Search Space
+# KERNEL DEFINITIONS - The Kernel Search Space
 # =============================================================================
 
 def create_box_kernel(size):
@@ -129,6 +129,16 @@ def create_cross_kernel(size):
     kernel[center, :] = GAIN  # Horizontal line
     kernel[:, center] = GAIN  # Vertical line
     kernel[center, center] = GAIN  # Don't double-count center
+    return kernel
+
+
+def create_center_weighted_cross_kernel(size):
+    """Center-weighted Cross: edges=GAIN, center=2×GAIN. 0 DSPs, same write count."""
+    kernel = np.zeros((size, size), dtype=np.int32)
+    center = size // 2
+    kernel[center, :] = GAIN      # edges
+    kernel[:, center] = GAIN      # edges
+    kernel[center, center] = GAIN * 2  # boosted center (bit-shift left by 1 in HW)
     return kernel
 
 def create_gaussian_kernel(size, sigma=None):
@@ -189,11 +199,10 @@ def create_binomial_kernel(size):
 
 def define_kernel_configs():
     """
-    Define all 19 kernel configurations for the grid search.
-    Original 15 + 4 Binomial (power-of-2 Gaussian approximations).
-    Order: Cross → Box → Gaussian for each size, then Binomial variants.
-    Gaussian cost_proxy = n² × 2 (DSP penalty factor).
-    Binomial cost_proxy = n² (0 DSPs - all bit-shifts).
+    Define all kernel configurations for the grid search.
+    Base: 15 (Point/Cross/Box/Gaussian)
+    Binomial: 4 (power-of-2 Gaussian approximations)
+    Center-Weighted Cross: 4 (boosted center, same bandwidth writes)
     Returns dict: config_id -> {kernel, size, topology, cost_proxy, uses_dsp}
     """
     configs = {}
@@ -389,6 +398,43 @@ def define_kernel_configs():
         'size': 11,
         'topology': 'Binomial',
         'cost_proxy': 121,  # 121 writes, 0 DSPs
+        'uses_dsp': False,
+    }
+
+    # Center-Weighted Cross (edges=GAIN, center=2×GAIN) - same write count as Cross
+    configs['K20'] = {
+        'name': '3x3_Cross_Centered',
+        'kernel': create_center_weighted_cross_kernel(3),
+        'size': 3,
+        'topology': 'CrossCentered',
+        'cost_proxy': 5,
+        'uses_dsp': False,
+    }
+
+    configs['K21'] = {
+        'name': '5x5_Cross_Centered',
+        'kernel': create_center_weighted_cross_kernel(5),
+        'size': 5,
+        'topology': 'CrossCentered',
+        'cost_proxy': 9,
+        'uses_dsp': False,
+    }
+
+    configs['K22'] = {
+        'name': '7x7_Cross_Centered',
+        'kernel': create_center_weighted_cross_kernel(7),
+        'size': 7,
+        'topology': 'CrossCentered',
+        'cost_proxy': 13,
+        'uses_dsp': False,
+    }
+
+    configs['K23'] = {
+        'name': '11x11_Cross_Centered',
+        'kernel': create_center_weighted_cross_kernel(11),
+        'size': 11,
+        'topology': 'CrossCentered',
+        'cost_proxy': 21,
         'uses_dsp': False,
     }
     
