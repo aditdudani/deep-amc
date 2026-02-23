@@ -1,7 +1,7 @@
 """
 Phase 2: Architecture Matrix - Comprehensive Single/Dual/Triple Channel Comparison
 
-Tests 6 configurations selected from Phase 1 Grid Search results:
+Tests 7 configurations selected from Phase 1 Grid Search results:
 
 TIER 1: Single-Channel
   Config A: K02 (3x3 Cross)  - Efficiency Champion (69.35%, cost=5)
@@ -14,6 +14,9 @@ TIER 2: Dual-Channel
 
 TIER 3: Triple-Channel
   Config F: K02 + K09 + K12  - Software Proxy (cost=175)
+
+HEAD-TO-HEAD ADDITION
+    Config G: K20 (3x3 Cross Centered) - Single-channel challenger to A (cost=5)
 
 Execution: Full dataset, 40 epochs, rolling disk generation.
 """
@@ -123,6 +126,16 @@ def create_cross_kernel(size):
     kernel[:, center] = GAIN
     return kernel
 
+
+def create_center_weighted_cross_kernel(size):
+    """Center-weighted Cross: edges=GAIN, center=2×GAIN."""
+    kernel = np.zeros((size, size), dtype=np.int32)
+    center = size // 2
+    kernel[center, :] = GAIN
+    kernel[:, center] = GAIN
+    kernel[center, center] = GAIN * 2
+    return kernel
+
 def create_box_kernel(size):
     """Uniform/Box kernel - all ones."""
     return np.ones((size, size), dtype=np.int32) * GAIN
@@ -131,20 +144,22 @@ def create_box_kernel(size):
 KERNEL_K02 = create_cross_kernel(3)   # 3x3 Cross - Efficiency Champion
 KERNEL_K09 = create_box_kernel(7)     # 7x7 Box - Accuracy Champion
 KERNEL_K12 = create_box_kernel(11)    # 11x11 Box - 0dB Integrator
+KERNEL_K20 = create_center_weighted_cross_kernel(3)  # 3x3 Cross Centered - Head-to-head challenger
 
 # Empirically calibrated shifts (from kernel_grid_search.py fix)
 SHIFT_K02 = 0   # 3x3: no shift needed
 SHIFT_K09 = 2   # 7x7: moderate shift
 SHIFT_K12 = 3   # 11x11: larger shift
+SHIFT_K20 = 0   # 3x3 centered: no shift needed
 
 
 # =============================================================================
-# 6-CONFIGURATION MATRIX
+# 7-CONFIGURATION MATRIX
 # =============================================================================
 
 def define_configurations():
     """
-    Define the 6 configurations for Phase 2 Architecture Matrix.
+    Define the 7 configurations for Phase 2 Architecture Matrix.
     Each config specifies: kernels, shifts, num_channels, cost, description.
     """
     configs = {
@@ -201,6 +216,15 @@ def define_configurations():
             'num_channels': 3,
             'cost': 5 + 49 + 121,
             'description': 'Software Proxy - Full multi-scale representation',
+        },
+        'G': {
+            'name': 'K20_3x3CrossCentered',
+            'tier': 'Single',
+            'kernels': [KERNEL_K20],
+            'shifts': [SHIFT_K20],
+            'num_channels': 1,
+            'cost': 5,
+            'description': 'Head-to-head vs A - Center-weighted 3x3 cross',
         },
     }
     return configs
@@ -579,7 +603,7 @@ def evaluate_per_snr(model, val_dir, class_names):
 # =============================================================================
 
 def analyze_results(all_results):
-    """Comprehensive analysis of all 6 configurations."""
+    """Comprehensive analysis of selected configurations."""
     print("\n" + "=" * 80)
     print("PHASE 2 ARCHITECTURE MATRIX - RESULTS ANALYSIS")
     print("=" * 80)
@@ -627,28 +651,39 @@ def analyze_results(all_results):
     print("ARCHITECTURE DECISION")
     print("-" * 60)
     
-    best_single = max([r for r in all_results if r['tier'] == 'Single'], 
-                      key=lambda x: x['overall_val_acc'])
-    best_multi = max([r for r in all_results if r['tier'] != 'Single'], 
-                     key=lambda x: x['overall_val_acc'])
-    
-    single_acc = best_single['overall_val_acc']
-    multi_acc = best_multi['overall_val_acc']
-    acc_diff = multi_acc - single_acc
-    
-    print(f"Best Single-Channel: {best_single['name']} ({single_acc*100:.2f}%, cost={best_single['cost']})")
-    print(f"Best Multi-Channel:  {best_multi['name']} ({multi_acc*100:.2f}%, cost={best_multi['cost']})")
-    print(f"Accuracy Difference: {acc_diff*100:+.2f}%")
-    
+    singles = [r for r in all_results if r['tier'] == 'Single']
+    multis = [r for r in all_results if r['tier'] != 'Single']
+
+    best_single = max(singles, key=lambda x: x['overall_val_acc']) if singles else None
+    best_multi = max(multis, key=lambda x: x['overall_val_acc']) if multis else None
+
     threshold = 0.05  # 5%
-    if acc_diff <= threshold:
-        recommendation = best_single['name']
-        reason = f"Multi-channel gain ({acc_diff*100:.2f}%) ≤ {threshold*100:.0f}% threshold"
-        fpga_benefit = "Single-channel saves bandwidth and complexity"
+    if best_single and best_multi:
+        single_acc = best_single['overall_val_acc']
+        multi_acc = best_multi['overall_val_acc']
+        acc_diff = multi_acc - single_acc
+
+        print(f"Best Single-Channel: {best_single['name']} ({single_acc*100:.2f}%, cost={best_single['cost']})")
+        print(f"Best Multi-Channel:  {best_multi['name']} ({multi_acc*100:.2f}%, cost={best_multi['cost']})")
+        print(f"Accuracy Difference: {acc_diff*100:+.2f}%")
+
+        if acc_diff <= threshold:
+            recommendation = best_single['name']
+            reason = f"Multi-channel gain ({acc_diff*100:.2f}%) ≤ {threshold*100:.0f}% threshold"
+            fpga_benefit = "Single-channel saves bandwidth and complexity"
+        else:
+            recommendation = best_multi['name']
+            reason = f"Multi-channel gain ({acc_diff*100:.2f}%) > {threshold*100:.0f}% threshold"
+            fpga_benefit = f"Multi-channel justified by {acc_diff*100:.2f}% accuracy gain"
     else:
-        recommendation = best_multi['name']
-        reason = f"Multi-channel gain ({acc_diff*100:.2f}%) > {threshold*100:.0f}% threshold"
-        fpga_benefit = f"Multi-channel justified by {acc_diff*100:.2f}% accuracy gain"
+        ranked = sorted(all_results, key=lambda x: x['overall_val_acc'], reverse=True)
+        recommendation = ranked[0]['name'] if ranked else 'N/A'
+        reason = 'Subset run contains only one architecture tier; selected top accuracy in this subset'
+        fpga_benefit = 'Use this result for focused head-to-head before full matrix comparison'
+        acc_diff = 0.0
+        if ranked:
+            print(f"Subset-only run ({ranked[0]['tier']} tier).")
+            print(f"Top Config: {ranked[0]['name']} ({ranked[0]['overall_val_acc']*100:.2f}%, cost={ranked[0]['cost']})")
     
     print(f"\n>>> RECOMMENDATION: {recommendation}")
     print(f">>> Reason: {reason}")
@@ -656,8 +691,8 @@ def analyze_results(all_results):
     
     return {
         'recommendation': recommendation,
-        'best_single': best_single['name'],
-        'best_multi': best_multi['name'],
+        'best_single': best_single['name'] if best_single else None,
+        'best_multi': best_multi['name'] if best_multi else None,
         'accuracy_difference': acc_diff,
     }
 
@@ -694,10 +729,14 @@ def save_results(all_results, output_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Phase 2 Architecture Matrix')
-    parser.add_argument('--config', type=str, help='Test single config only (e.g., A, B, C, D, E, F)')
+    parser.add_argument('--config', type=str, help='Test single config only (e.g., A, B, C, D, E, F, G)')
+    parser.add_argument('--configs', nargs='+', help='Test multiple configs (supports "A,G" or "A G" or mixed comma+space)')
     parser.add_argument('--resume', type=str, help='Resume from specific config')
     parser.add_argument('--no-log', action='store_true', help='Disable clean log file')
     args = parser.parse_args()
+
+    if args.config and args.configs:
+        parser.error('Use either --config or --configs, not both.')
     
     # Set up clean logging
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -729,7 +768,7 @@ def main():
     configs = define_configurations()
     
     # Print configuration matrix
-    print("\n6-CONFIGURATION MATRIX:")
+    print("\n7-CONFIGURATION MATRIX:")
     print("-" * 80)
     for cid, cfg in configs.items():
         print(f"  Config {cid}: {cfg['name']:<20} | {cfg['tier']:<7} | Cost={cfg['cost']:<5} | {cfg['description']}")
@@ -738,9 +777,19 @@ def main():
     # Filter if single config requested
     if args.config:
         if args.config.upper() not in configs:
-            print(f"ERROR: Unknown config {args.config}. Valid: A, B, C, D, E, F")
+            print(f"ERROR: Unknown config {args.config}. Valid: A, B, C, D, E, F, G")
             return
         configs = {args.config.upper(): configs[args.config.upper()]}
+    elif args.configs:
+        selected = []
+        for token in args.configs:
+            selected.extend([c.strip().upper() for c in token.split(',') if c.strip()])
+        invalid = [c for c in selected if c not in configs]
+        if invalid:
+            print(f"ERROR: Unknown configs {invalid}. Valid: A, B, C, D, E, F, G")
+            return
+        configs = {c: configs[c] for c in selected}
+        print(f"\nTesting selected configs: {selected}")
     
     # Resume handling
     start_idx = 0
