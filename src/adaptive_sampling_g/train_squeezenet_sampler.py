@@ -46,6 +46,29 @@ from adaptive_sampling_g.callbacks_confusion_snr import ConfusionBySNRCallback
 from adaptive_sampling_g.debug_utils import debug_train_steps, val_probe, ValProbeCallback
 
 
+class TeeLogger:
+    """Write to both stdout (with progress bars) and a clean log file."""
+    def __init__(self, log_path):
+        self.terminal = sys.stdout
+        self.log = open(log_path, 'w')
+
+    def write(self, message):
+        self.terminal.write(message)
+        if '\r' in message and '\n' not in message:
+            return
+        if any(pattern in message for pattern in ['[====', 'ETA:', '━', 'it/s]', '- loss:']):
+            return
+        self.log.write(message)
+        self.log.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+    def close(self):
+        self.log.close()
+
+
 # --------------------
 # Defaults; can be overridden via CLI
 # --------------------
@@ -132,6 +155,7 @@ def parse_args():
                    help='Comma-separated SNR list to sample from (e.g., "6,8,10"). If omitted, use all TARGET_SNRS')
     p.add_argument('--debug-trainstep', action='store_true', help='Run a few train_on_batch steps to verify learning')
     p.add_argument('--valprobe-batches', type=int, default=0, help='Probe validation preds over first N batches before/after training')
+    p.add_argument('--no-log', action='store_true', help='Disable clean log file')
     return p.parse_args()
 def _verify_metadata_quick(csv_path: str, class_names):
     """Lightweight checks: file exists, folder-based class in class_names, SNR in TARGET_SNRS.
@@ -279,195 +303,128 @@ def _make_tfdata_class_uniform_from_dir(train_dir: str, class_names: list, epoch
 def main():
     args = parse_args()
 
-    # Further reduce Python-side TF logs (keep training progress)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    logger = None
+    if not args.no_log:
+        os.makedirs('logs', exist_ok=True)
+        log_path = f'logs/adaptive_sampling_g_train_{timestamp}.log'
+        logger = TeeLogger(log_path)
+        sys.stdout = logger
+        print(f"Clean log: {log_path}")
+
     try:
-        import absl.logging
-        absl.logging.set_verbosity(absl.logging.ERROR)
-    except Exception:
-        pass
-    try:
-        tf.get_logger().setLevel('ERROR')
-    except Exception:
-        pass
+        # Further reduce Python-side TF logs (keep training progress)
+        try:
+            import absl.logging
+            absl.logging.set_verbosity(absl.logging.ERROR)
+        except Exception:
+            pass
+        try:
+            tf.get_logger().setLevel('ERROR')
+        except Exception:
+            pass
 
-    tf.keras.mixed_precision.set_global_policy('float32')
+        tf.keras.mixed_precision.set_global_policy('float32')
 
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    os.makedirs(TB_LOGDIR, exist_ok=True)
-    os.makedirs(os.path.dirname(MODEL_OUT), exist_ok=True)
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+        os.makedirs(TB_LOGDIR, exist_ok=True)
+        os.makedirs(os.path.dirname(MODEL_OUT), exist_ok=True)
 
-    if not os.path.isdir(TRAIN_DIR) or not os.path.isdir(VAL_DIR):
-        raise FileNotFoundError(f"Expected directories: {TRAIN_DIR} and {VAL_DIR}")
+        if not os.path.isdir(TRAIN_DIR) or not os.path.isdir(VAL_DIR):
+            raise FileNotFoundError(f"Expected directories: {TRAIN_DIR} and {VAL_DIR}")
 
-    # Determine class_names once from train dir; force same mapping for val
-    image_size = int(args.image_size)
-    batch_size = int(args.batch_size)
-    epochs = int(args.epochs)
-    learning_rate = float(args.lr)
+        # Determine class_names once from train dir; force same mapping for val
+        image_size = int(args.image_size)
+        batch_size = int(args.batch_size)
+        epochs = int(args.epochs)
+        learning_rate = float(args.lr)
 
-    class_names = sorted([d for d in os.listdir(TRAIN_DIR) if os.path.isdir(os.path.join(TRAIN_DIR, d))])
-    train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, image_size, batch_size, class_names=class_names)
+        class_names = sorted([d for d in os.listdir(TRAIN_DIR) if os.path.isdir(os.path.join(TRAIN_DIR, d))])
+        train_ds, val_ds = make_datasets(TRAIN_DIR, VAL_DIR, image_size, batch_size, class_names=class_names)
 
-    # Verify val contains same set
-    val_set = sorted([d for d in os.listdir(VAL_DIR) if os.path.isdir(os.path.join(VAL_DIR, d))])
-    print(f"Train classes ({len(class_names)}): {class_names}")
-    print(f"Val   classes ({len(val_set)}): {val_set}")
-    if class_names != val_set:
-        raise RuntimeError(
-            "Train/Val class folders differ. This will break label alignment.\n"
-            f"Train: {class_names}\nVal:   {val_set}")
-    num_classes = len(class_names)
+        # Verify val contains same set
+        val_set = sorted([d for d in os.listdir(VAL_DIR) if os.path.isdir(os.path.join(VAL_DIR, d))])
+        print(f"Train classes ({len(class_names)}): {class_names}")
+        print(f"Val   classes ({len(val_set)}): {val_set}")
+        if class_names != val_set:
+            raise RuntimeError(
+                "Train/Val class folders differ. This will break label alignment.\n"
+                f"Train: {class_names}\nVal:   {val_set}")
+        num_classes = len(class_names)
 
-    # Build model
-    model = build_squeezenet_v11(input_shape=(image_size, image_size, 3), num_classes=num_classes, dropout_rate=0.0)
-    clipnorm = float(args.clipnorm)
-    optimizer = optimizers.SGD(learning_rate=learning_rate, momentum=0.9, clipnorm=clipnorm if clipnorm > 0 else None)
-    model.compile(
-        optimizer=optimizer,
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
-        metrics=['accuracy'],
-    )
+        # Build model
+        model = build_squeezenet_v11(input_shape=(image_size, image_size, 3), num_classes=num_classes, dropout_rate=0.0)
+        clipnorm = float(args.clipnorm)
+        optimizer = optimizers.SGD(learning_rate=learning_rate, momentum=0.9, clipnorm=clipnorm if clipnorm > 0 else None)
+        model.compile(
+            optimizer=optimizer,
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+            metrics=['accuracy'],
+        )
 
-    ckpt = callbacks.ModelCheckpoint(
-        filepath=MODEL_OUT,
-        monitor='val_accuracy',
-        save_best_only=True,
-        mode='max',
-        verbose=1,
-    )
-    csv = callbacks.CSVLogger(LOG_CSV)
-    tb = callbacks.TensorBoard(log_dir=TB_LOGDIR)
-    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
+        ckpt = callbacks.ModelCheckpoint(
+            filepath=MODEL_OUT,
+            monitor='val_accuracy',
+            save_best_only=True,
+            mode='max',
+            verbose=1,
+        )
+        csv = callbacks.CSVLogger(LOG_CSV)
+        tb = callbacks.TensorBoard(log_dir=TB_LOGDIR)
+        reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
 
-    print("\n--- Training SqueezeNet v1.1 with adaptive sampler ---")
+        print("\n--- Training SqueezeNet v1.1 with adaptive sampler ---")
 
-    fit_kwargs = {
-        'validation_data': val_ds,
-        'epochs': epochs,
-        'callbacks': [ckpt, csv, tb, reduce_lr, LrPrinter()],
-        'verbose': 1,
-    }
+        fit_kwargs = {
+            'validation_data': val_ds,
+            'epochs': epochs,
+            'callbacks': [ckpt, csv, tb, reduce_lr, LrPrinter()],
+            'verbose': 1,
+        }
 
-    # Optional probe before training
-    if args.valprobe_batches and args.mode != 'parity':
-        val_probe(model, val_ds, class_names, n_batches=int(args.valprobe_batches), tag='pre')
+        # Optional probe before training
+        if args.valprobe_batches and args.mode != 'parity':
+            val_probe(model, val_ds, class_names, n_batches=int(args.valprobe_batches), tag='pre')
 
-    if args.mode == 'parity':
-        model.fit(train_ds, **fit_kwargs)
-    else:
-        # Sampler-based modes require metadata CSVs
-        if not os.path.exists(args.metadata_train) or not os.path.exists(args.metadata_val):
-            raise FileNotFoundError(
-                "Metadata CSVs not found. Please generate them first via:\n"
-                "  PYTHONPATH=src python src/adaptive_sampling_g/dataset_metadata.py\n"
-                f"Expected: {args.metadata_train} and {args.metadata_val}")
-
-        if args.verify_metadata:
-            _verify_metadata_quick(args.metadata_train, class_names)
-            _verify_metadata_quick(args.metadata_val, class_names)
-
-        # Initialize external weights array (mutable) for sampler and callback to share
-        weights = init_uniform_weights(num_classes, TARGET_SNRS)
-        if args.sampler_backend == 'sequence':
-            train_input = WeightedSamplerSequence(
-                train_metadata_csv=args.metadata_train,
-                class_count=num_classes,
-                snrs=TARGET_SNRS,
-                batch_size=batch_size,
-                epoch_size=args.epoch_size,
-                weights=weights,
-                shuffle_within_bucket=True,
-                class_names=class_names,
-            )
+        if args.mode == 'parity':
+            model.fit(train_ds, **fit_kwargs)
         else:
-            ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
-            if args.sampler_backend == 'tfdata':
-                snr_list = None
-                if args.snr_filter:
-                    try:
-                        candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
-                        snr_list = [s for s in candidate if s in TARGET_SNRS]
-                    except Exception:
-                        snr_list = None
-                scope = args.uniform_scope
-                print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}, scope={scope}, snrs={snr_list or TARGET_SNRS}")
-                train_input = _make_tfdata_from_sampler_draws(
-                    train_meta_csv=args.metadata_train,
-                    class_names=class_names,
-                    weights=weights,
-                    epoch_size=ep_size,
+            # Sampler-based modes require metadata CSVs
+            if not os.path.exists(args.metadata_train) or not os.path.exists(args.metadata_val):
+                raise FileNotFoundError(
+                    "Metadata CSVs not found. Please generate them first via:\n"
+                    "  PYTHONPATH=src python src/adaptive_sampling_g/dataset_metadata.py\n"
+                    f"Expected: {args.metadata_train} and {args.metadata_val}")
+
+            if args.verify_metadata:
+                _verify_metadata_quick(args.metadata_train, class_names)
+                _verify_metadata_quick(args.metadata_val, class_names)
+
+            # Initialize external weights array (mutable) for sampler and callback to share
+            weights = init_uniform_weights(num_classes, TARGET_SNRS)
+            if args.sampler_backend == 'sequence':
+                train_input = WeightedSamplerSequence(
+                    train_metadata_csv=args.metadata_train,
+                    class_count=num_classes,
+                    snrs=TARGET_SNRS,
                     batch_size=batch_size,
-                    image_size=image_size,
-                    uniform_scope=scope,
-                    snr_filter=snr_list,
+                    epoch_size=args.epoch_size,
+                    weights=weights,
+                    shuffle_within_bucket=True,
+                    class_names=class_names,
                 )
             else:
-                print(f"[sampler-backend] Using tf.data-dir-class with epoch_size={ep_size}")
-                train_input = _make_tfdata_class_uniform_from_dir(
-                    train_dir=TRAIN_DIR,
-                    class_names=class_names,
-                    epoch_size=ep_size,
-                    batch_size=batch_size,
-                    image_size=image_size,
-                )
-
-        cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
-
-        if args.debug_sampler and args.sampler_backend == 'sequence':
-            try:
-                X_dbg, y_dbg = train_input[0]
-                unique, counts = np.unique(y_dbg, return_counts=True)
-                print(f"[debug-sampler] y unique/counts: {list(zip(unique.tolist(), counts.tolist()))}")
-                # Print a few random sample folder->label pairs from buckets
-                import random as _rnd
-                keys = list(train_input.buckets.keys())
-                _rnd.shuffle(keys)
-                for key in keys[:8]:
-                    paths_k = train_input.buckets.get(key, [])
-                    if not paths_k:
-                        continue
-                    p0 = paths_k[_rnd.randrange(len(paths_k))]
-                    folder = os.path.basename(os.path.dirname(p0))
-                    cid = train_input.class_name_to_id.get(folder, None) if train_input.class_name_to_id else None
-                    print(f"[debug-sampler] example path: {p0} | folder={folder} -> label={cid}")
-            except Exception as e:
-                print(f"[debug-sampler] Failed to preview sampler batch: {e}")
-
-        if args.debug_trainstep:
-            debug_train_steps(model, train_input, num_classes, steps=5)
-        if args.mode == 'adaptive':
-            cb_list.append(ConfusionBySNRCallback(
-                val_metadata_csv=args.metadata_val,
-                weights_ref=weights,
-                out_dir=RESULTS_DIR,
-                beta=float(args.beta),
-                epsilon=float(args.epsilon),
-                max_cap=float(args.max_cap),
-                replay_fraction=float(args.replay_fraction),
-                batch_size=batch_size,
-                snrs=TARGET_SNRS,
-                warmup_epochs=args.warmup_epochs,
-                min_val_acc_for_updates=args.min_val_acc,
-                class_names=class_names,
-            ))
-        if args.valprobe_batches:
-            cb_list.append(ValProbeCallback(val_ds=val_ds, class_names=class_names, n_batches=int(args.valprobe_batches)))
-        fit_kwargs['callbacks'] = cb_list
-
-        # Dynamic resampling loop for tf.data backends if requested
-        if args.sampler_backend in ('tfdata', 'tfdata-dir-class') and args.resample_each_epoch:
-            print(f"[resample-loop] Enabled per-epoch resampling (backend={args.sampler_backend})")
-            ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
-            snr_list = None
-            if args.snr_filter:
-                try:
-                    candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
-                    snr_list = [s for s in candidate if s in TARGET_SNRS]
-                except Exception:
-                    snr_list = None
-            scope = args.uniform_scope
-            for epoch in range(epochs):
+                ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
                 if args.sampler_backend == 'tfdata':
+                    snr_list = None
+                    if args.snr_filter:
+                        try:
+                            candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
+                            snr_list = [s for s in candidate if s in TARGET_SNRS]
+                        except Exception:
+                            snr_list = None
+                    scope = args.uniform_scope
+                    print(f"[sampler-backend] Using tf.data with epoch_size={ep_size}, scope={scope}, snrs={snr_list or TARGET_SNRS}")
                     train_input = _make_tfdata_from_sampler_draws(
                         train_meta_csv=args.metadata_train,
                         class_names=class_names,
@@ -479,6 +436,7 @@ def main():
                         snr_filter=snr_list,
                     )
                 else:
+                    print(f"[sampler-backend] Using tf.data-dir-class with epoch_size={ep_size}")
                     train_input = _make_tfdata_class_uniform_from_dir(
                         train_dir=TRAIN_DIR,
                         class_names=class_names,
@@ -486,17 +444,97 @@ def main():
                         batch_size=batch_size,
                         image_size=image_size,
                     )
-                print(f"[resample-loop] Epoch {epoch+1}/{epochs}: built dataset with {ep_size} samples")
-                model.fit(train_input,
-                          validation_data=val_ds,
-                          epochs=epoch+1,
-                          initial_epoch=epoch,
-                          callbacks=cb_list,
-                          verbose=1)
-        else:
-            model.fit(train_input, **fit_kwargs)
 
-    print(f"\nTraining complete. Best model saved to: {MODEL_OUT}")
+            cb_list = [ckpt, csv, tb, reduce_lr, LrPrinter()]
+
+            if args.debug_sampler and args.sampler_backend == 'sequence':
+                try:
+                    X_dbg, y_dbg = train_input[0]
+                    unique, counts = np.unique(y_dbg, return_counts=True)
+                    print(f"[debug-sampler] y unique/counts: {list(zip(unique.tolist(), counts.tolist()))}")
+                    # Print a few random sample folder->label pairs from buckets
+                    import random as _rnd
+                    keys = list(train_input.buckets.keys())
+                    _rnd.shuffle(keys)
+                    for key in keys[:8]:
+                        paths_k = train_input.buckets.get(key, [])
+                        if not paths_k:
+                            continue
+                        p0 = paths_k[_rnd.randrange(len(paths_k))]
+                        folder = os.path.basename(os.path.dirname(p0))
+                        cid = train_input.class_name_to_id.get(folder, None) if train_input.class_name_to_id else None
+                        print(f"[debug-sampler] example path: {p0} | folder={folder} -> label={cid}")
+                except Exception as e:
+                    print(f"[debug-sampler] Failed to preview sampler batch: {e}")
+
+            if args.debug_trainstep:
+                debug_train_steps(model, train_input, num_classes, steps=5)
+            if args.mode == 'adaptive':
+                cb_list.append(ConfusionBySNRCallback(
+                    val_metadata_csv=args.metadata_val,
+                    weights_ref=weights,
+                    out_dir=RESULTS_DIR,
+                    beta=float(args.beta),
+                    epsilon=float(args.epsilon),
+                    max_cap=float(args.max_cap),
+                    replay_fraction=float(args.replay_fraction),
+                    batch_size=batch_size,
+                    snrs=TARGET_SNRS,
+                    warmup_epochs=args.warmup_epochs,
+                    min_val_acc_for_updates=args.min_val_acc,
+                    class_names=class_names,
+                ))
+            if args.valprobe_batches:
+                cb_list.append(ValProbeCallback(val_ds=val_ds, class_names=class_names, n_batches=int(args.valprobe_batches)))
+            fit_kwargs['callbacks'] = cb_list
+
+            # Dynamic resampling loop for tf.data backends if requested
+            if args.sampler_backend in ('tfdata', 'tfdata-dir-class') and args.resample_each_epoch:
+                print(f"[resample-loop] Enabled per-epoch resampling (backend={args.sampler_backend})")
+                ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
+                snr_list = None
+                if args.snr_filter:
+                    try:
+                        candidate = [int(x.strip()) for x in args.snr_filter.split(',') if x.strip()]
+                        snr_list = [s for s in candidate if s in TARGET_SNRS]
+                    except Exception:
+                        snr_list = None
+                scope = args.uniform_scope
+                for epoch in range(epochs):
+                    if args.sampler_backend == 'tfdata':
+                        train_input = _make_tfdata_from_sampler_draws(
+                            train_meta_csv=args.metadata_train,
+                            class_names=class_names,
+                            weights=weights,
+                            epoch_size=ep_size,
+                            batch_size=batch_size,
+                            image_size=image_size,
+                            uniform_scope=scope,
+                            snr_filter=snr_list,
+                        )
+                    else:
+                        train_input = _make_tfdata_class_uniform_from_dir(
+                            train_dir=TRAIN_DIR,
+                            class_names=class_names,
+                            epoch_size=ep_size,
+                            batch_size=batch_size,
+                            image_size=image_size,
+                        )
+                    print(f"[resample-loop] Epoch {epoch+1}/{epochs}: built dataset with {ep_size} samples")
+                    model.fit(train_input,
+                              validation_data=val_ds,
+                              epochs=epoch+1,
+                              initial_epoch=epoch,
+                              callbacks=cb_list,
+                              verbose=1)
+            else:
+                model.fit(train_input, **fit_kwargs)
+
+        print(f"\nTraining complete. Best model saved to: {MODEL_OUT}")
+    finally:
+        if logger:
+            sys.stdout = logger.terminal
+            logger.close()
 
 
 if __name__ == '__main__':

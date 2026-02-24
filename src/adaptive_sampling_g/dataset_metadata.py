@@ -11,6 +11,8 @@ import os
 import sys
 import csv
 import json
+import argparse
+from datetime import datetime
 from dataclasses import dataclass
 from typing import Dict, List
 
@@ -36,6 +38,33 @@ SUMMARY_JSON = os.path.join(OUTPUT_DIR, 'metadata_summary.json')
 
 TRAIN_VAL_SPLIT_RATIO = 0.9  # must match preprocess.py
 RANDOM_SEED = 42
+
+
+class TeeLogger:
+    """Write to both stdout and a clean log file."""
+    def __init__(self, log_path):
+        self.terminal = sys.stdout
+        self.log = open(log_path, 'w')
+
+    def write(self, message):
+        self.terminal.write(message)
+        if '\r' in message and '\n' not in message:
+            return
+        self.log.write(message)
+        self.log.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+    def close(self):
+        self.log.close()
+
+
+def parse_args():
+    p = argparse.ArgumentParser(description='Build metadata CSVs for Config G dataset')
+    p.add_argument('--no-log', action='store_true', help='Disable clean log file')
+    return p.parse_args()
 
 
 @dataclass
@@ -156,17 +185,33 @@ def _write_summary(path: str, train_records: List[Record], val_records: List[Rec
 
 
 def main():
-    if not os.path.exists(OUTPUT_DIR):
-        raise FileNotFoundError(f"Processed images directory not found: {OUTPUT_DIR}")
-    labels, snrs, mods = _load_labels_and_snrs(HDF5_PATH)
-    filtered = _filter_indices(labels, snrs, mods)
-    splits = _split_indices_per_class(filtered)
-    train_records, val_records = _build_records(splits, labels, snrs, mods)
+    args = parse_args()
 
-    _write_csv(TRAIN_CSV, train_records)
-    _write_csv(VAL_CSV, val_records)
-    _write_summary(SUMMARY_JSON, train_records, val_records)
-    print(f"Wrote metadata CSVs:\n  {TRAIN_CSV}\n  {VAL_CSV}\nSummary: {SUMMARY_JSON}")
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    logger = None
+    if not args.no_log:
+        os.makedirs('logs', exist_ok=True)
+        log_path = f'logs/dataset_metadata_g_{timestamp}.log'
+        logger = TeeLogger(log_path)
+        sys.stdout = logger
+        print(f"Clean log: {log_path}")
+
+    try:
+        if not os.path.exists(OUTPUT_DIR):
+            raise FileNotFoundError(f"Processed images directory not found: {OUTPUT_DIR}")
+        labels, snrs, mods = _load_labels_and_snrs(HDF5_PATH)
+        filtered = _filter_indices(labels, snrs, mods)
+        splits = _split_indices_per_class(filtered)
+        train_records, val_records = _build_records(splits, labels, snrs, mods)
+
+        _write_csv(TRAIN_CSV, train_records)
+        _write_csv(VAL_CSV, val_records)
+        _write_summary(SUMMARY_JSON, train_records, val_records)
+        print(f"Wrote metadata CSVs:\n  {TRAIN_CSV}\n  {VAL_CSV}\nSummary: {SUMMARY_JSON}")
+    finally:
+        if logger:
+            sys.stdout = logger.terminal
+            logger.close()
 
 
 if __name__ == '__main__':
