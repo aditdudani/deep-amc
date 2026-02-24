@@ -1,0 +1,27 @@
+{
+  "timestamp": "20260128_230305",
+  "multi_channel": {
+    "shifts": {
+      "ch1": 0,
+      "ch2": 0,
+      "ch3": 0
+    },
+    "kernels": {
+      "ch1": "3x3 (\u03b1=10)",
+      "ch2": "7x7 (\u03b1=3)",
+      "ch3": "15x15 (\u03b1=1)"
+    },
+    "gain": 32
+  },
+  "single_channel": {
+    "shifts": {
+      "ch1": 0
+    },
+    "kernels": {
+      "ch1": "3x3 (\u03b1=10)"
+    },
+    "gain": 32
+  },
+  "samples_per_class": 20,
+  "snr_min": 10
+}

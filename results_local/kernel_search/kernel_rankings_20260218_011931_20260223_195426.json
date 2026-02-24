@@ -1,0 +1,424 @@
+[
+  {
+    "config_id": "K01",
+    "name": "1x1_Point",
+    "size": 1,
+    "topology": "Point",
+    "cost_proxy": 1,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6589,
+    "best_val_acc": 0.6645,
+    "per_snr_accuracy": {
+      "0": 0.3861,
+      "2": 0.5323,
+      "4": 0.7147,
+      "6": 0.7670999999999999,
+      "8": 0.7781,
+      "10": 0.7809
+    }
+  },
+  {
+    "config_id": "K02",
+    "name": "3x3_Cross",
+    "size": 3,
+    "topology": "Cross",
+    "cost_proxy": 5,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6934999999999999,
+    "best_val_acc": 0.6969,
+    "per_snr_accuracy": {
+      "0": 0.4061,
+      "2": 0.5675,
+      "4": 0.7273000000000001,
+      "6": 0.8087000000000001,
+      "8": 0.8256,
+      "10": 0.8210999999999999
+    }
+  },
+  {
+    "config_id": "K03",
+    "name": "3x3_Box",
+    "size": 3,
+    "topology": "Box",
+    "cost_proxy": 9,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6616,
+    "best_val_acc": 0.6629999999999999,
+    "per_snr_accuracy": {
+      "0": 0.37450000000000006,
+      "2": 0.46270000000000006,
+      "4": 0.6990999999999999,
+      "6": 0.799,
+      "8": 0.8297,
+      "10": 0.8140999999999999
+    }
+  },
+  {
+    "config_id": "K04",
+    "name": "3x3_Gaussian",
+    "size": 3,
+    "topology": "Gaussian",
+    "cost_proxy": 18,
+    "uses_dsp": true,
+    "overall_val_acc": 0.6552,
+    "best_val_acc": 0.6667000000000001,
+    "per_snr_accuracy": {
+      "0": 0.4019,
+      "2": 0.5575,
+      "4": 0.7021999999999999,
+      "6": 0.7372,
+      "8": 0.7626000000000001,
+      "10": 0.7768999999999999
+    }
+  },
+  {
+    "config_id": "K05",
+    "name": "5x5_Cross",
+    "size": 5,
+    "topology": "Cross",
+    "cost_proxy": 9,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6628000000000001,
+    "best_val_acc": 0.6684,
+    "per_snr_accuracy": {
+      "0": 0.4103,
+      "2": 0.5665,
+      "4": 0.7053,
+      "6": 0.7662,
+      "8": 0.7668,
+      "10": 0.7729
+    }
+  },
+  {
+    "config_id": "K06",
+    "name": "5x5_Box",
+    "size": 5,
+    "topology": "Box",
+    "cost_proxy": 25,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6631999999999999,
+    "best_val_acc": 0.6631999999999999,
+    "per_snr_accuracy": {
+      "0": 0.3892,
+      "2": 0.4819,
+      "4": 0.7053,
+      "6": 0.7951999999999999,
+      "8": 0.8153,
+      "10": 0.802
+    }
+  },
+  {
+    "config_id": "K07",
+    "name": "5x5_Gaussian",
+    "size": 5,
+    "topology": "Gaussian",
+    "cost_proxy": 50,
+    "uses_dsp": true,
+    "overall_val_acc": 0.6479,
+    "best_val_acc": 0.6479,
+    "per_snr_accuracy": {
+      "0": 0.41240000000000004,
+      "2": 0.5292,
+      "4": 0.7021999999999999,
+      "6": 0.7411,
+      "8": 0.7503,
+      "10": 0.7587999999999999
+    }
+  },
+  {
+    "config_id": "K08",
+    "name": "7x7_Cross",
+    "size": 7,
+    "topology": "Cross",
+    "cost_proxy": 13,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6489,
+    "best_val_acc": 0.6489,
+    "per_snr_accuracy": {
+      "0": 0.3861,
+      "2": 0.5091,
+      "4": 0.7147,
+      "6": 0.7623000000000001,
+      "8": 0.7646999999999999,
+      "10": 0.7658
+    }
+  },
+  {
+    "config_id": "K09",
+    "name": "7x7_Box",
+    "size": 7,
+    "topology": "Box",
+    "cost_proxy": 49,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6815000000000001,
+    "best_val_acc": 0.6984,
+    "per_snr_accuracy": {
+      "0": 0.39770000000000005,
+      "2": 0.5222,
+      "4": 0.7565000000000001,
+      "6": 0.7970999999999999,
+      "8": 0.8079999999999999,
+      "10": 0.8161
+    }
+  },
+  {
+    "config_id": "K10",
+    "name": "7x7_Gaussian",
+    "size": 7,
+    "topology": "Gaussian",
+    "cost_proxy": 98,
+    "uses_dsp": true,
+    "overall_val_acc": 0.6476999999999999,
+    "best_val_acc": 0.6476999999999999,
+    "per_snr_accuracy": {
+      "0": 0.39659999999999995,
+      "2": 0.5625,
+      "4": 0.6812999999999999,
+      "6": 0.7448999999999999,
+      "8": 0.7523000000000001,
+      "10": 0.7548
+    }
+  },
+  {
+    "config_id": "K11",
+    "name": "11x11_Cross",
+    "size": 11,
+    "topology": "Cross",
+    "cost_proxy": 21,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6584,
+    "best_val_acc": 0.6616,
+    "per_snr_accuracy": {
+      "0": 0.3734,
+      "2": 0.5302,
+      "4": 0.6990999999999999,
+      "6": 0.7681,
+      "8": 0.7895,
+      "10": 0.8
+    }
+  },
+  {
+    "config_id": "K12",
+    "name": "11x11_Box",
+    "size": 11,
+    "topology": "Box",
+    "cost_proxy": 121,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6889,
+    "best_val_acc": 0.6889,
+    "per_snr_accuracy": {
+      "0": 0.4072,
+      "2": 0.5081,
+      "4": 0.7168000000000001,
+      "6": 0.8164,
+      "8": 0.8576,
+      "10": 0.8331999999999999
+    }
+  },
+  {
+    "config_id": "K13",
+    "name": "11x11_Gaussian",
+    "size": 11,
+    "topology": "Gaussian",
+    "cost_proxy": 242,
+    "uses_dsp": true,
+    "overall_val_acc": 0.6654000000000001,
+    "best_val_acc": 0.6654000000000001,
+    "per_snr_accuracy": {
+      "0": 0.42090000000000005,
+      "2": 0.5413,
+      "4": 0.7189,
+      "6": 0.7662,
+      "8": 0.7678,
+      "10": 0.7809
+    }
+  },
+  {
+    "config_id": "K14",
+    "name": "15x15_Box",
+    "size": 15,
+    "topology": "Box",
+    "cost_proxy": 225,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6744,
+    "best_val_acc": 0.6744,
+    "per_snr_accuracy": {
+      "0": 0.40299999999999997,
+      "2": 0.5403,
+      "4": 0.7241,
+      "6": 0.7903,
+      "8": 0.7977,
+      "10": 0.7909999999999999
+    }
+  },
+  {
+    "config_id": "K15",
+    "name": "15x15_Gaussian",
+    "size": 15,
+    "topology": "Gaussian",
+    "cost_proxy": 450,
+    "uses_dsp": true,
+    "overall_val_acc": 0.6596,
+    "best_val_acc": 0.6681999999999999,
+    "per_snr_accuracy": {
+      "0": 0.3998,
+      "2": 0.5575,
+      "4": 0.7189,
+      "6": 0.7604000000000001,
+      "8": 0.7678,
+      "10": 0.7618
+    }
+  },
+  {
+    "config_id": "K16",
+    "name": "3x3_Binomial",
+    "size": 3,
+    "topology": "Binomial",
+    "cost_proxy": 9,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6511,
+    "best_val_acc": 0.653,
+    "per_snr_accuracy": {
+      "0": 0.39659999999999995,
+      "2": 0.5383,
+      "4": 0.7001000000000001,
+      "6": 0.7594,
+      "8": 0.7554000000000001,
+      "10": 0.7548
+    }
+  },
+  {
+    "config_id": "K17",
+    "name": "5x5_Binomial",
+    "size": 5,
+    "topology": "Binomial",
+    "cost_proxy": 25,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6559,
+    "best_val_acc": 0.6579,
+    "per_snr_accuracy": {
+      "0": 0.39659999999999995,
+      "2": 0.5181,
+      "4": 0.7179000000000001,
+      "6": 0.742,
+      "8": 0.773,
+      "10": 0.799
+    }
+  },
+  {
+    "config_id": "K18",
+    "name": "7x7_Binomial",
+    "size": 7,
+    "topology": "Binomial",
+    "cost_proxy": 49,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6722,
+    "best_val_acc": 0.6722,
+    "per_snr_accuracy": {
+      "0": 0.4019,
+      "2": 0.5665,
+      "4": 0.722,
+      "6": 0.7681,
+      "8": 0.7905,
+      "10": 0.7839
+    }
+  },
+  {
+    "config_id": "K19",
+    "name": "11x11_Binomial",
+    "size": 11,
+    "topology": "Binomial",
+    "cost_proxy": 121,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6647,
+    "best_val_acc": 0.6808,
+    "per_snr_accuracy": {
+      "0": 0.3787,
+      "2": 0.5121,
+      "4": 0.7334999999999999,
+      "6": 0.7691,
+      "8": 0.7905,
+      "10": 0.804
+    }
+  },
+  {
+    "config_id": "K20",
+    "name": "3x3_Cross_Centered",
+    "size": 3,
+    "topology": "CrossCentered",
+    "cost_proxy": 5,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6884328126907349,
+    "best_val_acc": 0.6884328126907349,
+    "final_val_loss": 1.2208720445632935,
+    "per_snr_accuracy": {
+      "0": 0.4061181434599156,
+      "2": 0.5413306451612904,
+      "4": 0.6990595611285266,
+      "6": 0.8164251207729468,
+      "8": 0.8359133126934984,
+      "10": 0.8301507537688442
+    },
+    "calculated_shift": 0
+  },
+  {
+    "config_id": "K21",
+    "name": "5x5_Cross_Centered",
+    "size": 5,
+    "topology": "CrossCentered",
+    "cost_proxy": 9,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6580732464790344,
+    "best_val_acc": 0.6814789772033691,
+    "final_val_loss": 1.4421910047531128,
+    "per_snr_accuracy": {
+      "0": 0.370253164556962,
+      "2": 0.5060483870967742,
+      "4": 0.7042842215256009,
+      "6": 0.778743961352657,
+      "8": 0.7946336429308566,
+      "10": 0.7889447236180904
+    },
+    "calculated_shift": 1
+  },
+  {
+    "config_id": "K22",
+    "name": "7x7_Cross_Centered",
+    "size": 7,
+    "topology": "CrossCentered",
+    "cost_proxy": 13,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6299185752868652,
+    "best_val_acc": 0.6592605113983154,
+    "final_val_loss": 1.490944743156433,
+    "per_snr_accuracy": {
+      "0": 0.35864978902953587,
+      "2": 0.4657258064516129,
+      "4": 0.6875653082549634,
+      "6": 0.744927536231884,
+      "8": 0.7574819401444789,
+      "10": 0.7668341708542713
+    },
+    "calculated_shift": 2
+  },
+  {
+    "config_id": "K23",
+    "name": "11x11_Cross_Centered",
+    "size": 11,
+    "topology": "CrossCentered",
+    "cost_proxy": 21,
+    "uses_dsp": false,
+    "overall_val_acc": 0.6631614565849304,
+    "best_val_acc": 0.6631614565849304,
+    "final_val_loss": 1.3868587017059326,
+    "per_snr_accuracy": {
+      "0": 0.3860759493670886,
+      "2": 0.530241935483871,
+      "4": 0.7126436781609196,
+      "6": 0.770048309178744,
+      "8": 0.7791537667698658,
+      "10": 0.7989949748743719
+    },
+    "calculated_shift": 3
+  }
+]

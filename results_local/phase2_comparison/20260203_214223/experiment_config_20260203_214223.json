@@ -1,0 +1,30 @@
+{
+  "master_timestamp": "20260203_214223",
+  "subset_fraction": 0.3,
+  "train_val_split": 0.9,
+  "epochs": 40,
+  "batch_size": 64,
+  "base_learning_rate": 0.001,
+  "min_learning_rate": 1e-06,
+  "optimizer": "RMSprop",
+  "dropout": 0.5,
+  "random_seed": 42,
+  "accuracy_threshold": 0.05,
+  "target_snrs": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "hardware_params": {
+    "grid_size": 224,
+    "gain": 128,
+    "shifts": [
+      0,
+      0,
+      3
+    ]
+  }
+}

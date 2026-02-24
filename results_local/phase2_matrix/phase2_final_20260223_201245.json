@@ -1,0 +1,58 @@
+{
+  "timestamp": "20260223_201245",
+  "configs": [
+    {
+      "config_id": "A",
+      "name": "K02_3x3Cross",
+      "tier": "Single",
+      "num_channels": 1,
+      "cost": 5,
+      "description": "Efficiency Champion - Best accuracy/cost ratio",
+      "overall_val_acc": 0.7581809163093567,
+      "final_val_acc": 0.7560467720031738,
+      "final_val_loss": 1.1472045183181763,
+      "per_snr_accuracy": {
+        "0": 0.42652439024390243,
+        "2": 0.6417682926829268,
+        "4": 0.801219512195122,
+        "6": 0.8774390243902439,
+        "8": 0.900609756097561,
+        "10": 0.9085365853658537
+      },
+      "model_path": "results_local/phase2_matrix/model_config_A.keras"
+    },
+    {
+      "config_id": "G",
+      "name": "K20_3x3CrossCentered",
+      "tier": "Single",
+      "num_channels": 1,
+      "cost": 5,
+      "description": "Head-to-head vs A - Center-weighted 3x3 cross",
+      "overall_val_acc": 0.7631605863571167,
+      "final_val_acc": 0.761534571647644,
+      "final_val_loss": 1.0983612537384033,
+      "per_snr_accuracy": {
+        "0": 0.4454268292682927,
+        "2": 0.6560975609756098,
+        "4": 0.813719512195122,
+        "6": 0.8716463414634147,
+        "8": 0.8948170731707317,
+        "10": 0.9051829268292683
+      },
+      "model_path": "results_local/phase2_matrix/model_config_G.keras"
+    }
+  ],
+  "decision": {
+    "recommendation": "K20_3x3CrossCentered",
+    "best_single": "K20_3x3CrossCentered",
+    "best_multi": null,
+    "accuracy_difference": 0.0
+  },
+  "parameters": {
+    "epochs": 40,
+    "batch_size": 64,
+    "learning_rate": 0.01,
+    "patience": 3,
+    "dropout": 0.5
+  }
+}

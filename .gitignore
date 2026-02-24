@@ -31,7 +31,6 @@ Thumbs.db
 *:Zone.Identifier
 
 # Ignore credentials
-*.json
 !data/classes-fixed.json
 
 # Ignore misc
