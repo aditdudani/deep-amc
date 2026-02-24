@@ -490,6 +490,14 @@ def main():
 
             # Dynamic resampling loop for tf.data backends if requested
             if args.sampler_backend in ('tfdata', 'tfdata-dir-class') and args.resample_each_epoch:
+                # ReduceLROnPlateau resets state on each fit() call; manage LR manually here.
+                callbacks_resample = [cb for cb in cb_list if cb is not reduce_lr]
+                lr_patience = 5
+                lr_factor = 0.5
+                lr_min = 1e-6
+                best_val_acc = -float('inf')
+                wait = 0
+
                 print(f"[resample-loop] Enabled per-epoch resampling (backend={args.sampler_backend})")
                 ep_size = args.epoch_size or len(load_metadata_csv(args.metadata_train))
                 snr_list = None
@@ -521,12 +529,30 @@ def main():
                             image_size=image_size,
                         )
                     print(f"[resample-loop] Epoch {epoch+1}/{epochs}: built dataset with {ep_size} samples")
-                    model.fit(train_input,
-                              validation_data=val_ds,
-                              epochs=epoch+1,
-                              initial_epoch=epoch,
-                              callbacks=cb_list,
-                              verbose=1)
+                    history = model.fit(train_input,
+                                        validation_data=val_ds,
+                                        epochs=epoch+1,
+                                        initial_epoch=epoch,
+                                        callbacks=callbacks_resample,
+                                        verbose=1)
+
+                    current_val_acc = None
+                    if history.history.get('val_accuracy'):
+                        current_val_acc = float(history.history['val_accuracy'][-1])
+
+                    if current_val_acc is not None:
+                        if current_val_acc > best_val_acc + 1e-12:
+                            best_val_acc = current_val_acc
+                            wait = 0
+                        else:
+                            wait += 1
+                            if wait >= lr_patience:
+                                current_lr = float(tf.keras.backend.get_value(model.optimizer.learning_rate))
+                                new_lr = max(current_lr * lr_factor, lr_min)
+                                if new_lr < current_lr:
+                                    tf.keras.backend.set_value(model.optimizer.learning_rate, new_lr)
+                                    print(f"\n[manual-lr] Reducing learning rate: {current_lr:.6g} -> {new_lr:.6g}")
+                                wait = 0
             else:
                 model.fit(train_input, **fit_kwargs)
 
