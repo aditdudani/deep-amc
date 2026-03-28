@@ -4,31 +4,26 @@ Clean evaluation script - evaluates models on validation split ONLY using pre-ge
 No HDF5 contamination. Per-class per-SNR accuracy matrix (8 classes × 6 SNRs).
 
 Usage:
-  # Config A baseline
   python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path results_local/phase2_matrix/model_config_A.keras \
-    --model-name "Config_A_Baseline"
-
-  # Config G baseline
-  python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path results_local/phase2_matrix/model_config_G.keras \
-    --model-name "Config_G_Baseline"
-
-  # Adaptive Config G
-  python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path models/squeezenet_sampler_g_20260224_155039.h5 \
-    --model-name "Config_G_Adaptive"
+    --model-path <path> --model-name <name>
 """
 
 import os
 import sys
 import json
 import argparse
+import warnings
 from typing import Dict, List, Tuple
+
+# Suppress TensorFlow verbose logging BEFORE importing
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+warnings.filterwarnings('ignore')
 
 import numpy as np
 import tensorflow as tf
+tf.get_logger().setLevel('ERROR')
 import matplotlib.pyplot as plt
+plt.set_loglevel('error')
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(CURRENT_DIR)
@@ -46,16 +41,7 @@ def eval_validation_clean(
     model_name: str,
     batch_size: int = 64
 ):
-    """
-    Evaluate model using validation metadata CSV (clean, no HDF5 contamination).
-
-    Args:
-        model_path: Path to trained Keras model
-        metadata_val_csv: Path to validation metadata CSV
-        output_dir: Directory to save results
-        model_name: Descriptive name for the model (used in outputs)
-        batch_size: Prediction batch size
-    """
+    """Evaluate model on validation split using metadata CSV (clean, uncontaminated)."""
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -63,14 +49,13 @@ def eval_validation_clean(
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model not found: {model_path}")
     model = tf.keras.models.load_model(model_path, compile=False)
-    print(f"[eval] Loaded model: {model_path}")
-    print(f"[eval] Model input shape: {model.input_shape}")
+    print(f"✓ Loaded model: {model_path}")
 
     # Load metadata
     if not os.path.exists(metadata_val_csv):
         raise FileNotFoundError(f"Metadata CSV not found: {metadata_val_csv}")
     val_items = load_validation_metadata(metadata_val_csv)
-    print(f"[eval] Loaded {len(val_items)} validation items from {metadata_val_csv}")
+    print(f"✓ Loaded {len(val_items):,} validation samples")
 
     # Infer class order from directory structure
     inferred_classes = []
@@ -80,7 +65,7 @@ def eval_validation_clean(
             inferred_classes.append(folder)
     inferred_classes.sort()
     class_to_id = {c: i for i, c in enumerate(inferred_classes)}
-    print(f"[eval] Classes ({len(inferred_classes)}): {inferred_classes}")
+    print(f"✓ Classes ({len(inferred_classes)}): {', '.join(inferred_classes)}")
 
     # Group by SNR
     by_snr: Dict[int, List[Tuple[str, int, int]]] = {s: [] for s in TARGET_SNRS}
@@ -98,36 +83,32 @@ def eval_validation_clean(
     overall_correct = 0
     overall_total = 0
 
-    print(f"\n--- Evaluation by SNR ---")
+    print(f"\n{'─'*70}")
+    print(f"Evaluating by SNR")
+    print(f"{'─'*70}")
+
     for snr_idx, snr in enumerate(sorted(TARGET_SNRS)):
         items = by_snr[snr]
         if not items:
-            print(f"[eval] SNR {snr:>2} dB: No items")
             continue
 
         # Load images and predict in batches
         X_batch = []
         y_true = []
-        metadata_items = []
 
         for file_path, class_id, _ in items:
             if not os.path.exists(file_path):
-                print(f"[warn] File not found: {file_path}, skipping")
                 continue
-
             try:
                 img = tf.keras.utils.load_img(file_path, target_size=(IMAGE_SIZE, IMAGE_SIZE))
                 arr = tf.keras.utils.img_to_array(img)
                 X_batch.append(arr)
                 folder = os.path.basename(os.path.dirname(file_path))
                 y_true.append(class_to_id[folder])
-                metadata_items.append((file_path, folder))
-            except Exception as e:
-                print(f"[warn] Error loading {file_path}: {e}")
+            except Exception:
                 continue
 
         if not X_batch:
-            print(f"[eval] SNR {snr:>2} dB: No valid items")
             continue
 
         X_batch = np.array(X_batch, dtype=np.float32)
@@ -155,19 +136,22 @@ def eval_validation_clean(
         overall_correct += correct_snr
         overall_total += total_snr
 
-        print(f"[eval] SNR {snr:>2} dB -> accuracy: {acc*100:6.2f}% (n={total_snr})")
+        print(f"  SNR {snr:>2} dB → {acc*100:6.2f}% ({total_snr:,} samples)")
 
     overall_acc = overall_correct / overall_total if overall_total > 0 else 0.0
-    print(f"\n[eval] Overall accuracy: {overall_acc*100:.2f}% (n={overall_total})")
+    print(f"\n{'─'*70}")
+    print(f"Overall Accuracy: {overall_acc*100:.2f}% ({overall_total:,} samples)")
+    print(f"{'─'*70}")
 
     # Per-class overall accuracy
-    print(f"\n--- Per-Class Overall Accuracy ---")
+    print(f"\nPer-Class Accuracy:")
+    print(f"{'─'*70}")
     per_class_overall = {}
     for class_name in inferred_classes:
         if per_class_total[class_name] > 0:
             acc = per_class_correct[class_name] / per_class_total[class_name]
             per_class_overall[class_name] = float(acc)
-            print(f"{class_name:>8} -> {acc*100:6.2f}% ({per_class_correct[class_name]}/{per_class_total[class_name]})")
+            print(f"  {class_name:>8} → {acc*100:6.2f}% ({per_class_correct[class_name]:,}/{per_class_total[class_name]:,})")
         else:
             per_class_overall[class_name] = 0.0
 
@@ -189,7 +173,7 @@ def eval_validation_clean(
     json_path = os.path.join(output_dir, f"eval_{model_name}.json")
     with open(json_path, 'w') as f:
         json.dump(result, f, indent=2)
-    print(f"\n[save] JSON: {json_path}")
+    print(f"\n✓ Saved JSON: {json_path}")
 
     # Plot accuracy by SNR
     snrs = sorted(acc_by_snr.keys())
@@ -209,8 +193,8 @@ def eval_validation_clean(
     plt.tight_layout()
 
     png_path = os.path.join(output_dir, f"eval_{model_name}.png")
-    plt.savefig(png_path, dpi=150)
-    print(f"[save] Plot: {png_path}")
+    plt.savefig(png_path, dpi=150, bbox_inches='tight')
+    print(f"✓ Saved plot: {png_path}")
     plt.close()
 
     # Plot per-class heatmap (8 classes × 6 SNRs)
@@ -235,8 +219,8 @@ def eval_validation_clean(
     plt.tight_layout()
 
     heatmap_path = os.path.join(output_dir, f"eval_{model_name}_heatmap.png")
-    plt.savefig(heatmap_path, dpi=150)
-    print(f"[save] Heatmap: {heatmap_path}")
+    plt.savefig(heatmap_path, dpi=150, bbox_inches='tight')
+    print(f"✓ Saved heatmap: {heatmap_path}")
     plt.close()
 
     return result
@@ -248,28 +232,17 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Config A baseline
   python src/adaptive_sampling_g/eval_validation_clean.py \
     --model-path results_local/phase2_matrix/model_config_A.keras \
     --model-name "Config_A_Baseline"
-
-  # Config G baseline
-  python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path results_local/phase2_matrix/model_config_G.keras \
-    --model-name "Config_G_Baseline"
-
-  # Adaptive Config G
-  python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path models/squeezenet_sampler_g_20260224_155039.h5 \
-    --model-name "Config_G_Adaptive"
         """
     )
     p.add_argument('--model-path', type=str, required=True, help='Path to trained model')
-    p.add_argument('--model-name', type=str, required=True, help='Name for results (e.g. Config_A_Baseline)')
+    p.add_argument('--model-name', type=str, required=True, help='Name for results')
     p.add_argument('--metadata-val', type=str, default='data/processed_g/metadata_val.csv',
                    help='Path to validation metadata CSV')
     p.add_argument('--output-dir', type=str, default='results_local/phase3_clean_eval',
-                   help='Directory to save evaluation results')
+                   help='Directory to save results')
     p.add_argument('--batch-size', type=int, default=64, help='Prediction batch size')
     return p.parse_args()
 
