@@ -16,9 +16,9 @@ if SRC_DIR not in sys.path:
 from common.config import TARGET_MODS, TARGET_SNRS, IMAGE_SIZE
 
 HDF5_PATH = os.path.join('data', 'GOLD_XYZ_OSC.0001_1024.hdf5')
-MODEL_PATH = os.path.join('models', 'squeezenet_sampler_g_20260224_155039.h5')
+MODEL_PATH = os.path.join('models', 'squeezenet_sampler_g_20260225_080634.h5')
 TRAIN_DIR = os.path.join('data', 'processed_g', 'train')
-RESULTS_DIR = os.path.join('results_local', 'phase3_final')
+RESULTS_DIR = os.path.join('results_local', 'phase3_baseline')
 
 SAMPLES_PER_IMAGE = 1024
 CHUNK_SIZE = 128
@@ -195,9 +195,9 @@ def main():
     snrs = sorted(acc_by_snr.keys())
     accs = [acc_by_snr[s] * 100 for s in snrs]
     plt.figure(figsize=(8, 6))
-    plt.plot(snrs, accs, marker='o', linewidth=2, color='tab:red', label='Phase 3: Adaptive K20')
+    plt.plot(snrs, accs, marker='o', linewidth=2, color='tab:red', label='Phase 3: Baseline K20')
     plt.axhline(y=overall_acc * 100, color='gray', linestyle='--', label=f'Overall ({overall_acc*100:.2f}%)')
-    plt.title('Final Phase 3 Hardware Evaluation (Config G)', fontsize=14)
+    plt.title('Baseline Phase 3 Hardware Evaluation (Config G)', fontsize=14)
     plt.xlabel('SNR (dB)', fontsize=12)
     plt.ylabel('Accuracy (%)', fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.7)

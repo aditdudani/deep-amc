@@ -1,0 +1,208 @@
+python src/adaptive_sampling_g/eval_all_models.py
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    PHASE 3 CLEAN EVALUATION - ALL MODELS                     ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+[1/3] Evaluating: Phase 2 Winner - K02 3x3 Cross
+      Model: results_local/phase2_matrix/model_config_A.keras
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: results_local/phase2_matrix/model_config_A.keras
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  40.73% (3,317 samples)
+  SNR  2 dB →  61.59% (3,275 samples)
+  SNR  4 dB →  80.29% (3,283 samples)
+  SNR  6 dB →  88.46% (3,233 samples)
+  SNR  8 dB →  91.14% (3,286 samples)
+  SNR 10 dB →  92.54% (3,270 samples)
+
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 75.70% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  40.76% (1,002/2,458)
+     32QAM →  76.77% (1,887/2,458)
+      4ASK →  99.96% (2,457/2,458)
+     64QAM →  63.79% (1,568/2,458)
+      8PSK →  78.93% (1,940/2,458)
+      BPSK →  99.96% (2,457/2,458)
+     OQPSK →  68.47% (1,683/2,458)
+      QPSK →  76.93% (1,891/2,458)
+
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_A_Baseline.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_A_Baseline.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_A_Baseline_heatmap.png
+
+[2/3] Evaluating: Phase 2 Runner-up - K20 3x3 Cross Centered
+      Model: results_local/phase2_matrix/model_config_G.keras
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: results_local/phase2_matrix/model_config_G.keras
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  45.37% (3,317 samples)
+  SNR  2 dB →  68.06% (3,275 samples)
+  SNR  4 dB →  83.34% (3,283 samples)
+  SNR  6 dB →  88.99% (3,233 samples)
+  SNR  8 dB →  91.91% (3,286 samples)
+  SNR 10 dB →  92.20% (3,270 samples)
+
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 78.22% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  48.90% (1,202/2,458)
+     32QAM →  69.81% (1,716/2,458)
+      4ASK →  99.84% (2,454/2,458)
+     64QAM →  59.36% (1,459/2,458)
+      8PSK →  86.21% (2,119/2,458)
+      BPSK →  99.80% (2,453/2,458)
+     OQPSK →  77.38% (1,902/2,458)
+      QPSK →  84.50% (2,077/2,458)
+
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_G_Baseline.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_G_Baseline.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_G_Baseline_heatmap.png
+
+[3/3] Evaluating: Adaptive Sampling on Config G
+      Model: models/squeezenet_sampler_g_20260224_155039.h5
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: models/squeezenet_sampler_g_20260224_155039.h5
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  47.45% (3,317 samples)
+  SNR  2 dB →  67.60% (3,275 samples)
+  SNR  4 dB →  82.88% (3,283 samples)
+  SNR  6 dB →  89.76% (3,233 samples)
+  SNR  8 dB →  93.12% (3,286 samples)
+  SNR 10 dB →  94.13% (3,270 samples)
+
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 79.07% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  51.18% (1,258/2,458)
+     32QAM →  70.02% (1,721/2,458)
+      4ASK →  99.96% (2,457/2,458)
+     64QAM →  59.56% (1,464/2,458)
+      8PSK →  86.37% (2,123/2,458)
+      BPSK → 100.00% (2,458/2,458)
+     OQPSK →  77.66% (1,909/2,458)
+      QPSK →  87.84% (2,159/2,458)
+
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_G_Adaptive.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_G_Adaptive.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_G_Adaptive_heatmap.png
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              COMPARISON REPORT                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Overall Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+  Config_A_Baseline         →  75.70% (n=19,664)
+  Config_G_Baseline         →  78.22% (n=19,664)  (+2.53% vs Config A)
+  Config_G_Adaptive         →  79.07% (n=19,664)  (+3.38% vs Config A)
+
+Per-SNR Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+
+  SNR = 0 dB:
+    Config_A_Baseline         →  40.73% (n=3,317)
+    Config_G_Baseline         →  45.37% (n=3,317)
+    Config_G_Adaptive         →  47.45% (n=3,317)
+
+  SNR = 2 dB:
+    Config_A_Baseline         →  61.59% (n=3,275)
+    Config_G_Baseline         →  68.06% (n=3,275)
+    Config_G_Adaptive         →  67.60% (n=3,275)
+
+  SNR = 4 dB:
+    Config_A_Baseline         →  80.29% (n=3,283)
+    Config_G_Baseline         →  83.34% (n=3,283)
+    Config_G_Adaptive         →  82.88% (n=3,283)
+
+  SNR = 6 dB:
+    Config_A_Baseline         →  88.46% (n=3,233)
+    Config_G_Baseline         →  88.99% (n=3,233)
+    Config_G_Adaptive         →  89.76% (n=3,233)
+
+  SNR = 8 dB:
+    Config_A_Baseline         →  91.14% (n=3,286)
+    Config_G_Baseline         →  91.91% (n=3,286)
+    Config_G_Adaptive         →  93.12% (n=3,286)
+
+  SNR = 10 dB:
+    Config_A_Baseline         →  92.54% (n=3,270)
+    Config_G_Baseline         →  92.20% (n=3,270)
+    Config_G_Adaptive         →  94.13% (n=3,270)
+
+Per-Class Overall Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+
+  16QAM:
+    Config_A_Baseline         →  40.76%
+    Config_G_Baseline         →  48.90%
+    Config_G_Adaptive         →  51.18%
+
+  32QAM:
+    Config_A_Baseline         →  76.77%
+    Config_G_Baseline         →  69.81%
+    Config_G_Adaptive         →  70.02%
+
+  4ASK:
+    Config_A_Baseline         →  99.96%
+    Config_G_Baseline         →  99.84%
+    Config_G_Adaptive         →  99.96%
+
+  64QAM:
+    Config_A_Baseline         →  63.79%
+    Config_G_Baseline         →  59.36%
+    Config_G_Adaptive         →  59.56%
+
+  8PSK:
+    Config_A_Baseline         →  78.93%
+    Config_G_Baseline         →  86.21%
+    Config_G_Adaptive         →  86.37%
+
+  BPSK:
+    Config_A_Baseline         →  99.96%
+    Config_G_Baseline         →  99.80%
+    Config_G_Adaptive         → 100.00%
+
+  OQPSK:
+    Config_A_Baseline         →  68.47%
+    Config_G_Baseline         →  77.38%
+    Config_G_Adaptive         →  77.66%
+
+  QPSK:
+    Config_A_Baseline         →  76.93%
+    Config_G_Baseline         →  84.50%
+    Config_G_Adaptive         →  87.84%
+
+✓ Saved comparison JSON: results_local/phase3_clean_eval/phase3_comparison_all_models.json
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              Results saved to: results_local/phase3_clean_eval               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+]0;root@7493244fcadf: /approot@7493244fcadf:/app# 
