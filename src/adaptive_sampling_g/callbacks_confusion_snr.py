@@ -65,10 +65,11 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                  val_metadata_csv: str,
                  weights_ref: np.ndarray,
                  out_dir: str = 'results/adaptive_sampling_g',
-                 beta: float = 0.3,
-                 epsilon: float = 0.02,
-                 max_cap: float = 0.4,
-                 replay_fraction: float = 0.0,
+                 beta: float = 0.2,
+                 epsilon: float = 0.03,
+                 max_cap: float = 0.12,
+                 replay_fraction: float = 0.18,
+                 min_weight: float = 0.005,
                  batch_size: int = 64,
                  snrs: List[int] = None,
                  warmup_epochs: int = 3,
@@ -81,6 +82,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.beta = beta
         self.epsilon = epsilon
         self.max_cap = max_cap
+        self.min_weight = float(min_weight)  # minimum weight floor per bucket
         self.replay_fraction = max(0.0, min(float(replay_fraction), 0.95))  # clamp for safety
         self.batch_size = batch_size
         self.snrs = snrs if snrs is not None else TARGET_SNRS
@@ -98,6 +100,11 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                 json.dump({'epoch': epoch+1,
                            'weights': self.weights_ref.tolist(),
                            'snrs': self.snrs,
+                           'beta': self.beta,
+                           'epsilon': self.epsilon,
+                           'max_cap': self.max_cap,
+                           'min_weight': self.min_weight,
+                           'replay_fraction': self.replay_fraction,
                            'note': f'warmup_no_update_until_epoch_{self.warmup_epochs}'}, f, indent=2)
             print(f"[ConfusionBySNR] Warmup epoch {epoch+1}/{self.warmup_epochs}: weights not updated. Saved {weights_path}")
             return
@@ -115,6 +122,11 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                 json.dump({'epoch': epoch+1,
                            'weights': self.weights_ref.tolist(),
                            'snrs': self.snrs,
+                           'beta': self.beta,
+                           'epsilon': self.epsilon,
+                           'max_cap': self.max_cap,
+                           'min_weight': self.min_weight,
+                           'replay_fraction': self.replay_fraction,
                            'note': f'skipped_update_val_acc_below_{self.min_val_acc_for_updates}'}, f, indent=2)
             print(f"[ConfusionBySNR] Skipping update (val_acc={val_acc:.4f} < {self.min_val_acc_for_updates}); saved {weights_path}")
             return
@@ -153,10 +165,15 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
             uniform /= uniform.sum()
             updated = (1.0 - self.replay_fraction) * updated + self.replay_fraction * uniform
 
-        # Cap individual bucket weight to prevent collapse then renormalize
+        # Cap individual bucket weight to prevent collapse
         flat = updated.flatten()
         if self.max_cap is not None and self.max_cap > 0:
             flat = np.minimum(flat, self.max_cap)
+
+        # Apply minimum weight floor to prevent bucket starvation (protects easy classes)
+        flat = np.maximum(flat, self.min_weight)
+
+        # Renormalize
         flat_sum = flat.sum()
         if flat_sum <= 0:
             # Fallback to uniform if numerical issues occur
@@ -175,6 +192,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
                        'beta': self.beta,
                        'epsilon': self.epsilon,
                        'max_cap': self.max_cap,
+                       'min_weight': self.min_weight,
                        'replay_fraction': self.replay_fraction,
                        'per_class_snr_acc': per_class_snr_acc.tolist()}, f, indent=2)
         with open(confusion_path, 'w') as f:
