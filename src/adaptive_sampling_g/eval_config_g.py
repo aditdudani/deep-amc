@@ -16,9 +16,9 @@ from eval_validation_clean import eval_validation_clean
 
 if __name__ == '__main__':
     eval_validation_clean(
-        model_path='results_local/phase2_matrix/model_config_G.keras',
+        model_path='results/baselines/config_g/model.keras',
         metadata_val_csv='data/processed_g/metadata_val.csv',
-        output_dir='results_local/phase3_clean_eval',
+        output_dir='results/comparisons/phase3_all_models',
         model_name='Config_G_Baseline',
         batch_size=64
     )

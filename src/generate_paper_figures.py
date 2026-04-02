@@ -36,7 +36,7 @@ IMAGE_SIZE = 224
 PLANE_RANGE = 7.0
 
 # Output directory for figures
-OUTPUT_DIR = 'results_local/paper_figures'
+OUTPUT_DIR = 'results/analysis/paper_figures'
 
 # ============= FIGURE 1 CONFIGURATION =============
 # Single class, single SNR - showing alpha channel decomposition

@@ -19,7 +19,7 @@ from common.image_generator import tf_generate_three_channel_image
 
 # Paths and config
 HDF5_PATH = 'data/GOLD_XYZ_OSC.0001_1024.hdf5'  # Full RadioML 2018.01A file
-MODEL_PATH = 'models/strict_googlenet_proxy_incv3.h5'
+MODEL_PATH = 'results/baselines/config_a/model.keras'  # Updated to new structure (originally InceptionV3)
 TRAIN_DIR = os.path.join('data', 'processed', 'train')  # To infer class order
 RESULTS_DIR = 'results'
 OUTPUT_JSON = os.path.join(RESULTS_DIR, 'accuracy_by_snr.json')

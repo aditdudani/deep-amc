@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # --------- Config (no CLI) ---------
 VAL_DIR = os.path.join('data', 'processed', 'validation')
-MODEL_PATH = os.path.join('models', 'squeezenet_v11_rmsprop.h5')
+MODEL_PATH = os.path.join('results', 'baselines', 'config_a', 'model.keras')  # Updated to new structure
 IMAGE_SIZE = 224
 BATCH_SIZE = 64
 OUT_PNG = os.path.join('results', 'confusion_matrix_val.png')

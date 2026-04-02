@@ -111,7 +111,7 @@ RANDOM_SEED = 42
 
 # Output directories
 TEMP_DATA_DIR = 'data/phase2_temp'
-RESULTS_DIR = 'results_local/phase2_matrix'
+RESULTS_DIR = 'results/analysis/phase2_matrix'
 
 
 # =============================================================================

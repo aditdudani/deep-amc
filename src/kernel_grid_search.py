@@ -111,7 +111,7 @@ RANDOM_SEED = 42
 
 # Output directories
 TEMP_DATA_DIR = 'data/kernel_search_temp'
-RESULTS_DIR = 'results_local/kernel_search'
+RESULTS_DIR = 'results/analysis/kernel_search'
 
 
 # =============================================================================

@@ -26,11 +26,11 @@ from eval_validation_clean import eval_validation_clean
 
 
 def find_latest_adaptive_model():
-    """Find the most recent squeezenet_sampler_g_*.h5 model."""
-    pattern = 'models/squeezenet_sampler_g_*.h5'
+    """Find the most recent adaptive sampling model in results/adaptive_sampling_g/"""
+    pattern = 'results/adaptive_sampling_g/*/model.h5'
     models = glob.glob(pattern)
     if not models:
-        raise FileNotFoundError(f"No adaptive models found matching {pattern}")
+        raise FileNotFoundError(f"No adaptive models found matching {pattern}. Ensure training has been run with new structure.")
     # Sort by modification time, return most recent
     latest = max(models, key=os.path.getmtime)
     return latest
@@ -44,23 +44,23 @@ def run_all_evaluations():
 
     models = [
         {
-            'model_path': 'results_local/phase2_matrix/model_config_A.keras',
+            'model_path': 'results/baselines/config_a/model.keras',
             'model_name': 'Config_A_Baseline',
             'description': 'Phase 2 Winner - K02 3x3 Cross'
         },
         {
-            'model_path': 'results_local/phase2_matrix/model_config_G.keras',
+            'model_path': 'results/baselines/config_g/model.keras',
             'model_name': 'Config_G_Baseline',
             'description': 'Phase 2 Runner-up - K20 3x3 Cross Centered'
         },
         {
             'model_path': latest_adaptive,
             'model_name': 'Config_G_Adaptive',
-            'description': f'Adaptive Sampling on Config G ({os.path.basename(latest_adaptive)})'
+            'description': f'Adaptive Sampling on Config G ({os.path.basename(os.path.dirname(latest_adaptive))})'
         },
     ]
 
-    output_dir = 'results_local/phase3_clean_eval'
+    output_dir = 'results/comparisons/phase3_all_models'
     os.makedirs(output_dir, exist_ok=True)
 
     print("╔" + "═"*78 + "╗")

@@ -233,7 +233,7 @@ def parse_args():
         epilog="""
 Examples:
   python src/adaptive_sampling_g/eval_validation_clean.py \
-    --model-path results_local/phase2_matrix/model_config_A.keras \
+    --model-path results/baselines/config_a/model.keras \
     --model-name "Config_A_Baseline"
         """
     )
@@ -241,7 +241,7 @@ Examples:
     p.add_argument('--model-name', type=str, required=True, help='Name for results')
     p.add_argument('--metadata-val', type=str, default='data/processed_g/metadata_val.csv',
                    help='Path to validation metadata CSV')
-    p.add_argument('--output-dir', type=str, default='results_local/phase3_clean_eval',
+    p.add_argument('--output-dir', type=str, default='results/comparisons/phase3_all_models',
                    help='Directory to save results')
     p.add_argument('--batch-size', type=int, default=64, help='Prediction batch size')
     return p.parse_args()

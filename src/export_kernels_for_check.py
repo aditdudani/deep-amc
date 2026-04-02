@@ -7,7 +7,7 @@ Generates:
 
 Usage:
     python src/export_kernels_for_check.py
-    python src/export_kernels_for_check.py --out-dir results_local/kernel_debug
+    python src/export_kernels_for_check.py --out-dir results/analysis/kernel_debug
 """
 
 import os
@@ -106,7 +106,7 @@ def save_all_kernels_csv(configs, out_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Export all kernels for manual cross-check")
-    parser.add_argument("--out-dir", default="results_local/kernel_debug", help="Output directory")
+    parser.add_argument("--out-dir", default="results/analysis/kernel_debug", help="Output directory")
     args = parser.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)

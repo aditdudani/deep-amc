@@ -16,9 +16,9 @@ if SRC_DIR not in sys.path:
 from common.config import TARGET_MODS, TARGET_SNRS, IMAGE_SIZE
 
 HDF5_PATH = os.path.join('data', 'GOLD_XYZ_OSC.0001_1024.hdf5')
-MODEL_PATH = os.path.join('models', 'squeezenet_sampler_g_20260225_080634.h5')
+MODEL_PATH = os.path.join('results', 'adaptive_sampling_g', '20260328_180649', 'model.h5')  # Update to latest
 TRAIN_DIR = os.path.join('data', 'processed_g', 'train')
-RESULTS_DIR = os.path.join('results_local', 'phase3_baseline')
+RESULTS_DIR = os.path.join('results', 'evaluations', 'phase3_baseline')
 
 SAMPLES_PER_IMAGE = 1024
 CHUNK_SIZE = 128

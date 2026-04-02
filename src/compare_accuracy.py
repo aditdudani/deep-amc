@@ -2,11 +2,11 @@ import json
 import os
 import matplotlib.pyplot as plt
 
-BASELINE_JSON = 'results_local/squeezenet/accuracy_by_snr_squeezenet.json'
-GOOGLENET_JSON = 'results_local/googlenet/accuracy_by_snr.json'
-ADAPTIVE_V1_JSON = 'results_local/adaptive_sampling/adaptive_v1/accuracy_by_snr_squeezenet.json'
-ADAPTIVE_V2_JSON = 'results_local/adaptive_sampling/adaptive_v2/accuracy_by_snr_squeezenet.json'
-OUT_PATH = 'results_local/compare/accuracy_vs_snr2.png'
+BASELINE_JSON = 'results/analysis/squeezenet/accuracy_by_snr_squeezenet.json'
+GOOGLENET_JSON = 'results/analysis/googlenet/accuracy_by_snr.json'
+ADAPTIVE_V1_JSON = 'results/analysis/adaptive_sampling/adaptive_v1/accuracy_by_snr_squeezenet.json'
+ADAPTIVE_V2_JSON = 'results/analysis/adaptive_sampling/adaptive_v2/accuracy_by_snr_squeezenet.json'
+OUT_PATH = 'results/analysis/compare/accuracy_vs_snr2.png'
 
 os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 

@@ -89,13 +89,18 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
         self.warmup_epochs = max(int(warmup_epochs), 0)
         self.min_val_acc_for_updates = float(min_val_acc_for_updates)
         os.makedirs(self.out_dir, exist_ok=True)
+        # Create subdirectories for organized artifact storage
+        self.weights_dir = os.path.join(self.out_dir, 'weights')
+        self.confusion_dir = os.path.join(self.out_dir, 'confusion')
+        os.makedirs(self.weights_dir, exist_ok=True)
+        os.makedirs(self.confusion_dir, exist_ok=True)
         self.val_items = load_validation_metadata(self.val_metadata_csv)
         self.class_name_to_id = {name: i for i, name in enumerate(class_names)} if class_names else None
 
     def on_epoch_end(self, epoch, logs=None):
         # Optional warmup: don't alter weights for first N epochs
         if (epoch + 1) <= self.warmup_epochs:
-            weights_path = os.path.join(self.out_dir, f'weights_epoch{epoch+1}.json')
+            weights_path = os.path.join(self.weights_dir, f'weights_epoch{epoch+1}.json')
             with open(weights_path, 'w') as f:
                 json.dump({'epoch': epoch+1,
                            'weights': self.weights_ref.tolist(),
@@ -117,7 +122,7 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
             except Exception:
                 val_acc = None
         if val_acc is not None and val_acc < self.min_val_acc_for_updates:
-            weights_path = os.path.join(self.out_dir, f'weights_epoch{epoch+1}.json')
+            weights_path = os.path.join(self.weights_dir, f'weights_epoch{epoch+1}.json')
             with open(weights_path, 'w') as f:
                 json.dump({'epoch': epoch+1,
                            'weights': self.weights_ref.tolist(),
@@ -182,9 +187,9 @@ class ConfusionBySNRCallback(tf.keras.callbacks.Callback):
             flat /= flat_sum
         self.weights_ref[:] = flat.reshape(self.weights_ref.shape)
 
-        # Persist artifacts
-        weights_path = os.path.join(self.out_dir, f'weights_epoch{epoch+1}.json')
-        confusion_path = os.path.join(self.out_dir, f'confusion_epoch{epoch+1}.json')
+        # Persist artifacts to organized subdirectories
+        weights_path = os.path.join(self.weights_dir, f'weights_epoch{epoch+1}.json')
+        confusion_path = os.path.join(self.confusion_dir, f'confusion_epoch{epoch+1}.json')
         with open(weights_path, 'w') as f:
             json.dump({'epoch': epoch+1,
                        'weights': self.weights_ref.tolist(),

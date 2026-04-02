@@ -4,9 +4,9 @@ Generate all graphs for kernel search + phase2 matrix CSV results.
 Usage:
     python src/generate_all_result_graphs.py
     python src/generate_all_result_graphs.py \
-        --kernel-csv results_local/kernel_search/kernel_rankings_20260218_011931.csv \
-        --phase2-csv results_local/phase2_matrix/phase2_rankings_20260218_095516.csv \
-        --out-dir results_local/all_graphs
+        --kernel-csv results/analysis/kernel_search/kernel_rankings_20260218_011931.csv \
+        --phase2-csv results/analysis/phase2_matrix/phase2_rankings_20260218_095516.csv \
+        --out-dir results/analysis/all_graphs
 """
 
 import os
@@ -15,9 +15,9 @@ import csv
 import matplotlib.pyplot as plt
 
 
-DEFAULT_KERNEL_CSV = "results_local/kernel_search/kernel_rankings_20260218_011931.csv"
-DEFAULT_PHASE2_CSV = "results_local/phase2_matrix/phase2_rankings_20260218_095516.csv"
-DEFAULT_OUT_DIR = "results_local/all_graphs"
+DEFAULT_KERNEL_CSV = "results/analysis/kernel_search/kernel_rankings_20260218_011931.csv"
+DEFAULT_PHASE2_CSV = "results/analysis/phase2_matrix/phase2_rankings_20260218_095516.csv"
+DEFAULT_OUT_DIR = "results/analysis/all_graphs"
 SNR_COLUMNS = ["snr_0dB", "snr_2dB", "snr_4dB", "snr_6dB", "snr_8dB", "snr_10dB"]
 
 
