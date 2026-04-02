@@ -1,10 +1,26 @@
-# Ignore datasets and generated artifacts
+# Large binary model files only
 models/
 data/
 references/
-results/
+results/adaptive_sampling_g/*/model.h5
+results/baselines/*/model.h5
+results/baselines/*/model.keras
 
-# Ignore Python cache and environment files
+# Old backup folders
+results_old/
+results_local_old/
+results_new/
+
+# IDE and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -13,26 +29,15 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Environments
 amc_env/
 venv/
 .venv/
 env/
 
-# Ignore IDE/editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Ignore OS-specific files
-.DS_Store
-Thumbs.db
-*:Zone.Identifier
-
-# Ignore credentials
-!data/classes-fixed.json
-
-# Ignore misc
+# Misc
 models2/
 --sampler-backend
-        .]
+screenlog.*
+*.log

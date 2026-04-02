@@ -1,0 +1,3 @@
+config_id,name,tier,channels,cost,overall_acc,best_acc,snr_0dB,snr_2dB,snr_4dB,snr_6dB,snr_8dB,snr_10dB
+A,K02_3x3Cross,Single,1,5,75.82,75.60,42.65,64.18,80.12,87.74,90.06,90.85
+G,K20_3x3CrossCentered,Single,1,5,76.32,76.15,44.54,65.61,81.37,87.16,89.48,90.52
