@@ -1,0 +1,350 @@
+Clean log: logs/adaptive_sampling_g_train_20260328_180649.log
+Found 176944 files belonging to 8 classes.
+Found 19664 files belonging to 8 classes.
+Train classes (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+Val   classes (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+--- Training SqueezeNet v1.1 with adaptive sampler ---
+[Epoch 1] Learning rate: 0.01
+Epoch 1/40
+Epoch 1: val_accuracy improved from -inf to 0.65022, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Warmup epoch 1/3: weights not updated. Saved results/adaptive_sampling_g/20260328_180649/weights_epoch1.json
+Epoch 2/40
+Epoch 2: val_accuracy improved from 0.65022 to 0.70342, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Warmup epoch 2/3: weights not updated. Saved results/adaptive_sampling_g/20260328_180649/weights_epoch2.json
+[Epoch 3] Learning rate: 0.01
+Epoch 3/40
+Epoch 3: val_accuracy improved from 0.70342 to 0.72849, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Warmup epoch 3/3: weights not updated. Saved results/adaptive_sampling_g/20260328_180649/weights_epoch3.json
+[Epoch 4] Learning rate: 0.01
+Epoch 4/40
+Epoch 4: val_accuracy improved from 0.72849 to 0.74024, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch4.json
+[Epoch 5] Learning rate: 0.01
+Epoch 5/40
+Epoch 5: val_accuracy improved from 0.74024 to 0.75270, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch5.json
+[Epoch 6] Learning rate: 0.01
+Epoch 6/40
+Epoch 6: val_accuracy improved from 0.75270 to 0.75509, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch6.json
+[Epoch 7] Learning rate: 0.01
+Epoch 7/40
+Epoch 7: val_accuracy improved from 0.75509 to 0.75971, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch7.json
+[Epoch 8] Learning rate: 0.01
+Epoch 8/40
+Epoch 8: val_accuracy improved from 0.75971 to 0.76871, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch8.json
+[Epoch 9] Learning rate: 0.01
+Epoch 9/40
+Epoch 9: val_accuracy improved from 0.76871 to 0.77309, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch9.json
+[Epoch 10] Learning rate: 0.01
+Epoch 10/40
+Epoch 10: val_accuracy did not improve from 0.77309
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch10.json
+[Epoch 11] Learning rate: 0.01
+Epoch 11/40
+Epoch 11: val_accuracy did not improve from 0.77309
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch11.json
+[Epoch 12] Learning rate: 0.01
+Epoch 12/40
+Epoch 12: val_accuracy did not improve from 0.77309
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch12.json
+[Epoch 13] Learning rate: 0.01
+Epoch 13/40
+Epoch 13: val_accuracy did not improve from 0.77309
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch13.json
+[Epoch 14] Learning rate: 0.01
+Epoch 14/40
+Epoch 14: val_accuracy improved from 0.77309 to 0.77395, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch14.json
+[Epoch 15] Learning rate: 0.01
+Epoch 15/40
+Epoch 15: val_accuracy did not improve from 0.77395
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch15.json
+[Epoch 16] Learning rate: 0.01
+Epoch 16/40
+Epoch 16: val_accuracy did not improve from 0.77395
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch16.json
+[Epoch 17] Learning rate: 0.01
+Epoch 17/40
+Epoch 17: val_accuracy did not improve from 0.77395
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch17.json
+[Epoch 18] Learning rate: 0.01
+Epoch 18/40
+Epoch 18: val_accuracy did not improve from 0.77395
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch18.json
+[Epoch 19] Learning rate: 0.01
+Epoch 19/40
+Epoch 19: val_accuracy did not improve from 0.77395
+Epoch 19: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch19.json
+[Epoch 20] Learning rate: 0.005
+Epoch 20/40
+Epoch 20: val_accuracy improved from 0.77395 to 0.78311, saving model to models/squeezenet_sampler_g_20260328_180649.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch20.json
+[Epoch 21] Learning rate: 0.005
+Epoch 21/40
+Epoch 21: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch21.json
+[Epoch 22] Learning rate: 0.005
+Epoch 22/40
+Epoch 22: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch22.json
+[Epoch 23] Learning rate: 0.005
+Epoch 23/40
+Epoch 23: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch23.json
+[Epoch 24] Learning rate: 0.005
+Epoch 24/40
+Epoch 24: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch24.json
+[Epoch 25] Learning rate: 0.005
+Epoch 25/40
+Epoch 25: val_accuracy did not improve from 0.78311
+Epoch 25: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch25.json
+[Epoch 26] Learning rate: 0.0025
+Epoch 26/40
+Epoch 26: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch26.json
+[Epoch 27] Learning rate: 0.0025
+Epoch 27/40
+Epoch 27: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch27.json
+[Epoch 28] Learning rate: 0.0025
+Epoch 28/40
+Epoch 28: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch28.json
+[Epoch 29] Learning rate: 0.0025
+Epoch 29/40
+Epoch 29: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch29.json
+[Epoch 30] Learning rate: 0.0025
+Epoch 30/40
+Epoch 30: val_accuracy did not improve from 0.78311
+Epoch 30: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch30.json
+[Epoch 31] Learning rate: 0.00125
+Epoch 31/40
+Epoch 31: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch31.json
+[Epoch 32] Learning rate: 0.00125
+Epoch 32/40
+Epoch 32: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch32.json
+[Epoch 33] Learning rate: 0.00125
+Epoch 33/40
+Epoch 33: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch33.json
+[Epoch 34] Learning rate: 0.00125
+Epoch 34/40
+Epoch 34: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch34.json
+[Epoch 35] Learning rate: 0.00125
+Epoch 35/40
+Epoch 35: val_accuracy did not improve from 0.78311
+Epoch 35: ReduceLROnPlateau reducing learning rate to 0.0006249999860301614.
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch35.json
+[Epoch 36] Learning rate: 0.000625
+Epoch 36/40
+Epoch 36: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch36.json
+[Epoch 37] Learning rate: 0.000625
+Epoch 37/40
+Epoch 37: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch37.json
+[Epoch 38] Learning rate: 0.000625
+Epoch 38/40
+Epoch 38: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch38.json
+[Epoch 39] Learning rate: 0.000625
+Epoch 39/40
+Epoch 39: val_accuracy did not improve from 0.78311
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch39.json
+[Epoch 40] Learning rate: 0.000625
+Epoch 40/40
+Epoch 40: val_accuracy did not improve from 0.78311
+Epoch 40: ReduceLROnPlateau reducing learning rate to 0.0003124999930150807.
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260328_180649/weights_epoch40.json
+Training complete. Best model saved to: models/squeezenet_sampler_g_20260328_180649.h5
+]0;root@7493244fcadf: /approot@7493244fcadf:/app# python src/adaptive_sampling_g/eval_all_models.py
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    PHASE 3 CLEAN EVALUATION - ALL MODELS                     ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+[1/3] Evaluating: Phase 2 Winner - K02 3x3 Cross
+      Model: results_local/phase2_matrix/model_config_A.keras
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: results_local/phase2_matrix/model_config_A.keras
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  40.73% (3,317 samples)
+  SNR  2 dB →  61.59% (3,275 samples)
+  SNR  4 dB →  80.29% (3,283 samples)
+  SNR  6 dB →  88.46% (3,233 samples)
+  SNR  8 dB →  91.14% (3,286 samples)
+  SNR 10 dB →  92.54% (3,270 samples)
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 75.70% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  40.76% (1,002/2,458)
+     32QAM →  76.77% (1,887/2,458)
+      4ASK →  99.96% (2,457/2,458)
+     64QAM →  63.79% (1,568/2,458)
+      8PSK →  78.93% (1,940/2,458)
+      BPSK →  99.96% (2,457/2,458)
+     OQPSK →  68.47% (1,683/2,458)
+      QPSK →  76.93% (1,891/2,458)
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_A_Baseline.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_A_Baseline.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_A_Baseline_heatmap.png
+[2/3] Evaluating: Phase 2 Runner-up - K20 3x3 Cross Centered
+      Model: results_local/phase2_matrix/model_config_G.keras
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: results_local/phase2_matrix/model_config_G.keras
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  45.37% (3,317 samples)
+  SNR  2 dB →  68.06% (3,275 samples)
+  SNR  4 dB →  83.34% (3,283 samples)
+  SNR  6 dB →  88.99% (3,233 samples)
+  SNR  8 dB →  91.91% (3,286 samples)
+  SNR 10 dB →  92.20% (3,270 samples)
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 78.22% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  48.90% (1,202/2,458)
+     32QAM →  69.81% (1,716/2,458)
+      4ASK →  99.84% (2,454/2,458)
+     64QAM →  59.36% (1,459/2,458)
+      8PSK →  86.21% (2,119/2,458)
+      BPSK →  99.80% (2,453/2,458)
+     OQPSK →  77.38% (1,902/2,458)
+      QPSK →  84.50% (2,077/2,458)
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_G_Baseline.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_G_Baseline.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_G_Baseline_heatmap.png
+[3/3] Evaluating: Adaptive Sampling on Config G
+      Model: models/squeezenet_sampler_g_20260224_155039.h5
+      ──────────────────────────────────────────────────────────────────────────
+✓ Loaded model: models/squeezenet_sampler_g_20260224_155039.h5
+✓ Loaded 19,664 validation samples
+✓ Classes (8): 16QAM, 32QAM, 4ASK, 64QAM, 8PSK, BPSK, OQPSK, QPSK
+──────────────────────────────────────────────────────────────────────
+Evaluating by SNR
+──────────────────────────────────────────────────────────────────────
+  SNR  0 dB →  47.45% (3,317 samples)
+  SNR  2 dB →  67.60% (3,275 samples)
+  SNR  4 dB →  82.88% (3,283 samples)
+  SNR  6 dB →  89.76% (3,233 samples)
+  SNR  8 dB →  93.12% (3,286 samples)
+  SNR 10 dB →  94.13% (3,270 samples)
+──────────────────────────────────────────────────────────────────────
+Overall Accuracy: 79.07% (19,664 samples)
+──────────────────────────────────────────────────────────────────────
+Per-Class Accuracy:
+──────────────────────────────────────────────────────────────────────
+     16QAM →  51.18% (1,258/2,458)
+     32QAM →  70.02% (1,721/2,458)
+      4ASK →  99.96% (2,457/2,458)
+     64QAM →  59.56% (1,464/2,458)
+      8PSK →  86.37% (2,123/2,458)
+      BPSK → 100.00% (2,458/2,458)
+     OQPSK →  77.66% (1,909/2,458)
+      QPSK →  87.84% (2,159/2,458)
+✓ Saved JSON: results_local/phase3_clean_eval/eval_Config_G_Adaptive.json
+✓ Saved plot: results_local/phase3_clean_eval/eval_Config_G_Adaptive.png
+✓ Saved heatmap: results_local/phase3_clean_eval/eval_Config_G_Adaptive_heatmap.png
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              COMPARISON REPORT                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+Overall Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+  Config_A_Baseline         →  75.70% (n=19,664)
+  Config_G_Baseline         →  78.22% (n=19,664)  (+2.53% vs Config A)
+  Config_G_Adaptive         →  79.07% (n=19,664)  (+3.38% vs Config A)
+Per-SNR Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+  SNR = 0 dB:
+    Config_A_Baseline         →  40.73% (n=3,317)
+    Config_G_Baseline         →  45.37% (n=3,317)
+    Config_G_Adaptive         →  47.45% (n=3,317)
+  SNR = 2 dB:
+    Config_A_Baseline         →  61.59% (n=3,275)
+    Config_G_Baseline         →  68.06% (n=3,275)
+    Config_G_Adaptive         →  67.60% (n=3,275)
+  SNR = 4 dB:
+    Config_A_Baseline         →  80.29% (n=3,283)
+    Config_G_Baseline         →  83.34% (n=3,283)
+    Config_G_Adaptive         →  82.88% (n=3,283)
+  SNR = 6 dB:
+    Config_A_Baseline         →  88.46% (n=3,233)
+    Config_G_Baseline         →  88.99% (n=3,233)
+    Config_G_Adaptive         →  89.76% (n=3,233)
+  SNR = 8 dB:
+    Config_A_Baseline         →  91.14% (n=3,286)
+    Config_G_Baseline         →  91.91% (n=3,286)
+    Config_G_Adaptive         →  93.12% (n=3,286)
+  SNR = 10 dB:
+    Config_A_Baseline         →  92.54% (n=3,270)
+    Config_G_Baseline         →  92.20% (n=3,270)
+    Config_G_Adaptive         →  94.13% (n=3,270)
+Per-Class Overall Accuracy Comparison:
+──────────────────────────────────────────────────────────────────────────────
+  16QAM:
+    Config_A_Baseline         →  40.76%
+    Config_G_Baseline         →  48.90%
+    Config_G_Adaptive         →  51.18%
+  32QAM:
+    Config_A_Baseline         →  76.77%
+    Config_G_Baseline         →  69.81%
+    Config_G_Adaptive         →  70.02%
+  4ASK:
+    Config_A_Baseline         →  99.96%
+    Config_G_Baseline         →  99.84%
+    Config_G_Adaptive         →  99.96%
+  64QAM:
+    Config_A_Baseline         →  63.79%
+    Config_G_Baseline         →  59.36%
+    Config_G_Adaptive         →  59.56%
+  8PSK:
+    Config_A_Baseline         →  78.93%
+    Config_G_Baseline         →  86.21%
+    Config_G_Adaptive         →  86.37%
+  BPSK:
+    Config_A_Baseline         →  99.96%
+    Config_G_Baseline         →  99.80%
+    Config_G_Adaptive         → 100.00%
+  OQPSK:
+    Config_A_Baseline         →  68.47%
+    Config_G_Baseline         →  77.38%
+    Config_G_Adaptive         →  77.66%
+  QPSK:
+    Config_A_Baseline         →  76.93%
+    Config_G_Baseline         →  84.50%
+    Config_G_Adaptive         →  87.84%
+✓ Saved comparison JSON: results_local/phase3_clean_eval/phase3_comparison_all_models.json
+──────────────────────────────────────────────────────────────────────────────
+Generating comparison visualizations...
+──────────────────────────────────────────────────────────────────────────────
+  ✓ Overall accuracy bar chart
+  ✓ Per-SNR line plot
+  ✓ Per-class grouped bar chart
+  ✓ Combined heatmaps (per-class per-SNR)
+  ✓ Delta comparison vs Config A baseline
+╔══════════════════════════════════════════════════════════════════════════════╗
+║            All results saved to: results_local/phase3_clean_eval             ║
+╚══════════════════════════════════════════════════════════════════════════════╝
