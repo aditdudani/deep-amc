@@ -6,6 +6,10 @@ results/adaptive_sampling_g/*/model.h5
 results/baselines/*/model.h5
 results/baselines/*/model.keras
 
+#just all .h5 and keras
+*.h5
+*.keras
+
 # Old backup folders
 results_old/
 results_local_old/
