@@ -1,0 +1,159 @@
+================================================================================
+PHASE 2: SINGLE vs MULTI-CHANNEL COMPARISON
+Timestamp: 20260203_214223
+Clean log: logs/phase2_20260203_214223.log
+================================================================================
+
+============================================================
+EXPERIMENT CONFIGURATION
+============================================================
+  Data subset:         30%
+  Train/Val split:     90/10
+  Epochs:              40
+  Batch size:          64
+  Base learning rate:  0.001
+  Optimizer:           RMSprop
+  Dropout:             0.5
+  Random seed:         42
+  Decision threshold:  5%
+============================================================
+
+================================================================================
+EXPERIMENT 1: SINGLE-CHANNEL
+================================================================================
+
+============================================================
+SKIPPING SINGLE-CHANNEL GENERATION (SKIP_GEN=1)
+Using existing images in: data/processed_hw_single
+============================================================
+
+============================================================
+TRAINING: SINGLE-CHANNEL, Seed=42
+Run directory: results_local/phase2_comparison/20260203_214223/single_20260203_214223
+============================================================
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+  Classes: ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+  Steps per epoch: 829
+[Epoch 1] LR: 0.001
+Epoch 1/40
+
+Epoch 1: val_accuracy improved from -inf to 0.12500, saving model to results_local/phase2_comparison/20260203_214223/single_20260203_214223/model_best_20260203_214223.h5
+829/829 [==============================] - 50s 56ms/step - loss: 2.0795 - accuracy: 0.1252 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 2/40
+
+Epoch 2: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 3/40
+
+Epoch 3: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 4/40
+
+Epoch 4: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 5/40
+
+Epoch 5: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 6/40
+
+Epoch 6: val_accuracy did not improve from 0.12500
+
+Epoch 6: ReduceLROnPlateau reducing learning rate to 0.0005000000237487257.
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0010
+Epoch 7/40
+
+Epoch 7: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 5.0000e-04
+Epoch 8/40
+
+Epoch 8: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 5.0000e-04
+Epoch 9/40
+
+Epoch 9: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 5.0000e-04
+Epoch 10/40
+
+Epoch 10: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 5.0000e-04
+[Epoch 11] LR: 0.0005
+Epoch 11/40
+
+Epoch 11: val_accuracy did not improve from 0.12500
+
+Epoch 11: ReduceLROnPlateau reducing learning rate to 0.0002500000118743628.
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 5.0000e-04
+Epoch 12/40
+
+Epoch 12: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 2.5000e-04
+Epoch 13/40
+
+Epoch 13: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 2.5000e-04
+Epoch 14/40
+
+Epoch 14: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 2.5000e-04
+Epoch 15/40
+
+Epoch 15: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 2.5000e-04
+Epoch 16/40
+
+Epoch 16: val_accuracy did not improve from 0.12500
+
+Epoch 16: ReduceLROnPlateau reducing learning rate to 0.0001250000059371814.
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 2.5000e-04
+Epoch 17/40
+
+Epoch 17: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 43s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 1.2500e-04
+Epoch 18/40
+
+Epoch 18: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 43s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 1.2500e-04
+Epoch 19/40
+
+Epoch 19: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 1.2500e-04
+Epoch 20/40
+
+Epoch 20: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 1.2500e-04
+[Epoch 21] LR: 0.000125
+Epoch 21/40
+
+Epoch 21: val_accuracy did not improve from 0.12500
+
+Epoch 21: ReduceLROnPlateau reducing learning rate to 6.25000029685907e-05.
+829/829 [==============================] - 43s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 1.2500e-04
+Epoch 22/40
+
+Epoch 22: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 6.2500e-05
+Epoch 23/40
+
+Epoch 23: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 6.2500e-05
+Epoch 24/40
+
+Epoch 24: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 6.2500e-05
+Epoch 25/40
+
+Epoch 25: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 6.2500e-05
+Epoch 26/40
+
+Epoch 26: val_accuracy did not improve from 0.12500
+
+Epoch 26: ReduceLROnPlateau reducing learning rate to 3.125000148429535e-05.
+829/829 [==============================] - 44s 52ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 6.2500e-05
+Epoch 27/40
+
+Epoch 27: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 44s 53ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 3.1250e-05
+Epoch 28/40

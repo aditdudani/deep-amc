@@ -1,0 +1,49 @@
+Clean log: logs/kernel_grid_search_20260223_171335.log
+
+======================================================================
+KERNEL GRID SEARCH - Deterministic Kernel Topology Selection
+======================================================================
+Date: 2026-02-23 17:13:35
+Data: data/GOLD_XYZ_OSC.0001_1024.hdf5
+Subset: 30%
+Epochs: 20
+Batch size: 64
+Optimizer: SGD(lr=0.01, momentum=0.9)
+======================================================================
+
+23 kernel configurations to test:
+  K01: 1x1_Point       | sum=     128 | shift=0 | cost=1
+  K02: 3x3_Cross       | sum=     640 | shift=0 | cost=5
+  K03: 3x3_Box         | sum=    1152 | shift=0 | cost=9
+  K04: 3x3_Gaussian    | sum=     420 | shift=0 | cost=18
+  K05: 5x5_Cross       | sum=    1152 | shift=1 | cost=9
+  K06: 5x5_Box         | sum=    3200 | shift=1 | cost=25
+  K07: 5x5_Gaussian    | sum=    1140 | shift=1 | cost=50
+  K08: 7x7_Cross       | sum=    1664 | shift=2 | cost=13
+  K09: 7x7_Box         | sum=    6272 | shift=2 | cost=49
+  K10: 7x7_Gaussian    | sum=    2236 | shift=2 | cost=98
+  K11: 11x11_Cross     | sum=    2688 | shift=3 | cost=21
+  K12: 11x11_Box       | sum=   15488 | shift=3 | cost=121
+  K13: 11x11_Gaussian  | sum=    5492 | shift=3 | cost=242
+  K14: 15x15_Box       | sum=   28800 | shift=4 | cost=225
+  K15: 15x15_Gaussian  | sum=   10196 | shift=4 | cost=450
+  K16: 3x3_Binomial    | sum=     512 | shift=0 | cost=9
+  K17: 5x5_Binomial    | sum=     800 | shift=1 | cost=25
+  K18: 7x7_Binomial    | sum=     968 | shift=2 | cost=49
+  K19: 11x11_Binomial  | sum=    1096 | shift=3 | cost=121
+  K20: 3x3_Cross_Centered | sum=     768 | shift=0 | cost=5
+  K21: 5x5_Cross_Centered | sum=    1280 | shift=1 | cost=9
+  K22: 7x7_Cross_Centered | sum=    1792 | shift=2 | cost=13
+  K23: 11x11_Cross_Centered | sum=    2816 | shift=3 | cost=21
+
+Testing 4 selected kernels: ['K20', 'K21', 'K22', 'K23']
+
+Append file not found, will create: results_local/kernel_search/kernel_rankingsclear
+
+======================================================================
+[1/4] Testing K20: 3x3_Cross_Centered
+  Size: 3x3, Topology: CrossCentered
+  Kernel sum: 768, Calculated shift: 0
+  HW Cost proxy: 5, Uses DSP: False
+======================================================================
+  Generating images to data/kernel_search_temp...

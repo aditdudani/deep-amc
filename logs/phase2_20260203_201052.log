@@ -1,0 +1,41 @@
+================================================================================
+PHASE 2: SINGLE vs MULTI-CHANNEL COMPARISON
+Timestamp: 20260203_201052
+Clean log: logs/phase2_20260203_201052.log
+================================================================================
+
+============================================================
+EXPERIMENT CONFIGURATION
+============================================================
+  Data subset:         30%
+  Train/Val split:     90/10
+  Epochs:              40
+  Warmup epochs:       5
+  Batch size:          64
+  Base learning rate:  0.01
+  Early stop patience: 10
+  Random seed:         42
+  Decision threshold:  5%
+============================================================
+
+================================================================================
+EXPERIMENT 1: SINGLE-CHANNEL
+================================================================================
+
+============================================================
+SKIPPING SINGLE-CHANNEL GENERATION (SKIP_GEN=1)
+Using existing images in: data/processed_hw_single
+============================================================
+
+============================================================
+TRAINING: SINGLE-CHANNEL, Seed=42
+Run directory: results_local/phase2_comparison/20260203_201052/single_20260203_201052
+============================================================
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+  Classes: ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+  Steps per epoch: 829
+[Epoch 1] LR: 0
+Epoch 1/40
+
+Epoch 1: val_accuracy improved from -inf to 0.12500, saving model to results_local/phase2_comparison/20260203_201052/single_20260203_201052/model_best_20260203_201052.h5

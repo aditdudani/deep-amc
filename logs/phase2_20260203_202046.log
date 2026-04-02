@@ -1,0 +1,140 @@
+================================================================================
+PHASE 2: SINGLE vs MULTI-CHANNEL COMPARISON
+Timestamp: 20260203_202046
+Clean log: logs/phase2_20260203_202046.log
+================================================================================
+
+============================================================
+EXPERIMENT CONFIGURATION
+============================================================
+  Data subset:         30%
+  Train/Val split:     90/10
+  Epochs:              40
+  Batch size:          64
+  Base learning rate:  0.01
+  Early stop patience: 10
+  Random seed:         42
+  Decision threshold:  5%
+============================================================
+
+================================================================================
+EXPERIMENT 1: SINGLE-CHANNEL
+================================================================================
+
+============================================================
+SKIPPING SINGLE-CHANNEL GENERATION (SKIP_GEN=1)
+Using existing images in: data/processed_hw_single
+============================================================
+
+============================================================
+TRAINING: SINGLE-CHANNEL, Seed=42
+Run directory: results_local/phase2_comparison/20260203_202046/single_20260203_202046
+============================================================
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+  Classes: ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+  Steps per epoch: 829
+[Epoch 1] LR: 0.01
+Epoch 1/40
+
+Epoch 1: val_accuracy improved from -inf to 0.12500, saving model to results_local/phase2_comparison/20260203_202046/single_20260203_202046/model_best_20260203_202046.h5
+829/829 [==============================] - 45s 51ms/step - loss: 2.0795 - accuracy: 0.1266 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 2/40
+
+Epoch 2: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 3/40
+
+Epoch 3: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 4/40
+
+Epoch 4: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 5/40
+
+Epoch 5: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 6/40
+
+Epoch 6: val_accuracy did not improve from 0.12500
+
+Epoch 6: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+829/829 [==============================] - 41s 49ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0100
+Epoch 7/40
+
+Epoch 7: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 49ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0050
+Epoch 8/40
+
+Epoch 8: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 40s 49ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0050
+Epoch 9/40
+
+Epoch 9: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0050
+Epoch 10/40
+
+Epoch 10: val_accuracy did not improve from 0.12500
+829/829 [==============================] - 41s 49ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0050
+[Epoch 11] LR: 0.005
+Epoch 11/40
+
+Epoch 11: val_accuracy did not improve from 0.12500
+Restoring model weights from the end of the best epoch: 1.
+
+Epoch 11: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+829/829 [==============================] - 41s 50ms/step - loss: 2.0795 - accuracy: 0.1250 - val_loss: 2.0794 - val_accuracy: 0.1250 - lr: 0.0050
+Epoch 11: early stopping
+
+>>> SINGLE-CHANNEL Results:
+    Best Val Accuracy: 12.50% (epoch 1)
+    Epochs trained: 11/40
+
+Evaluating per-SNR accuracy (single-channel)...
+
+  Per-SNR Accuracy (Single-Channel):
+    SNR   0dB:  12.40%
+    SNR   2dB:  12.59%
+    SNR   4dB:  13.65%
+    SNR   6dB:  12.39%
+    SNR   8dB:  13.52%
+    SNR  10dB:  10.44%
+
+================================================================================
+EXPERIMENT 2: MULTI-CHANNEL
+================================================================================
+
+============================================================
+GENERATING MULTI-CHANNEL DATASET
+============================================================
+Loading from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+  Total samples: 2555904
+  Target classes: ['4ASK', 'BPSK', 'QPSK', '8PSK', '16QAM', '32QAM', '64QAM', 'OQPSK']
+  Target SNRs: [0, 2, 4, 6, 8, 10] dB
+
+Stratified sampling:
+  Samples per (class, SNR): 1228
+  Total combinations: 8 classes × 6 SNRs = 48
+
+  Per-SNR sample counts:
+    SNR   0dB: 9824 samples
+    SNR   2dB: 9824 samples
+    SNR   4dB: 9824 samples
+    SNR   6dB: 9824 samples
+    SNR   8dB: 9824 samples
+    SNR  10dB: 9824 samples
+
+  Total selected: 58944 samples
+
+  Per-class sample counts:
+    4ASK    : 7368
+    BPSK    : 7368
+    QPSK    : 7368
+    8PSK    : 7368
+    16QAM   : 7368
+    32QAM   : 7368
+    64QAM   : 7368
+    OQPSK   : 7368
+
+Generating images...

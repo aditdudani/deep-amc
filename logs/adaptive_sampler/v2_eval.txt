@@ -1,0 +1,25 @@
+python src/eval_squeezenet_by_snr.py \
+>   --model models/squeezenet_sampler_20251119_230254.h5 \
+>   --hdf5 data/GOLD_XYZ_OSC.0001_1024.hdf5 \
+>   --per-class \
+>   --limit-per-bucket 200 \
+>   --chunk-size 512 \
+>   --predict-batch 256
+
+--- Evaluating SqueezeNet accuracy by SNR ---
+
+Model: models/squeezenet_sampler_20251119_230254.h5
+HDF5: data/GOLD_XYZ_OSC.0001_1024.hdf5
+Classes inferred from: data/processed/train
+Target mods: ['BPSK', '4ASK', 'QPSK', 'OQPSK', '8PSK', '16QAM', '32QAM', '64QAM']
+Target SNRs: [0, 2, 4, 6, 8, 10]
+Training class order (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+SNR  0 dB -> accuracy: 0.5094 (n=1600)
+SNR  2 dB -> accuracy: 0.7462 (n=1600)
+SNR  4 dB -> accuracy: 0.8519 (n=1600)
+SNR  6 dB -> accuracy: 0.9056 (n=1600)
+SNR  8 dB -> accuracy: 0.9319 (n=1600)
+SNR 10 dB -> accuracy: 0.9425 (n=1600)
+Saved JSON: results/evals/squeezenet/20251120_010240/accuracy_by_snr_squeezenet.json
+Saved plot: results/evals/squeezenet/20251120_010240/accuracy_by_snr_squeezenet.png
+]0;root@bdb759346b49: /approot@bdb759346b49:/app# 

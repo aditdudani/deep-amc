@@ -1,0 +1,6 @@
+Clean log: logs/dataset_metadata_g_20260224_084342.log
+Found 176944 files belonging to 8 classes.
+Wrote metadata CSVs:
+  data/processed_g/metadata_train.csv
+  data/processed_g/metadata_val.csv
+Summary: data/processed_g/metadata_summary.json

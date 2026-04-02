@@ -1,0 +1,522 @@
+Clean log: logs/phase2_matrix_20260218_095516.log
+
+================================================================================
+PHASE 2: ARCHITECTURE MATRIX
+================================================================================
+Date: 2026-02-18 09:55:16
+Data: data/GOLD_XYZ_OSC.0001_1024.hdf5 (FULL DATASET)
+Epochs: 40
+Batch size: 64
+Optimizer: SGD(lr=0.01, momentum=0.9)
+ReduceLROnPlateau: patience=3
+================================================================================
+
+6-CONFIGURATION MATRIX:
+--------------------------------------------------------------------------------
+  Config A: K02_3x3Cross         | Single  | Cost=5     | Efficiency Champion - Best accuracy/cost ratio
+  Config B: K09_7x7Box           | Single  | Cost=49    | Accuracy Champion - Highest Phase 1 accuracy
+  Config C: K12_11x11Box         | Single  | Cost=121   | 0dB Integrator - Best low-SNR performance
+  Config D: K02+K09              | Dual    | Cost=54    | Mid-Range Pairing - High-SNR + Overall champion
+  Config E: K02+K12              | Dual    | Cost=126   | Extremes Pairing - Sharp + Heavy integration
+  Config F: K02+K09+K12          | Triple  | Cost=175   | Software Proxy - Full multi-scale representation
+--------------------------------------------------------------------------------
+
+================================================================================
+[1/6] TESTING CONFIG A: K02_3x3Cross
+  Tier: Single, Channels: 1, Cost: 5
+  Efficiency Champion - Best accuracy/cost ratio
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+
+Epoch 27: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 28/40
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+
+Epoch 34: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+Epoch 38/40
+
+Epoch 38: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 74.98% (best: 75.01%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 42.1%
+    SNR   2dB: 63.4%
+    SNR   4dB: 79.1%
+    SNR   6dB: 86.3%
+    SNR   8dB: 89.0%
+    SNR  10dB: 90.8%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[2/6] TESTING CONFIG B: K09_7x7Box
+  Tier: Single, Channels: 1, Cost: 49
+  Accuracy Champion - Highest Phase 1 accuracy
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+
+Epoch 33: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 34/40
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 76.20% (best: 76.20%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 43.9%
+    SNR   2dB: 65.8%
+    SNR   4dB: 80.3%
+    SNR   6dB: 88.1%
+    SNR   8dB: 89.5%
+    SNR  10dB: 90.3%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[3/6] TESTING CONFIG C: K12_11x11Box
+  Tier: Single, Channels: 1, Cost: 121
+  0dB Integrator - Best low-SNR performance
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+
+Epoch 16: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+
+Epoch 24: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+Epoch 29/40
+
+Epoch 29: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+
+Epoch 33: ReduceLROnPlateau reducing learning rate to 0.0006249999860301614.
+Epoch 34/40
+Epoch 35/40
+Epoch 36/40
+
+Epoch 36: ReduceLROnPlateau reducing learning rate to 0.0003124999930150807.
+Epoch 37/40
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 75.13% (best: 75.13%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 43.4%
+    SNR   2dB: 63.3%
+    SNR   4dB: 80.7%
+    SNR   6dB: 86.5%
+    SNR   8dB: 88.0%
+    SNR  10dB: 89.6%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[4/6] TESTING CONFIG D: K02+K09
+  Tier: Dual, Channels: 2, Cost: 54
+  Mid-Range Pairing - High-SNR + Overall champion
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+
+Epoch 37: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 74.63% (best: 75.47%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 44.5%
+    SNR   2dB: 63.3%
+    SNR   4dB: 78.4%
+    SNR   6dB: 86.5%
+    SNR   8dB: 89.6%
+    SNR  10dB: 91.4%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[5/6] TESTING CONFIG E: K02+K12
+  Tier: Dual, Channels: 2, Cost: 126
+  Extremes Pairing - Sharp + Heavy integration
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+
+Epoch 28: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+
+Epoch 37: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 75.98% (best: 76.43%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 44.5%
+    SNR   2dB: 67.1%
+    SNR   4dB: 79.7%
+    SNR   6dB: 86.7%
+    SNR   8dB: 90.1%
+    SNR  10dB: 91.2%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[6/6] TESTING CONFIG F: K02+K09+K12
+  Tier: Triple, Channels: 3, Cost: 175
+  Software Proxy - Full multi-scale representation
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+
+Epoch 18: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+
+Epoch 25: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+
+Epoch 34: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 76.49% (best: 76.59%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 44.1%
+    SNR   2dB: 66.5%
+    SNR   4dB: 82.1%
+    SNR   6dB: 88.1%
+    SNR   8dB: 89.5%
+    SNR  10dB: 90.0%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+PHASE 2 ARCHITECTURE MATRIX - RESULTS ANALYSIS
+================================================================================
+
+------------------------------------------------------------
+OVERALL ACCURACY RANKING
+------------------------------------------------------------
+Rank  Config Name               Tier     Accuracy   Cost    
+------------------------------------------------------------
+1     F      K02+K09+K12        Triple     76.59%  175     
+2     E      K02+K12            Dual       76.43%  126     
+3     B      K09_7x7Box         Single     76.20%  49      
+4     D      K02+K09            Dual       75.47%  54      
+5     C      K12_11x11Box       Single     75.13%  121     
+6     A      K02_3x3Cross       Single     75.01%  5       
+
+------------------------------------------------------------
+TIER COMPARISON
+------------------------------------------------------------
+Single-Channel: Best=76.20% (K09_7x7Box), Avg=75.45%
+Dual-Channel: Best=76.43% (K02+K12), Avg=75.95%
+Triple-Channel: Best=76.59% (K02+K09+K12), Avg=76.59%
+
+------------------------------------------------------------
+PER-SNR CHAMPIONS
+------------------------------------------------------------
+SNR   0dB: K02+K12            (44.5%)
+SNR   2dB: K02+K12            (67.1%)
+SNR   4dB: K02+K09+K12        (82.1%)
+SNR   6dB: K09_7x7Box         (88.1%)
+SNR   8dB: K02+K12            (90.1%)
+SNR  10dB: K02+K09            (91.4%)
+
+------------------------------------------------------------
+ARCHITECTURE DECISION
+------------------------------------------------------------
+Best Single-Channel: K09_7x7Box (76.20%, cost=49)
+Best Multi-Channel:  K02+K09+K12 (76.59%, cost=175)
+Accuracy Difference: +0.39%
+
+>>> RECOMMENDATION: K09_7x7Box
+>>> Reason: Multi-channel gain (0.39%) ≤ 5% threshold
+>>> FPGA: Single-channel saves bandwidth and complexity
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings_20260218_095516.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings_20260218_095516.csv
+
+Saved final analysis to results_local/phase2_matrix/phase2_final_20260218_095516.json
+
+================================================================================
+PHASE 2 ARCHITECTURE MATRIX COMPLETE
+================================================================================
+Results saved to: results_local/phase2_matrix/
+Best models saved with weights.
+================================================================================

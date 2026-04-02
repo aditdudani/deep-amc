@@ -1,0 +1,224 @@
+Clean log: logs/phase2_matrix_20260223_201245.log
+
+================================================================================
+PHASE 2: ARCHITECTURE MATRIX
+================================================================================
+Date: 2026-02-23 20:12:45
+Data: data/GOLD_XYZ_OSC.0001_1024.hdf5 (FULL DATASET)
+Epochs: 40
+Batch size: 64
+Optimizer: SGD(lr=0.01, momentum=0.9)
+ReduceLROnPlateau: patience=3
+================================================================================
+
+7-CONFIGURATION MATRIX:
+--------------------------------------------------------------------------------
+  Config A: K02_3x3Cross         | Single  | Cost=5     | Efficiency Champion - Best accuracy/cost ratio
+  Config B: K09_7x7Box           | Single  | Cost=49    | Accuracy Champion - Highest Phase 1 accuracy
+  Config C: K12_11x11Box         | Single  | Cost=121   | 0dB Integrator - Best low-SNR performance
+  Config D: K02+K09              | Dual    | Cost=54    | Mid-Range Pairing - High-SNR + Overall champion
+  Config E: K02+K12              | Dual    | Cost=126   | Extremes Pairing - Sharp + Heavy integration
+  Config F: K02+K09+K12          | Triple  | Cost=175   | Software Proxy - Full multi-scale representation
+  Config G: K20_3x3CrossCentered | Single  | Cost=5     | Head-to-head vs A - Center-weighted 3x3 cross
+--------------------------------------------------------------------------------
+
+Testing selected configs: ['A', 'G']
+
+================================================================================
+[1/2] TESTING CONFIG A: K02_3x3Cross
+  Tier: Single, Channels: 1, Cost: 5
+  Efficiency Champion - Best accuracy/cost ratio
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+Epoch 23/40
+Epoch 24/40
+
+Epoch 24: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+
+Epoch 28: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+Epoch 38/40
+Epoch 39/40
+
+Epoch 39: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+Epoch 40/40
+
+  Overall val_acc: 75.60% (best: 75.82%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 42.7%
+    SNR   2dB: 64.2%
+    SNR   4dB: 80.1%
+    SNR   6dB: 87.7%
+    SNR   8dB: 90.1%
+    SNR  10dB: 90.9%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+[2/2] TESTING CONFIG G: K20_3x3CrossCentered
+  Tier: Single, Channels: 1, Cost: 5
+  Head-to-head vs A - Center-weighted 3x3 cross
+================================================================================
+
+  Generating images to data/phase2_temp...
+  Loading labels...
+  Processing 2,555,904 total samples...
+  Generated 176,928 train, 19,680 val images
+
+  Training SqueezeNet for 40 epochs...
+Found 176928 files belonging to 8 classes.
+Found 19680 files belonging to 8 classes.
+Epoch 1/40
+Epoch 2/40
+Epoch 3/40
+Epoch 4/40
+Epoch 5/40
+Epoch 6/40
+Epoch 7/40
+Epoch 8/40
+Epoch 9/40
+Epoch 10/40
+Epoch 11/40
+Epoch 12/40
+Epoch 13/40
+Epoch 14/40
+Epoch 15/40
+Epoch 16/40
+Epoch 17/40
+Epoch 18/40
+Epoch 19/40
+Epoch 20/40
+Epoch 21/40
+Epoch 22/40
+
+Epoch 22: ReduceLROnPlateau reducing learning rate to 0.004999999888241291.
+Epoch 23/40
+Epoch 24/40
+Epoch 25/40
+Epoch 26/40
+Epoch 27/40
+Epoch 28/40
+
+Epoch 28: ReduceLROnPlateau reducing learning rate to 0.0024999999441206455.
+Epoch 29/40
+Epoch 30/40
+Epoch 31/40
+Epoch 32/40
+Epoch 33/40
+Epoch 34/40
+
+Epoch 34: ReduceLROnPlateau reducing learning rate to 0.0012499999720603228.
+Epoch 35/40
+Epoch 36/40
+Epoch 37/40
+Epoch 38/40
+Epoch 39/40
+Epoch 40/40
+
+  Overall val_acc: 76.15% (best: 76.32%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 44.5%
+    SNR   2dB: 65.6%
+    SNR   4dB: 81.4%
+    SNR   6dB: 87.2%
+    SNR   8dB: 89.5%
+    SNR  10dB: 90.5%
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings.csv
+  Cleaned up temp directory
+
+================================================================================
+PHASE 2 ARCHITECTURE MATRIX - RESULTS ANALYSIS
+================================================================================
+
+------------------------------------------------------------
+OVERALL ACCURACY RANKING
+------------------------------------------------------------
+Rank  Config Name               Tier     Accuracy   Cost    
+------------------------------------------------------------
+1     G      K20_3x3CrossCentered Single     76.32%  5       
+2     A      K02_3x3Cross       Single     75.82%  5       
+
+------------------------------------------------------------
+TIER COMPARISON
+------------------------------------------------------------
+Single-Channel: Best=76.32% (K20_3x3CrossCentered), Avg=76.07%
+
+------------------------------------------------------------
+PER-SNR CHAMPIONS
+------------------------------------------------------------
+SNR   0dB: K20_3x3CrossCentered (44.5%)
+SNR   2dB: K20_3x3CrossCentered (65.6%)
+SNR   4dB: K20_3x3CrossCentered (81.4%)
+SNR   6dB: K02_3x3Cross       (87.7%)
+SNR   8dB: K02_3x3Cross       (90.1%)
+SNR  10dB: K02_3x3Cross       (90.9%)
+
+------------------------------------------------------------
+ARCHITECTURE DECISION
+------------------------------------------------------------
+Subset-only run (Single tier).
+Top Config: K20_3x3CrossCentered (76.32%, cost=5)
+
+>>> RECOMMENDATION: K20_3x3CrossCentered
+>>> Reason: Subset run contains only one architecture tier; selected top accuracy in this subset
+>>> FPGA: Use this result for focused head-to-head before full matrix comparison
+
+Saved detailed results to results_local/phase2_matrix/phase2_rankings_20260223_201245.json
+Saved rankings to results_local/phase2_matrix/phase2_rankings_20260223_201245.csv
+
+Saved final analysis to results_local/phase2_matrix/phase2_final_20260223_201245.json
+
+================================================================================
+PHASE 2 ARCHITECTURE MATRIX COMPLETE
+================================================================================
+Results saved to: results_local/phase2_matrix/
+Best models saved with weights.
+================================================================================

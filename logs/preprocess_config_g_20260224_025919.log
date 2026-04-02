@@ -1,0 +1,33 @@
+Clean log: logs/preprocess_config_g_20260224_025919.log
+--- Starting Offline Pre-processing (Config G: 3x3 Cross Centered) ---
+Cleared 'data/processed_g' (force-clear).
+Loading metadata from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+Index counts per class:
+  BPSK: 24576
+  4ASK: 24576
+  QPSK: 24576
+  OQPSK: 24576
+  8PSK: 24576
+  16QAM: 24576
+  32QAM: 24576
+  64QAM: 24576
+
+Summary of images generated (Config G):
+  train:
+    BPSK: 22118
+    4ASK: 22118
+    QPSK: 22118
+    OQPSK: 22118
+    8PSK: 22118
+    16QAM: 22118
+    32QAM: 22118
+    64QAM: 22118
+  validation:
+    BPSK: 2458
+    4ASK: 2458
+    QPSK: 2458
+    OQPSK: 2458
+    8PSK: 2458
+    16QAM: 2458
+    32QAM: 2458
+    64QAM: 2458

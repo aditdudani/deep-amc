@@ -1,0 +1,13 @@
+Clean log: logs/preprocess_config_g_20260224_024206.log
+--- Starting Offline Pre-processing (Config G: 3x3 Cross Centered) ---
+Cleared 'data/processed_g' (force-clear).
+Loading metadata from data/GOLD_XYZ_OSC.0001_1024.hdf5...
+Index counts per class:
+  BPSK: 24576
+  4ASK: 24576
+  QPSK: 24576
+  OQPSK: 24576
+  8PSK: 24576
+  16QAM: 24576
+  32QAM: 24576
+  64QAM: 24576

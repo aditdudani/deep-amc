@@ -1,0 +1,264 @@
+Clean log: logs/kernel_grid_search_20260219_112905.log
+
+======================================================================
+KERNEL GRID SEARCH - Deterministic Kernel Topology Selection
+======================================================================
+Date: 2026-02-19 11:29:05
+Data: data/GOLD_XYZ_OSC.0001_1024.hdf5
+Subset: 30%
+Epochs: 20
+Batch size: 64
+Optimizer: SGD(lr=0.01, momentum=0.9)
+======================================================================
+
+19 kernel configurations to test:
+  K01: 1x1_Point       | sum=     128 | shift=0 | cost=1
+  K02: 3x3_Cross       | sum=     640 | shift=0 | cost=5
+  K03: 3x3_Box         | sum=    1152 | shift=0 | cost=9
+  K04: 3x3_Gaussian    | sum=     420 | shift=0 | cost=18
+  K05: 5x5_Cross       | sum=    1152 | shift=1 | cost=9
+  K06: 5x5_Box         | sum=    3200 | shift=1 | cost=25
+  K07: 5x5_Gaussian    | sum=    1140 | shift=1 | cost=50
+  K08: 7x7_Cross       | sum=    1664 | shift=2 | cost=13
+  K09: 7x7_Box         | sum=    6272 | shift=2 | cost=49
+  K10: 7x7_Gaussian    | sum=    2236 | shift=2 | cost=98
+  K11: 11x11_Cross     | sum=    2688 | shift=3 | cost=21
+  K12: 11x11_Box       | sum=   15488 | shift=3 | cost=121
+  K13: 11x11_Gaussian  | sum=    5492 | shift=3 | cost=242
+  K14: 15x15_Box       | sum=   28800 | shift=4 | cost=225
+  K15: 15x15_Gaussian  | sum=   10196 | shift=4 | cost=450
+  K16: 3x3_Binomial    | sum=     512 | shift=0 | cost=9
+  K17: 5x5_Binomial    | sum=     800 | shift=1 | cost=25
+  K18: 7x7_Binomial    | sum=     968 | shift=2 | cost=49
+  K19: 11x11_Binomial  | sum=    1096 | shift=3 | cost=121
+
+Testing 4 selected kernels: ['K16', 'K17', 'K18', 'K19']
+
+Loaded 15 existing results from results_local/kernel_search/kernel_rankings_20260218_011931.csv
+  Existing kernels: ['K01', 'K02', 'K03', 'K04', 'K05', 'K06', 'K07', 'K08', 'K09', 'K10', 'K11', 'K12', 'K13', 'K14', 'K15']
+
+======================================================================
+[1/4] Testing K16: 3x3_Binomial
+  Size: 3x3, Topology: Binomial
+  Kernel sum: 512, Calculated shift: 0
+  HW Cost proxy: 9, Uses DSP: False
+======================================================================
+  Generating images to data/kernel_search_temp...
+  Generated 53048 train, 5896 val images
+  Training SqueezeNet for 20 epochs...
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+Epoch 1/20
+Epoch 2/20
+Epoch 3/20
+Epoch 4/20
+Epoch 5/20
+Epoch 6/20
+Epoch 7/20
+Epoch 8/20
+Epoch 9/20
+Epoch 10/20
+Epoch 11/20
+Epoch 12/20
+Epoch 13/20
+Epoch 14/20
+Epoch 15/20
+Epoch 16/20
+Epoch 17/20
+Epoch 18/20
+Epoch 19/20
+Epoch 20/20
+  Overall val_acc: 65.11% (best: 65.30%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 39.7%
+    SNR   2dB: 53.8%
+    SNR   4dB: 70.0%
+    SNR   6dB: 75.9%
+    SNR   8dB: 75.5%
+    SNR  10dB: 75.5%
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931.csv
+  Cleaned up temp directory
+
+======================================================================
+[2/4] Testing K17: 5x5_Binomial
+  Size: 5x5, Topology: Binomial
+  Kernel sum: 800, Calculated shift: 1
+  HW Cost proxy: 25, Uses DSP: False
+======================================================================
+  Generating images to data/kernel_search_temp...
+  Generated 53048 train, 5896 val images
+  Training SqueezeNet for 20 epochs...
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+Epoch 1/20
+Epoch 2/20
+Epoch 3/20
+Epoch 4/20
+Epoch 5/20
+Epoch 6/20
+Epoch 7/20
+Epoch 8/20
+Epoch 9/20
+Epoch 10/20
+Epoch 11/20
+Epoch 12/20
+Epoch 13/20
+Epoch 14/20
+Epoch 15/20
+Epoch 16/20
+Epoch 17/20
+Epoch 18/20
+Epoch 19/20
+Epoch 20/20
+  Overall val_acc: 65.59% (best: 65.79%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 39.7%
+    SNR   2dB: 51.8%
+    SNR   4dB: 71.8%
+    SNR   6dB: 74.2%
+    SNR   8dB: 77.3%
+    SNR  10dB: 79.9%
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931.csv
+  Cleaned up temp directory
+
+======================================================================
+[3/4] Testing K18: 7x7_Binomial
+  Size: 7x7, Topology: Binomial
+  Kernel sum: 968, Calculated shift: 2
+  HW Cost proxy: 49, Uses DSP: False
+======================================================================
+  Generating images to data/kernel_search_temp...
+  Generated 53048 train, 5896 val images
+  Training SqueezeNet for 20 epochs...
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+Epoch 1/20
+Epoch 2/20
+Epoch 3/20
+Epoch 4/20
+Epoch 5/20
+Epoch 6/20
+Epoch 7/20
+Epoch 8/20
+Epoch 9/20
+Epoch 10/20
+Epoch 11/20
+Epoch 12/20
+Epoch 13/20
+Epoch 14/20
+Epoch 15/20
+Epoch 16/20
+Epoch 17/20
+Epoch 18/20
+Epoch 19/20
+Epoch 20/20
+  Overall val_acc: 67.22% (best: 67.22%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 40.2%
+    SNR   2dB: 56.7%
+    SNR   4dB: 72.2%
+    SNR   6dB: 76.8%
+    SNR   8dB: 79.1%
+    SNR  10dB: 78.4%
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931.csv
+  Cleaned up temp directory
+
+======================================================================
+[4/4] Testing K19: 11x11_Binomial
+  Size: 11x11, Topology: Binomial
+  Kernel sum: 1096, Calculated shift: 3
+  HW Cost proxy: 121, Uses DSP: False
+======================================================================
+  Generating images to data/kernel_search_temp...
+  Generated 53048 train, 5896 val images
+  Training SqueezeNet for 20 epochs...
+Found 53048 files belonging to 8 classes.
+Found 5896 files belonging to 8 classes.
+Epoch 1/20
+Epoch 2/20
+Epoch 3/20
+Epoch 4/20
+Epoch 5/20
+Epoch 6/20
+Epoch 7/20
+Epoch 8/20
+Epoch 9/20
+Epoch 10/20
+Epoch 11/20
+Epoch 12/20
+Epoch 13/20
+Epoch 14/20
+Epoch 15/20
+Epoch 16/20
+Epoch 17/20
+Epoch 18/20
+Epoch 19/20
+Epoch 20/20
+  Overall val_acc: 66.47% (best: 68.08%)
+  Evaluating per-SNR accuracy...
+  Per-SNR accuracy:
+    SNR   0dB: 37.9%
+    SNR   2dB: 51.2%
+    SNR   4dB: 73.4%
+    SNR   6dB: 76.9%
+    SNR   8dB: 79.1%
+    SNR  10dB: 80.4%
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931.csv
+  Cleaned up temp directory
+
+======================================================================
+PARETO ANALYSIS - Accuracy vs HW Cost
+======================================================================
+
+Ranked by Overall Accuracy:
+Rank  Config          Accuracy   Cost     DSP?  
+--------------------------------------------------
+1     7x7_Box           69.84%  49       False 
+2     3x3_Cross         69.69%  5        False 
+3     11x11_Box         68.89%  121      False 
+4     11x11_Binomial    68.08%  121      False 
+5     15x15_Box         67.44%  225      False 
+6     7x7_Binomial      67.22%  49       False 
+7     5x5_Cross         66.84%  9        False 
+8     15x15_Gaussian    66.82%  450      True  
+9     3x3_Gaussian      66.67%  18       True  
+10    11x11_Gaussian    66.54%  242      True  
+11    1x1_Point         66.45%  1        False 
+12    5x5_Box           66.32%  25       False 
+13    3x3_Box           66.30%  9        False 
+14    11x11_Cross       66.16%  21       False 
+15    5x5_Binomial      65.79%  25       False 
+16    3x3_Binomial      65.30%  9        False 
+17    7x7_Cross         64.89%  13       False 
+18    5x5_Gaussian      64.79%  50       True  
+19    7x7_Gaussian      64.77%  98       True  
+
+Pareto-Optimal Configurations (non-dominated):
+  7x7_Box: 69.84% @ cost=49
+  3x3_Cross: 69.69% @ cost=5
+  1x1_Point: 66.45% @ cost=1
+
+Per-SNR Champions (validates kernel-SNR inverse correlation):
+  SNR   0dB: 11x11_Gaussian (42.1%)
+  SNR   2dB: 3x3_Cross (56.8%)
+  SNR   4dB: 7x7_Box (75.7%)
+  SNR   6dB: 11x11_Box (81.6%)
+  SNR   8dB: 11x11_Box (85.8%)
+  SNR  10dB: 11x11_Box (83.3%)
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931_20260219_140629.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931_20260219_140629.csv
+Saved detailed results to results_local/kernel_search/kernel_rankings_20260218_011931.json
+Saved rankings to results_local/kernel_search/kernel_rankings_20260218_011931.csv
+
+======================================================================
+GRID SEARCH COMPLETE
+======================================================================
+Results saved to: results_local/kernel_search/
+Next step: Use rankings to select champion kernel for Phase 2

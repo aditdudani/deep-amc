@@ -1,0 +1,21 @@
+p[Kclear[3Plscd ..[3Plscd resultsls[Kclearrm screenlog.0[9Pclearnano src/eval_squeezenet_by_snr.py[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[Kgit pullpython src/eval_squeezenet_by_snr.py 
+2025-11-01 13:03:23.733016: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+--- Evaluating SqueezeNet accuracy by SNR ---
+
+2025-11-01 13:03:46.817508: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-11-01 13:03:47.156281: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1637] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 27126 MB memory:  -> device: 0, name: Tesla V100-PCIE-32GB, pci bus id: 0000:3b:00.0, compute capability: 7.0
+Training class order (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+2025-11-01 13:04:05.513997: W tensorflow/core/grappler/costs/op_level_cost_estimator.cc:690] Error in PredictCost() for the op: op: "Softmax" attr { key: "T" value { type: DT_FLOAT } } inputs { dtype: DT_FLOAT shape { unknown_rank: true } } device { type: "GPU" vendor: "NVIDIA" model: "Tesla V100-PCIE-32GB" frequency: 1380 num_cores: 80 environment { key: "architecture" value: "7.0" } environment { key: "cuda" value: "11080" } environment { key: "cudnn" value: "8700" } num_registers: 65536 l1_cache_size: 24576 l2_cache_size: 6291456 shared_memory_size_per_multiprocessor: 98304 memory_size: 28444065792 bandwidth: 898048000 } outputs { dtype: DT_FLOAT shape { unknown_rank: true } }
+2025-11-01 13:04:06.056168: I tensorflow/stream_executor/cuda/cuda_dnn.cc:424] Loaded cuDNN version 8700
+SNR  0 dB -> accuracy: 0.4212 (n=32768)
+SNR  2 dB -> accuracy: 0.6609 (n=32768)
+SNR  4 dB -> accuracy: 0.8013 (n=32768)
+SNR  6 dB -> accuracy: 0.8521 (n=32768)
+SNR  8 dB -> accuracy: 0.8728 (n=32768)
+SNR 10 dB -> accuracy: 0.8739 (n=32768)
+Saved JSON: results/accuracy_by_snr_squeezenet.json
+Saved plot: results/accuracy_by_snr_squeezenet.png
+]0;root@3973cb9e2f2d: /approot@3973cb9e2f2d:/app# 

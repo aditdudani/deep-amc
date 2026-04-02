@@ -3,7 +3,6 @@ models/
 data/
 references/
 results/
-logs/
 
 # Ignore Python cache and environment files
 __pycache__/

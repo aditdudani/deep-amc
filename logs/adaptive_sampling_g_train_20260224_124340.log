@@ -1,0 +1,68 @@
+Clean log: logs/adaptive_sampling_g_train_20260224_124340.log
+Found 176944 files belonging to 8 classes.
+Found 19664 files belonging to 8 classes.
+Train classes (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+Val   classes (8): ['16QAM', '32QAM', '4ASK', '64QAM', '8PSK', 'BPSK', 'OQPSK', 'QPSK']
+
+--- Training SqueezeNet v1.1 with adaptive sampler ---
+[sampler-backend] Using tf.data with epoch_size=176944, scope=class, snrs=[0, 2, 4, 6, 8, 10]
+[resample-loop] Enabled per-epoch resampling (backend=tfdata)
+[resample-loop] Epoch 1/40: built dataset with 176944 samples
+
+[Epoch 1] Learning rate: 0.01
+
+Epoch 1: val_accuracy improved from -inf to 0.58381, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Warmup epoch 1/3: weights not updated. Saved results/adaptive_sampling_g/20260224_124340/weights_epoch1.json
+[resample-loop] Epoch 2/40: built dataset with 176944 samples
+
+[Epoch 2] Learning rate: 0.01
+Epoch 2/2
+
+Epoch 2: val_accuracy improved from 0.58381 to 0.71872, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Warmup epoch 2/3: weights not updated. Saved results/adaptive_sampling_g/20260224_124340/weights_epoch2.json
+[resample-loop] Epoch 3/40: built dataset with 176944 samples
+
+[Epoch 3] Learning rate: 0.01
+Epoch 3/3
+
+Epoch 3: val_accuracy improved from 0.71872 to 0.73230, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Warmup epoch 3/3: weights not updated. Saved results/adaptive_sampling_g/20260224_124340/weights_epoch3.json
+[resample-loop] Epoch 4/40: built dataset with 176944 samples
+
+[Epoch 4] Learning rate: 0.01
+Epoch 4/4
+
+Epoch 4: val_accuracy improved from 0.73230 to 0.74186, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260224_124340/weights_epoch4.json
+[resample-loop] Epoch 5/40: built dataset with 176944 samples
+
+[Epoch 5] Learning rate: 0.01
+Epoch 5/5
+
+Epoch 5: val_accuracy improved from 0.74186 to 0.75198, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260224_124340/weights_epoch5.json
+[resample-loop] Epoch 6/40: built dataset with 176944 samples
+
+[Epoch 6] Learning rate: 0.01
+Epoch 6/6
+
+Epoch 6: val_accuracy did not improve from 0.75198
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260224_124340/weights_epoch6.json
+[resample-loop] Epoch 7/40: built dataset with 176944 samples
+
+[Epoch 7] Learning rate: 0.01
+Epoch 7/7
+
+Epoch 7: val_accuracy improved from 0.75198 to 0.76017, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260224_124340/weights_epoch7.json
+[resample-loop] Epoch 8/40: built dataset with 176944 samples
+
+[Epoch 8] Learning rate: 0.01
+Epoch 8/8
+
+Epoch 8: val_accuracy improved from 0.76017 to 0.76251, saving model to models/squeezenet_sampler_g_20260224_124340.h5
+[ConfusionBySNR] Updated weights saved: results/adaptive_sampling_g/20260224_124340/weights_epoch8.json
+[resample-loop] Epoch 9/40: built dataset with 176944 samples
+
+[Epoch 9] Learning rate: 0.01
+Epoch 9/9
