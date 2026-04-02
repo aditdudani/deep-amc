@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
 Run clean evaluation on all three models and generate comparison report + visualizations.
+Auto-detects latest adaptive sampling model.
 """
 
 import os
 import sys
 import json
 import warnings
+import glob
 
 # Suppress TensorFlow logging BEFORE importing
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -23,8 +25,22 @@ if SRC_DIR not in sys.path:
 from eval_validation_clean import eval_validation_clean
 
 
+def find_latest_adaptive_model():
+    """Find the most recent squeezenet_sampler_g_*.h5 model."""
+    pattern = 'models/squeezenet_sampler_g_*.h5'
+    models = glob.glob(pattern)
+    if not models:
+        raise FileNotFoundError(f"No adaptive models found matching {pattern}")
+    # Sort by modification time, return most recent
+    latest = max(models, key=os.path.getmtime)
+    return latest
+
+
 def run_all_evaluations():
     """Evaluate all three models and save comparison."""
+
+    # Auto-detect latest adaptive model
+    latest_adaptive = find_latest_adaptive_model()
 
     models = [
         {
@@ -38,9 +54,9 @@ def run_all_evaluations():
             'description': 'Phase 2 Runner-up - K20 3x3 Cross Centered'
         },
         {
-            'model_path': 'models/squeezenet_sampler_g_20260224_155039.h5',
+            'model_path': latest_adaptive,
             'model_name': 'Config_G_Adaptive',
-            'description': 'Adaptive Sampling on Config G'
+            'description': f'Adaptive Sampling on Config G ({os.path.basename(latest_adaptive)})'
         },
     ]
 
