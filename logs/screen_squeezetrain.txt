@@ -1,0 +1,38 @@
+2765/2765 [==============================] - 131s 47ms/step - loss: 1.8980 - accuracy: 0.3343 - val_loss: 1.3540 - val_accuracy: 0.7218 - lr: 0.
+0050
+
+[Epoch 36] Learning rate: 0.005
+Epoch 36/40
+2765/2765 [==============================] - ETA: 0s - loss: 1.8952 - accuracy: 0.3372
+2765/2765 [==============================] - 132s 48ms/step - loss: 1.8952 - accuracy: 0.3372 - val_loss: 1.2890 - val_accuracy: 0.7420 - lr: 0.
+0050
+
+[Epoch 37] Learning rate: 0.005
+Epoch 37/40
+2764/2765 [============================>.] - ETA: 0s - loss: 1.8978 - accuracy: 0.3350
+2765/2765 [==============================] - 133s 48ms/step - loss: 1.8978 - accuracy: 0.3350 - val_loss: 1.2812 - val_accuracy: 0.7426 - lr: 0.
+0050
+
+[Epoch 38] Learning rate: 0.005
+Epoch 38/40
+2764/2765 [============================>.] - ETA: 0s - loss: 1.8715 - accuracy: 0.3517
+2765/2765 [==============================] - 128s 46ms/step - loss: 1.8714 - accuracy: 0.3517 - val_loss: 1.2353 - val_accuracy: 0.7392 - lr: 0.
+0050
+
+[Epoch 39] Learning rate: 0.005
+Epoch 39/40
+2765/2765 [==============================] - ETA: 0s - loss: 1.8954 - accuracy: 0.3371
+2765/2765 [==============================] - 131s 48ms/step - loss: 1.8954 - accuracy: 0.3371 - val_loss: 1.3125 - val_accuracy: 0.7325 - lr: 0.
+0050
+
+[Epoch 40] Learning rate: 0.005
+Epoch 40/40
+2765/2765 [==============================] - ETA: 0s - loss: 1.8952 - accuracy: 0.3381
+2765/2765 [==============================] - 132s 48ms/step - loss: 1.8952 - accuracy: 0.3381 - val_loss: 1.2766 - val_accuracy: 0.7373 - lr: 0.
+0050
+
+Training complete. Best model saved to: models/squeezenet_v11_rmsprop.h5
+WARNING:absl:Found untraced functions such as _jit_compiled_convolution_op, _jit_compiled_convolution_op, _jit_compiled_convolution_op, _jit_com
+piled_convolution_op, _jit_compiled_convolution_op while saving (showing 5 of 26). These functions will not be directly callable after loading.
+SavedModel exported to: models/squeezenet_v11_rmsprop_savedmodel
+root@e825c7012b68:/app#
