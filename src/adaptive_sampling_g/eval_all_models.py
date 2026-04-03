@@ -26,11 +26,19 @@ from eval_validation_clean import eval_validation_clean
 
 
 def find_latest_adaptive_model():
-    """Find the most recent adaptive sampling model in results/adaptive_sampling_g/"""
+    """Find the most recent adaptive sampling model in results/adaptive_sampling_g/ or models/ (fallback)"""
+    # Try new results/ structure first
     pattern = 'results/adaptive_sampling_g/*/model.h5'
     models = glob.glob(pattern)
+
+    # Fallback to old models/ directory for backward compatibility
     if not models:
-        raise FileNotFoundError(f"No adaptive models found matching {pattern}. Ensure training has been run with new structure.")
+        pattern = 'models/squeezenet_sampler_g_*.h5'
+        models = glob.glob(pattern)
+
+    if not models:
+        raise FileNotFoundError(f"No adaptive models found in results/adaptive_sampling_g/ or models/")
+
     # Sort by modification time, return most recent
     latest = max(models, key=os.path.getmtime)
     return latest
