@@ -361,3 +361,134 @@ Phase 3: Fix adaptive sampling hyperparameters and add min_weight floor
 
 Fixes catastrophic forgetting at epoch 15 where 16QAM accuracy dropped 50%→3%
 ```
+
+---
+
+## Part 7: Latest Run Analysis (March 28, 20260328_180649) & Critical Issues
+
+### Status After March 28 Training
+
+**Run executed with corrected hyperparameters:**
+- epsilon: 0.03 ✓
+- beta: 0.2 ✓
+- max_cap: 0.12 ✓
+- min_weight: 0.005 ✓
+- replay_fraction: 0.18 ✓
+
+**Result: WORSE than old model + NEW CRITICAL ISSUE DISCOVERED**
+
+| Metric | March 28 Model | Feb 24 Model | Baseline G |
+|--------|---|---|---|
+| Overall Accuracy | 78.07% | 79.07% | 78.22% |
+| 16QAM @ 0dB | 0.28% | 47.45% | 45.37% |
+| Training plateau | Epoch 9 (77.3%) | N/A | N/A |
+
+### Critical Discovery: Evaluation Pipeline Broken
+
+**The real problem:** Eval script used OLD model (Feb 24), NOT new one (March 28)
+- `eval_all_models.py` was hardcoded to look in `models/squeezenet_sampler_g_20260224_155039.h5`
+- New model trained to `results/adaptive_sampling_g/20260328_180649/` but NO .h5 file saved there
+- The 79.07% result reported was from OLD model, NOT the new training run
+
+**Why this happened:**
+- Directory structure migration: models/ → results/ subdirectories
+- Training script saves model to `models/squeezenet_sampler_g_[timestamp].h5` (old path, logged in output)
+- But .gitignore blocks *.h5 files, so they're never in results/ directory after reorganization
+- Eval script's `find_latest_adaptive_model()` needs to search new directory structure
+
+### True Performance of March 28 Model: UNKNOWN
+
+Cannot confirm if hyperparameter fixes worked because:
+1. ❌ New model was never properly evaluated
+2. ❌ Hardcoded eval paths prevented finding it
+3. ❌ Log says "Overall Accuracy: 79.07%" but that's from OLD model (Feb 24)
+4. ❓ TRUE performance of March 28 model at epoch 40: UNKNOWN
+
+### Training Run Observations (from logs and weights)
+
+**Positive signs:**
+- min_weight floor working: All weights ≥ 0.005 in weights_epoch40.json ✓
+- No catastrophic collapse to near-zero weights
+- Smooth weight distribution across classes
+
+**Negative signs:**
+- Plateau at epoch 9 (77.3%) → suggests aggressive parameters still too strong
+- 16QAM 0dB: still only 0.28% accuracy (catastrophic)
+- Training loss oscillating heavily (val_loss jumped from 0.58 to 1.52 by epoch 35)
+- Indicates overfitting or weight instability despite fixes
+
+### Files Affected
+
+**Training run artifacts saved to:**
+- `results/adaptive_sampling_g/20260328_180649/weights/` - contains weights_epoch*.json ✓ SAVED
+- `results/adaptive_sampling_g/20260328_180649/confusion/` - contains confusion matrices ✓ SAVED
+- `results/adaptive_sampling_g/20260328_180649/logs/` - contains training logs ✓ SAVED
+- `results/adaptive_sampling_g/20260328_180649/` - NO model.h5 found ✗ MISSING
+
+Model file location: Unknown (possibly in `models/` or deleted)
+
+---
+
+## Part 8: Next Steps - PRIORITY ORDER
+
+### ⭐ PHASE 1: Fix Evaluation Pipeline (CRITICAL)
+
+**Objective:** Re-evaluate March 28 model with correct eval script
+
+**Changes needed in `src/adaptive_sampling_g/eval_all_models.py`:**
+1. Rewrite `find_latest_adaptive_model()` function (lines 28-64)
+2. Primary search: `results/adaptive_sampling_g/*/model.h5` with glob + getmtime
+3. Fallback search: `models/squeezenet_sampler_g_*.h5` (for old runs)
+4. Return actual latest model path, not hardcoded
+
+**Why:** Without this, we cannot determine if hyperparameter fixes actually worked
+
+**Expected outcome:** Get TRUE evaluation metrics for March 28 model to compare against:
+- Baseline G: 78.22%
+- Feb 24 adaptive: 79.07%
+- March 28 adaptive: ???%
+
+### PHASE 2: Analyze Training Dynamics (POST-EVAL)
+
+Once eval is fixed and true metrics known:
+
+1. **If March 28 > 78.22%**: Hyperparameter fixes worked, investigate why 16QAM still bad
+2. **If March 28 ≤ 78.22%**: Hyperparameters need more tuning, move to Phase 3
+3. **If March 28 << 78.22%**: Adaptive sampler fundamentally broken, consider pivot
+
+### PHASE 3: Hyperparameter Iteration (IF NEEDED)
+
+If March 28 underperforms:
+
+| Parameter | Current | Try | Rationale |
+|-----------|---------|-----|-----------|
+| max_cap | 0.12 | 0.08 | More restrictions prevent over-focus |
+| epsilon | 0.03 | 0.05 | Higher error floor protects easy classes |
+| replay_fraction | 0.18 | 0.25 | Stronger uniform baseline |
+| beta | 0.2 | 0.15 | Even slower adaptation |
+
+Or pivot to: per-SNR weights only (ignore class difficulty), curriculum learning, or accept Baseline G
+
+---
+
+## Decision Tree
+
+**Current state:** Hyperparameters implemented, but TRUE model performance unknown
+
+```
+March 28 eval completed?
+├─ NO → FIX EVAL SCRIPT (Phase 1)
+│   └─ Re-run eval_all_models.py
+│
+└─ YES → Check results
+    ├─ March 28 > 78.22%? → GOOD: Analyze why 16QAM bad
+    ├─ 78.22% ≥ March 28 > 78.07%? → OK: Minor regression, tune params
+    └─ March 28 ≤ 78.07%? → BAD: Pivot strategy or accept baseline
+```
+
+**Status as of April 3, 2026:**
+- ✅ Hyperparameters implemented in code
+- ✅ March 28 training run completed
+- ✅ Artifacts saved (weights, confusion, logs)
+- ❌ Model evaluation incorrectly used old model from Feb 24
+- ❌ TRUE performance of March 28 model UNKNOWN
